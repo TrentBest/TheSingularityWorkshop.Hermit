@@ -22,3 +22,5 @@ jobs:
           node-version: 22
       - name: Run deterministic Hermit and lesson tests
         run: npm test
+      - name: Run deterministic inspection example
+        run: node examples/deterministic-inspection.mjs
