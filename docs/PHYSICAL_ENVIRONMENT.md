@@ -83,7 +83,22 @@ Hermit may propose a physical action such as grasp, lift, push, pull, walk-to, l
 
 The model must never be allowed to declare that an object moved, a collision did not occur, or a load was successfully lifted. Those are simulation outcomes.
 
-## 6. Typed physical actions and affordances
+## 6. Reuse the Workshop Physics foundation deliberately
+
+The Physics development branch already provides a useful but bounded foundation. Its articulated-mechanics integration contract records the current boundary: finite spatial vectors, normalized quaternion orientation, metre-based poses, timestamped rigid-body snapshots, a bounded 3D translational distance-link experiment, per-step contact observations, sphere-sphere narrowphase detection, a limited frictionless normal-impulse response for one contact at a time, and bounded single-contact positional correction.
+
+That is not yet a general rigid-body engine. The documented omissions include angular inertia, friction, simultaneous contacts, broadphase, persistent contact manifolds, rigid joints, a rigid-body time integrator, and articulated constraint-reaction-load modeling. We must not present those as available simply because the concepts appear in a design contract.
+
+Hermit's physical-world implementation should therefore proceed in two tracks:
+
+1. **Use existing Physics capabilities where their tested contracts fit.** Preserve the Physics package's units, coordinate conventions, deterministic inputs, run records, and evidence discipline.
+2. **Raise explicit Physics work for missing mechanics.** The ant-farm needs a coherent bounded body/rigid-body stepping path, contact and friction behavior, tool/load constraints, and eventually articulated actuation. Each capability needs source, focused tests, declared assumptions, and a reproducible demonstration before Hermit depends on it.
+
+Do not add a second physics authority inside Hermit. Hermit owns goals, planning and action proposals; Physics owns modeled physical outcomes. If a temporary fake adapter is used for the first assistant slice, label it as a deterministic test double and keep it separate from a real physical simulation.
+
+Reference: [Physics articulated mechanics integration contract](https://github.com/TrentBest/TheSingularityWorkshop.Physics/blob/development/docs/ARTICULATED_MECHANICS_CONTRACT.md), [contact impulse experiment](https://github.com/TrentBest/TheSingularityWorkshop.Physics/blob/development/docs/experiments/contact-impulse.md), and [Physics capability catalog](https://github.com/TrentBest/TheSingularityWorkshop.Physics/blob/development/docs/PHYSICS_CAPABILITY_CATALOG.md).
+
+## 7. Typed physical actions and affordances
 
 A future action contract should identify actor/body identity; target object or mechanism identity; action kind; target pose, direction, or contact point where applicable; force/effort or duration bounds; preconditions and required affordances; expected outcome type (not a promised outcome); cancellation and timeout behavior.
 
@@ -101,7 +116,7 @@ Examples of useful failure reasons:
 
 A failed attempt is useful information. Hermit should be able to inspect the reason, revise its plan, and try a different approach within bounded planning and execution limits.
 
-## 7. A first vertical slice
+## 8. A first vertical slice
 
 Do not begin with a full sandbox, realistic robotics, or a complex physics package integration. Prove the concept with a tiny deterministic environment.
 
@@ -136,7 +151,7 @@ Do not begin with a full sandbox, realistic robotics, or a complex physics packa
 
 The first implementation can use simplified, deterministic physics if the limitations are visible and the action outcomes are internally consistent. Select or integrate a physics engine only after comparing its license, runtime targets, determinism, 2D/3D needs, collision support, and adapter surface.
 
-## 8. The learning loop
+## 9. The learning loop
 
 The user should be able to watch the following cycle:
 
@@ -150,7 +165,7 @@ The user should be able to watch the following cycle:
 
 This can teach more than movement. It gives users a visible way to experiment with mechanics, forces, leverage, friction, stability, energy, and tool design. The environment becomes both a playground and an educational laboratory.
 
-## 9. Safety and trust boundaries
+## 10. Safety and trust boundaries
 
 - The simulation is authoritative for physical outcomes.
 - Hermit cannot bypass body limits by describing an impossible result.
@@ -160,7 +175,7 @@ This can teach more than movement. It gives users a visible way to experiment wi
 - Every action is attributable and inspectable; failed actions are recorded as outcomes, not hidden.
 - Physical properties are data, not instructions. Object descriptions and labels cannot override host policy.
 
-## 10. Product direction
+## 11. Product direction
 
 The experience should feel like a living ant farm: the user builds and modifies the world; Hermit explores and acts within it; physical rules make outcomes understandable; tools and mechanisms expand what is possible; users can pause, inspect, replay, and experiment; and the same underlying environment model can eventually be presented in a browser, desktop app, or spatial/VR shell.
 
