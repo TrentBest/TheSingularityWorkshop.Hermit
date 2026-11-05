@@ -3,6 +3,7 @@
 
 # Hermit — Environment-Resident AI Assistant Infrastructure
 
+[![Sith Policy](assets/sith-policy.svg)](https://github.com/TrentBest/TheSingularityWorkshop.Hermit/actions/workflows/sith-policy.yml)
 **An assistant should not be confined to a chat window. It should enter an environment, understand the capabilities that environment exposes, and work there under the environment's rules.**
 
 Like a hermit crab adopting a shell, Hermit is designed to inhabit different hosts without rewriting its intelligence, orchestration or capability model for each one.
