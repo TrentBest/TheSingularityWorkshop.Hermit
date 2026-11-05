@@ -14,6 +14,32 @@ function byteLength(value) {
   return new TextEncoder().encode(value).length;
 }
 
+function assertInputSchema(schema, path = "$") {
+  if (!schema || typeof schema !== "object" || Array.isArray(schema)) {
+    throw new HermitError("INVALID_CAPABILITY_SCHEMA", "Capability input schema must be an object.");
+  }
+  if (schema.type === "object") {
+    const properties = schema.properties ?? {};
+    if (typeof properties !== "object" || Array.isArray(properties)) {
+      throw new HermitError("INVALID_CAPABILITY_SCHEMA", `Invalid properties at ${path}.`);
+    }
+    const required = schema.required ?? [];
+    if (!Array.isArray(required) || required.some(key => typeof key !== "string" || !Object.hasOwn(properties, key))) {
+      throw new HermitError("INVALID_CAPABILITY_SCHEMA", `Invalid required fields at ${path}.`);
+    }
+    for (const [key, child] of Object.entries(properties)) assertInputSchema(child, `${path}.${key}`);
+    return;
+  }
+  if (schema.type === "string") {
+    if (schema.maxLength !== undefined && (!Number.isInteger(schema.maxLength) || schema.maxLength < 0)) {
+      throw new HermitError("INVALID_CAPABILITY_SCHEMA", `Invalid maxLength at ${path}.`);
+    }
+    return;
+  }
+  if (schema.type === "number" || schema.type === "boolean") return;
+  throw new HermitError("INVALID_CAPABILITY_SCHEMA", `Unsupported schema type at ${path}.`);
+}
+
 function validateSchema(value, schema, path = "$") {
   if (!schema || typeof schema !== "object" || Array.isArray(schema)) {
     throw new HermitError("INVALID_CAPABILITY_SCHEMA", "Capability input schema must be an object.");
@@ -77,7 +103,7 @@ export class CapabilityRegistry {
     if (!Number.isInteger(maxOutputBytes) || maxOutputBytes < 1 || maxOutputBytes > DEFAULT_MAX_OUTPUT_BYTES) {
       throw new HermitError("INVALID_OUTPUT_LIMIT", "Capability output limit must be between 1 and 16384 bytes.");
     }
-    validateSchema({}, inputSchema);
+    assertInputSchema(inputSchema);
     if (this.#capabilities.has(id)) {
       throw new HermitError("DUPLICATE_CAPABILITY", `Capability identity is already registered: ${id}.`, { id });
     }
