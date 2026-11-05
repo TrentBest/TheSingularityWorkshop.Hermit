@@ -205,3 +205,29 @@ A green build is not proof of correct authorization. A successful inference requ
 4. Which memory workloads require DataWarehouse, and which remain host-owned?
 5. What is shared across shells, and what remains local to each host?
 6. How should multiple Hermit instances coordinate without sharing authority or private context?
+
+## 11. Implemented deterministic runtime slice (development)
+
+The first executable slice lives in `src/hermit-runtime.js` and is intentionally independent of the Pages neural-network lesson.
+
+Implemented in this slice:
+- an explicit capability registry with stable identity, version, input contract and registered adapter;
+- deterministic planner injection (the sample planner is fake and local);
+- bounded structured argument validation, including rejection of undeclared fields;
+- host-supplied `allow`, `deny` or `approval-required` policy decisions;
+- approval gating before invocation;
+- cancellation and an overall execution timeout;
+- bounded JSON-serializable capability output;
+- success/failure traces containing capability identity/version and policy outcome;
+- a fake in-memory `inspect-item` example and automated Node tests.
+
+Not implemented by this slice:
+- a real HeadlessAi/model-provider adapter or model-driven planning;
+- multi-round planning, task persistence or durable memory;
+- a real AnyApp/WebApp/server shell or external capability adapter;
+- a full JSON Schema implementation, concurrent scheduling or production-grade audit storage;
+- verified integration with FSM_API, FSM_COS, MicroBundleDomain or GUI.
+
+The current schema validator deliberately supports only object, string, finite number and boolean fields. Expand it only alongside explicit contract tests. The runtime is a development proof, not a production security boundary: host policy and approval must remain in trusted host code, and any real adapter must independently enforce its own resource and authority limits.
+
+Verification command: `npm test`. Example: `node examples/deterministic-inspection.mjs`. CI runs the Node test suite on pushes and pull requests targeting `development`.
