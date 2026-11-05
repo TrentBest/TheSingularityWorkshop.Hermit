@@ -153,7 +153,7 @@ export class HermitRuntime {
     const record = (event, details = {}) => trace.push(Object.freeze({ event, at: new Date().toISOString(), ...details }));
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(new HermitError("TIMEOUT", "Task exceeded its execution time limit.")), timeoutMs);
-    const onCallerAbort = () => controller.abort(signal.reason ?? new HermitError("CANCELLED", "Task cancelled."));
+    const onCallerAbort = () => controller.abort(new HermitError("CANCELLED", "Task cancelled."));
     if (signal) {
       if (signal.aborted) onCallerAbort();
       else signal.addEventListener("abort", onCallerAbort, { once: true });
