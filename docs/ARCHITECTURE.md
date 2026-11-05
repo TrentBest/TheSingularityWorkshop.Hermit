@@ -213,7 +213,7 @@ The first executable slice lives in `src/hermit-runtime.js` and is intentionally
 Implemented in this slice:
 - an explicit capability registry with stable identity, version, input contract and registered adapter;
 - deterministic planner injection (the sample planner is fake and local);
-- bounded structured argument validation, including rejection of undeclared fields;
+- bounded, immutable capability schemas and structured argument validation, including rejection of undeclared fields;
 - host-supplied `allow`, `deny` or `approval-required` policy decisions;
 - approval gating before invocation;
 - cancellation and an overall execution timeout;
@@ -228,6 +228,6 @@ Not implemented by this slice:
 - a full JSON Schema implementation, concurrent scheduling or production-grade audit storage;
 - verified integration with FSM_API, FSM_COS, MicroBundleDomain or GUI.
 
-The current schema validator deliberately supports only object, string, finite number and boolean fields. Expand it only alongside explicit contract tests. The runtime is a development proof, not a production security boundary: host policy and approval must remain in trusted host code, and any real adapter must independently enforce its own resource and authority limits.
+The current schema validator deliberately supports only object, string, finite number and boolean fields. Registered schemas are cloned, structurally bounded and deeply frozen so callers cannot mutate the contract after registration. Expand it only alongside explicit contract tests. The runtime is a development proof, not a production security boundary: host policy and approval must remain in trusted host code, and any real adapter must independently enforce its own resource and authority limits.
 
 Verification command: `npm test`. Example: `node examples/deterministic-inspection.mjs`. CI runs the Node test suite on pushes and pull requests targeting `development`.
