@@ -74,12 +74,21 @@ These are integration candidates, not mandatory dependencies. Keep Hermit's core
 
 ## First milestones
 
+The public learning experience and the assistant-runtime proof are parallel tracks:
+
+- **Public learning track:** [Build Hermit's first GitHub Pages learning experience](https://github.com/TrentBest/TheSingularityWorkshop.Hermit/issues/3). Begin with a fixed 2-input / 2-output inference lesson whose living SVG is driven by the actual calculation.
+- **Runtime track:** [Build the first deterministic Hermit assistant vertical slice](https://github.com/TrentBest/TheSingularityWorkshop.Hermit/issues/1), using fake inference and a fake environment.
+
+The broader runtime progression is:
+
 1. Reconnaissance and contract comparison.
 2. Deterministic assistant loop using fake inference and a fake environment.
 3. Capability discovery, schema validation and safe execution.
 4. Host-controlled permissions, approval, memory and audit.
 5. First real Workshop shell.
 6. Additional portable shells after the first proves the contracts.
+
+The Pages lesson is a separate educational presentation. It does not imply that neural inference is already integrated into Hermit's assistant runtime.
 
 Every milestone must distinguish implemented, tested, specified and planned functionality. No NuGet publication without explicit authorization.
 
