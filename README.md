@@ -97,7 +97,18 @@ Every milestone must distinguish implemented, tested, specified and planned func
 
 The repository follows the Workshop Sith branch policy: `master` and `development` only. Active work and local dependency integration belong on `development`; `master` is the stable line.
 
-Build and test instructions will be added with the first executable project. Hermit is currently an architecture and contract foundation, not a releasable package.
+### Run the deterministic runtime proof
+
+Requires Node.js 22 or later; the runtime has no third-party package dependencies.
+
+```bash
+npm test
+node examples/deterministic-inspection.mjs
+```
+
+The first runtime proof is a small JavaScript implementation in `src/hermit-runtime.js`, separate from the Pages neural-network lesson. It demonstrates a deterministic planner, explicit capability registry, structured argument validation, host-supplied policy, approval gating, bounded execution, cancellation/timeout propagation, bounded JSON output and an execution trace.
+
+This is an initial executable slice, not yet a production assistant runtime. It has no live model adapter, durable memory, real host shell, multi-step planning loop, or provider integration. The current tests exercise the deterministic fake environment only. No package publishing is configured or authorized.
 
 ---
 
