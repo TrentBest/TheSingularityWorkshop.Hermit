@@ -14,20 +14,24 @@ function byteLength(value) {
   return new TextEncoder().encode(value).length;
 }
 
-function assertInputSchema(schema, path = "$") {
+function assertInputSchema(schema, path = "$", depth = 0, budget = { nodes: 0 }) {
+  budget.nodes += 1;
+  if (depth > 16 || budget.nodes > 256) {
+    throw new HermitError("INVALID_CAPABILITY_SCHEMA", "Capability schema exceeds its structural limits.");
+  }
   if (!schema || typeof schema !== "object" || Array.isArray(schema)) {
     throw new HermitError("INVALID_CAPABILITY_SCHEMA", "Capability input schema must be an object.");
   }
   if (schema.type === "object") {
     const properties = schema.properties ?? {};
-    if (typeof properties !== "object" || Array.isArray(properties)) {
-      throw new HermitError("INVALID_CAPABILITY_SCHEMA", `Invalid properties at ${path}.`);
+    if (typeof properties !== "object" || Array.isArray(properties) || Object.keys(properties).length > 64) {
+      throw new HermitError("INVALID_CAPABILITY_SCHEMA", `Invalid or excessive properties at ${path}.`);
     }
     const required = schema.required ?? [];
-    if (!Array.isArray(required) || required.some(key => typeof key !== "string" || !Object.hasOwn(properties, key))) {
+    if (!Array.isArray(required) || new Set(required).size !== required.length || required.some(key => typeof key !== "string" || !Object.hasOwn(properties, key))) {
       throw new HermitError("INVALID_CAPABILITY_SCHEMA", `Invalid required fields at ${path}.`);
     }
-    for (const [key, child] of Object.entries(properties)) assertInputSchema(child, `${path}.${key}`);
+    for (const [key, child] of Object.entries(properties)) assertInputSchema(child, `${path}.${key}`, depth + 1, budget);
     return;
   }
   if (schema.type === "string") {
@@ -38,6 +42,14 @@ function assertInputSchema(schema, path = "$") {
   }
   if (schema.type === "number" || schema.type === "boolean") return;
   throw new HermitError("INVALID_CAPABILITY_SCHEMA", `Unsupported schema type at ${path}.`);
+}
+
+function deepFreeze(value) {
+  if (value && typeof value === "object" && !Object.isFrozen(value)) {
+    for (const child of Object.values(value)) deepFreeze(child);
+    Object.freeze(value);
+  }
+  return value;
 }
 
 function validateSchema(value, schema, path = "$") {
@@ -103,12 +115,13 @@ export class CapabilityRegistry {
     if (!Number.isInteger(maxOutputBytes) || maxOutputBytes < 1 || maxOutputBytes > DEFAULT_MAX_OUTPUT_BYTES) {
       throw new HermitError("INVALID_OUTPUT_LIMIT", "Capability output limit must be between 1 and 16384 bytes.");
     }
-    assertInputSchema(inputSchema);
+    const stableSchema = structuredClone(inputSchema);
+    assertInputSchema(stableSchema);
     if (this.#capabilities.has(id)) {
       throw new HermitError("DUPLICATE_CAPABILITY", `Capability identity is already registered: ${id}.`, { id });
     }
     const capability = Object.freeze({
-      id, version, inputSchema: structuredClone(inputSchema),
+      id, version, inputSchema: deepFreeze(stableSchema),
       risk: descriptor.risk ?? "read-only",
       approvalRequired: descriptor.approvalRequired === true,
       maxOutputBytes, invoke
