@@ -120,6 +120,40 @@ test("rejects duplicate capability identities deterministically", () => {
   assert.throws(() => registry.register(descriptor), error => error instanceof HermitError && error.code === "DUPLICATE_CAPABILITY");
 });
 
+test("registered capability schemas are immutable and structurally bounded", async () => {
+  const registry = new CapabilityRegistry();
+  const sourceSchema = {
+    type: "object",
+    properties: { name: { type: "string", maxLength: 80 } },
+    required: ["name"]
+  };
+  const capability = registry.register({
+    id: "inspect-item", version: "1.0.0", inputSchema: sourceSchema,
+    invoke: async ({ name }) => ({ name })
+  });
+
+  sourceSchema.properties.name.maxLength = 1;
+  assert.throws(() => { capability.inputSchema.properties.name.maxLength = 1; }, TypeError);
+
+  const runtime = new HermitRuntime({ registry, policy: () => "allow" });
+  const response = await runtime.execute({
+    task: "Inspect the compass.",
+    planner: async () => ({ capabilityId: "inspect-item", arguments: { name: "compass" } })
+  });
+  assert.equal(response.status, "completed");
+  assert.deepEqual(response.result, { name: "compass" });
+});
+
+test("rejects excessively deep capability schemas at registration", () => {
+  let schema = { type: "string" };
+  for (let i = 0; i < 18; i += 1) schema = { type: "object", properties: { nested: schema } };
+  const registry = new CapabilityRegistry();
+  assert.throws(
+    () => registry.register({ id: "deep-schema", version: "1.0.0", inputSchema: schema, invoke: async () => ({}) }),
+    error => error instanceof HermitError && error.code === "INVALID_CAPABILITY_SCHEMA"
+  );
+});
+
 test("tool output is data and cannot alter the host policy decision", async () => {
   let policyCalls = 0;
   const { runtime, planner } = setup({
