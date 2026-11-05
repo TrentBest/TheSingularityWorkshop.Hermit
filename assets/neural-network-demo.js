@@ -1,9 +1,8 @@
-import { MODEL, forwardPass } from "./neural-network.js";
+import { forwardPass } from "./neural-network.js";
 
 const $ = (id) => document.getElementById(id);
 const input1 = $("input-one");
 const input2 = $("input-two");
-const svg = $("network-visual");
 const status = $("step-status");
 const stepButton = $("step-button");
 const playButton = $("play-button");
@@ -94,11 +93,19 @@ playButton.addEventListener("click", () => {
     return;
   }
   if (step === stepNames.length - 1) step = 0;
-  advance();
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    advance();
+    return;
+  }
   timer = window.setInterval(() => {
+    if (step === stepNames.length - 1) {
+      stop();
+      return;
+    }
+    advance();
     if (step === stepNames.length - 1) stop();
-    else advance();
   }, 1100);
+  advance();
   render();
 });
 resetButton.addEventListener("click", () => {
