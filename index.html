@@ -34,7 +34,8 @@
     .node.active circle { stroke:var(--accent); stroke-width:4; }
     .edge { stroke:#718899; stroke-width:3; fill:none; opacity:.7; }
     .edge.negative { stroke-dasharray:7 5; }
-    .edge.active { stroke:var(--warm); stroke-width:5; opacity:1; }
+    .edge.active { stroke:var(--warm); stroke-width:5; opacity:1; stroke-dasharray:10 8; animation:flow 1.2s linear infinite; }
+    @keyframes flow { to { stroke-dashoffset:-36; } }
     .edge-label { fill:var(--ink); font-size:13px; paint-order:stroke; stroke:var(--panel); stroke-width:5px; stroke-linejoin:round; }
     .stage { border-left:3px solid #506575; padding:.2rem 0 .2rem 1rem; margin:.65rem 0; }
     .stage-active { border-color:var(--warm); color:var(--ink); }
