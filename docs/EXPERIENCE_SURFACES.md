@@ -137,3 +137,12 @@ This makes the Learning campus relevant as a spatial presentation precedent, Eco
 - How should users distinguish a visual connection from a live data flow or an authorized action?
 
 These are prototype questions, not assumptions to hard-code into the core assistant contracts.
+
+
+## Physical environment: the ant-farm direction
+
+The next design refinement is an embodied, physics-backed environment: users place cubes, balls, tools and mechanisms into a small world; Hermit inhabits that world with a deliberately limited armature. Its lift capacity, push force, reach, grip, traction and stability constrain what it can do. A dolly changes the mechanics of moving a heavy load without changing the load's mass. A hamster wheel is a stateful mechanism Hermit can discover and actuate.
+
+This is not intended to be a scripted toy animation. The environment simulation must determine collisions, forces, constraints and outcomes; Hermit proposes actions and adapts to observed results. The builder, environment host, physics engine, Hermit embodiment/planner and renderer have separate responsibilities.
+
+The design and first proposed vertical slice are documented in [The Physical Environment](PHYSICAL_ENVIRONMENT.md). This remains a design specification, not implemented functionality. The initial assistant proof in issue #1 should remain small and deterministic; the physics-backed ant-farm experience is a richer follow-on environment, not a reason to bypass the safe capability and host-policy foundation.
