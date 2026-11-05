@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="An interactive, visual lesson showing how values travel through a tiny neural network.">
+  <title>Hermit — A Neural Network You Can Follow</title>
+  <style>
+    :root { color-scheme: dark; --bg:#101820; --panel:#192632; --ink:#edf3f7; --muted:#aabac6; --line:#506575; --accent:#79d4c3; --warm:#f4c477; --blue:#8fc5f2; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif; }
+    a { color:var(--accent); }
+    main { width:min(1120px, calc(100% - 2rem)); margin:0 auto; padding:2.5rem 0 4rem; }
+    header { max-width:780px; margin-bottom:2rem; }
+    .eyebrow { color:var(--accent); font-weight:700; letter-spacing:.12em; text-transform:uppercase; font-size:.78rem; }
+    h1 { font-size:clamp(2rem,5vw,3.7rem); line-height:1.08; margin:.4rem 0 1rem; }
+    h2 { margin-top:2.2rem; line-height:1.2; }
+    p { color:var(--muted); }
+    .panel { background:var(--panel); border:1px solid #304453; border-radius:16px; padding:clamp(1rem,3vw,1.5rem); margin:1.25rem 0; }
+    .controls { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:1rem; }
+    label { display:block; font-weight:650; margin-bottom:.35rem; }
+    input { width:100%; accent-color:var(--accent); background:#0d151c; border:1px solid var(--line); border-radius:8px; color:var(--ink); padding:.65rem; font:inherit; }
+    .buttons { display:flex; flex-wrap:wrap; gap:.65rem; margin-top:1rem; }
+    button { border:1px solid var(--line); border-radius:9px; padding:.65rem 1rem; color:var(--ink); background:#223746; font:inherit; font-weight:650; cursor:pointer; }
+    button:hover { border-color:var(--accent); }
+    button:focus-visible,input:focus-visible { outline:3px solid var(--warm); outline-offset:3px; }
+    button:disabled { opacity:.45; cursor:not-allowed; }
+    #step-status { color:var(--accent); font-weight:700; min-height:1.6em; }
+    .visual-wrap { overflow-x:auto; }
+    svg { display:block; width:100%; min-width:620px; height:auto; }
+    .node circle { fill:#203747; stroke:#8ca6b7; stroke-width:2.5; }
+    .node text { fill:var(--ink); font-size:15px; text-anchor:middle; }
+    .node .value { fill:var(--accent); font-size:13px; font-weight:700; }
+    .node.active circle { stroke:var(--accent); stroke-width:4; }
+    .edge { stroke:#718899; stroke-width:3; fill:none; opacity:.7; }
+    .edge.negative { stroke-dasharray:7 5; }
+    .edge.active { stroke:var(--warm); stroke-width:5; opacity:1; }
+    .edge-label { fill:var(--ink); font-size:13px; paint-order:stroke; stroke:var(--panel); stroke-width:5px; stroke-linejoin:round; }
+    .stage { border-left:3px solid #506575; padding:.2rem 0 .2rem 1rem; margin:.65rem 0; }
+    .stage-active { border-color:var(--warm); color:var(--ink); }
+    .stage-done { border-color:var(--accent); }
+    .math { overflow-wrap:anywhere; background:#0e171e; border-radius:8px; padding:.8rem; color:var(--ink); font-family:ui-monospace,SFMono-Regular,Consolas,monospace; }
+    .outputs { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:1rem; }
+    .output { font-size:1.6rem; color:var(--accent); font-weight:750; }
+    code { color:var(--warm); }
+    footer { border-top:1px solid #304453; margin-top:3rem; padding-top:1rem; color:var(--muted); font-size:.9rem; }
+    @media (prefers-reduced-motion: reduce) { *,*::before,*::after { scroll-behavior:auto !important; animation:none !important; transition:none !important; } }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="eyebrow">Hermit · Learn by watching</div>
+    <h1>A neural network you can follow</h1>
+    <p>A neural network does not understand a number by magic. It transforms inputs through a sequence of explicit calculations. This tiny network has two inputs and two outputs. Change the inputs, then step through the arithmetic.</p>
+  </header>
+
+  <section class="panel" aria-labelledby="experiment-title">
+    <h2 id="experiment-title">1. Choose the inputs</h2>
+    <p>These values are the signals entering the network. Try changing either one and watch every downstream value update.</p>
+    <div class="controls">
+      <div><label for="input-one">Input x₁</label><input id="input-one" type="number" min="-2" max="2" step="0.1" value="0.6"></div>
+      <div><label for="input-two">Input x₂</label><input id="input-two" type="number" min="-2" max="2" step="0.1" value="0.2"></div>
+    </div>
+    <div class="buttons">
+      <button id="play-button" type="button">Play</button>
+      <button id="step-button" type="button">Next step</button>
+      <button id="reset-button" type="button">Reset</button>
+    </div>
+    <p id="step-status" role="status" aria-live="polite">Step 1 of 6: Inputs.</p>
+  </section>
+
+  <section class="panel" aria-labelledby="network-title">
+    <h2 id="network-title">2. Watch the signal travel</h2>
+    <p>Every line carries an input multiplied by its weight. Dashed lines indicate negative weights. The values shown are calculated by the same function that drives this picture.</p>
+    <div class="visual-wrap">
+      <svg id="network-visual" viewBox="0 0 900 390" role="img" aria-labelledby="svg-title svg-desc">
+        <title id="svg-title">A fully connected two-input, two-output neural network</title>
+        <desc id="svg-desc">Two input nodes connect to two output neurons. Each connection is labeled with its fixed weight. Numerical values are displayed beside the nodes and in the calculation stages below.</desc>
+        <defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#718899"/></marker></defs>
+        <path id="edge-11" class="edge" d="M165 105 C340 105 520 105 700 145" marker-end="url(#arrow)"/>
+        <path id="edge-21" class="edge negative" d="M165 285 C340 285 520 190 700 145" marker-end="url(#arrow)"/>
+        <path id="edge-12" class="edge negative" d="M165 105 C340 105 520 285 700 285" marker-end="url(#arrow)"/>
+        <path id="edge-22" class="edge" d="M165 285 C340 285 520 285 700 285" marker-end="url(#arrow)"/>
+        <text class="edge-label" x="420" y="82">w₁₁ = 0.5 · <tspan id="contribution-11">0.300</tspan></text>
+        <text class="edge-label" x="420" y="210">w₂₁ = −0.4 · <tspan id="contribution-21">−0.080</tspan></text>
+        <text class="edge-label" x="420" y="170">w₁₂ = −0.3 · <tspan id="contribution-12">−0.180</tspan></text>
+        <text class="edge-label" x="420" y="315">w₂₂ = 0.8 · <tspan id="contribution-22">0.160</tspan></text>
+        <g id="node-input-one" class="node"><circle cx="115" cy="105" r="48"/><text x="115" y="100">x₁</text><text id="input-one-value" class="value" x="115" y="123">0.600</text></g>
+        <g id="node-input-two" class="node"><circle cx="115" cy="285" r="48"/><text x="115" y="280">x₂</text><text id="input-two-value" class="value" x="115" y="303">0.200</text></g>
+        <g id="node-output-one" class="node"><circle cx="760" cy="145" r="58"/><text x="760" y="132">Neuron 1</text><text id="output-one" class="value" x="760" y="157">0.579</text><text x="760" y="177">y₁</text></g>
+        <g id="node-output-two" class="node"><circle cx="760" cy="285" r="58"/><text x="760" y="272">Neuron 2</text><text id="output-two" class="value" x="760" y="297">0.445</text><text x="760" y="317">y₂</text></g>
+      </svg>
+    </div>
+    <div class="outputs">
+      <div><strong>Output y₁</strong><div class="output" id="output-one-readable">—</div></div>
+      <div><strong>Output y₂</strong><div class="output" id="output-two-readable">—</div></div>
+    </div>
+  </section>
+
+  <section class="panel" aria-labelledby="calculation-title">
+    <h2 id="calculation-title">3. Follow the calculation</h2>
+    <div class="stage" data-stage="0"><strong>Inputs</strong><p>The network receives x₁ = <span id="input-one-value-copy">0.600</span> and x₂ = <span id="input-two-value-copy">0.200</span>.</p></div>
+    <div class="stage" data-stage="1"><strong>Weighted contributions</strong><p>Each input is multiplied by the weight on its connection. For example, x₁ contributes x₁ × 0.5 to neuron 1.</p></div>
+    <div class="stage" data-stage="2"><strong>Weighted sums</strong><p>Contributions arriving at each neuron are added.</p><div class="math">z₁ = <span id="sum-one">0.220</span><br>z₂ = <span id="sum-two">−0.020</span></div></div>
+    <div class="stage" data-stage="3"><strong>Bias</strong><p>A bias shifts the weighted sum before activation.</p><div class="math">z₁ + b₁ = <span id="biased-one">0.320</span> (b₁ = <span id="bias-one">0.100</span>)<br>z₂ + b₂ = <span id="biased-two">−0.220</span> (b₂ = <span id="bias-two">−0.200</span>)</div></div>
+    <div class="stage" data-stage="4"><strong>Activation</strong><p>The sigmoid function maps each biased sum to a value between 0 and 1: σ(z) = 1 / (1 + e<sup>−z</sup>).</p></div>
+    <div class="stage" data-stage="5"><strong>Outputs</strong><p>The final values are the network's prediction for these inputs. The weights and biases stayed fixed throughout.</p></div>
+    <h3>The actual equations</h3>
+    <div class="math" id="equation-one">y₁ = σ((0.600 × 0.5) + (0.200 × −0.4) + 0.1)</div>
+    <div class="math" id="equation-two">y₂ = σ((0.600 × −0.3) + (0.200 × 0.8) − 0.2)</div>
+  </section>
+
+  <section>
+    <h2>4. What did we just do?</h2>
+    <p><strong>A neuron</strong> receives values, multiplies each by a learned or chosen weight, adds the contributions, adds a bias, and applies an activation function. A layer is a collection of neurons performing this process.</p>
+    <p><strong>Inference</strong> is using the current weights and biases to calculate an output. This lesson performs inference only. <strong>Learning</strong> is a separate process that changes weights and biases based on examples and an optimization rule. Nothing in this demonstration trains the network.</p>
+    <p>The weights are deliberately fixed so you can isolate the computation. Later lessons can introduce hidden layers, different activation functions, training examples, loss, gradients, and optimization one concept at a time.</p>
+  </section>
+
+  <footer>
+    <p>This is an educational, deterministic demonstration. It does not connect to a live AI model, use a GPU, or take actions in an environment.</p>
+    <p><a href="https://github.com/TrentBest/TheSingularityWorkshop.Hermit">Hermit source repository</a> · <a href="https://github.com/TrentBest/TheSingularityWorkshop.Hermit/issues/3">Pages learning experience work item</a></p>
+    <p align="center"><img src="https://raw.githubusercontent.com/TrentBest/FSM_API/master/Documentation/Branding/TheSingularityWorkshop.png" alt="The Singularity Workshop" width="320"></p>
+  </footer>
+</main>
+<script type="module">
+  import { forwardPass } from "./assets/neural-network.js";
+  import "./assets/neural-network-demo.js";
+</script>
+</body>
+</html>
