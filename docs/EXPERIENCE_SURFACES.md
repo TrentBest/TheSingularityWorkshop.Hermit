@@ -91,3 +91,49 @@ The first comparison should be whether the same task, capability identity, polic
 - [Economy Pages preview workflow](https://github.com/TrentBest/TheSingularityWorkshop.Economy/blob/development/.github/workflows/pages-build.yml)
 - [FSM_COS Gallery](https://github.com/TrentBest/TheSingularityWorkshop.FSM_COS/blob/master/docs/GALLERY.md)
 - [FSM_COS WebPage integration boundary](https://github.com/TrentBest/TheSingularityWorkshop.FSM_COS/blob/master/docs/WEBPAGE_INTEGRATION.md)
+
+
+## New direction: a visual environment builder
+
+The intended experience is not merely a chat panel embedded in a page. The Workshop should provide a **builder surface** where a person can drag available things into a workspace, compose an environment, and then enter or run that environment with Hermit resident inside it.
+
+This introduces two distinct modes:
+
+- **Build mode:** a palette/catalog of available objects, tools, data sources, capabilities, and presentation elements; a composition surface where the user can drag, drop, connect, arrange, and configure them; and an inspector for the selected element's properties and permissions.
+- **Environment mode:** the composed environment becomes an explorable/usable space. Hermit is present within it, can discover the environment's registered capabilities, understand the selected context, and assist through the same policy-controlled capability pipeline.
+
+The builder should create a declarative environment description, not execute arbitrary code assembled by drag-and-drop. A placed item is initially a visual/compositional object. It gains operational meaning only when the host binds it to a registered, versioned capability or environment service. Connections should be typed and validated; invalid or unresolved connections remain visible as design-time errors.
+
+### Candidate interaction model
+
+1. Choose an environment template or start with an empty workspace.
+2. Drag items from a categorized palette onto the composition surface.
+3. Arrange items spatially and connect compatible ports/relationships.
+4. Select an item to inspect its description, configuration, data boundaries, permissions, and available actions.
+5. Validate the composition and show missing dependencies or policy concerns before activation.
+6. Enter the environment. The host instantiates the approved composition and Hermit becomes available as its resident assistant.
+7. Select an object or area, ask Hermit about it, and see the capability proposal, approval requirement, action result, and evidence trace.
+
+The first prototype should be deliberately small: a workspace containing a few visible objects, one read-only inspect capability, typed connections, a property inspector, and a Hermit presence panel/avatar. Dragging an object into the environment should make it discoverable to Hermit; selecting it should scope the assistant's context to that object. The fake model and host policy remain deterministic for this first proof.
+
+### Architectural implications
+
+- The **builder** edits a declarative composition; it is not itself the runtime.
+- The **environment host** owns instantiation, lifecycle, state, input, authorization, and execution.
+- **Hermit** is a resident assistant service/presence within the host, not a privileged owner of the environment.
+- The **palette** should be populated from registered descriptors/catalogs, not from arbitrary executable snippets.
+- **Visual objects** and **operational capabilities** must remain distinct. A beautiful object with no registered behavior is still valid as presentation; it simply has no actions.
+- **Connections** need explicit type/contract compatibility and validation.
+- The same composition should eventually be renderable in more than one shell. A browser drag-and-drop builder is one shell; a desktop or spatial shell could present the same environment description differently.
+
+This makes the Learning campus relevant as a spatial presentation precedent, Economy's shop-placement proof relevant to reusable objects and presentation skins, Physics relevant to inspectable properties and evidence, and FSM_COS relevant only where its composition/runtime boundary genuinely fits. None of those projects alone supplies the complete visual builder or Hermit-resident experience; that is the new product direction to prove.
+
+### Open design questions to resolve through prototypes
+
+- Is the initial composition surface a 2D node/workspace editor, a spatial 3D scene, or a 2D builder that can preview a 3D environment?
+- Which palette categories are essential for the first slice: objects, capabilities, data, agents, layouts, or connectors?
+- Does Hermit appear as a panel, an avatar/character in the scene, or both—with one underlying assistant session?
+- Which environment state is ephemeral, locally persisted, or explicitly saved as a project?
+- How should users distinguish a visual connection from a live data flow or an authorized action?
+
+These are prototype questions, not assumptions to hard-code into the core assistant contracts.
