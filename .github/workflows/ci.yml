@@ -1,4 +1,4 @@
-name: Verify Hermit Pages lesson
+name: Verify Hermit
 
 on:
   push:
@@ -10,8 +10,8 @@ permissions:
   contents: read
 
 jobs:
-  neural-inference-tests:
-    name: Neural inference arithmetic
+  hermit-tests:
+    name: Hermit runtime and neural lesson tests
     runs-on: ubuntu-latest
     steps:
       - name: Check out source
@@ -20,5 +20,5 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Run deterministic inference tests
+      - name: Run deterministic Hermit and lesson tests
         run: npm test
