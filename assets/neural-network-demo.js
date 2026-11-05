@@ -31,6 +31,8 @@ function readInputs() {
 function render() {
   setText("input-one-value", fmt(result.inputs[0]));
   setText("input-two-value", fmt(result.inputs[1]));
+  setText("input-one-value-copy", fmt(result.inputs[0]));
+  setText("input-two-value-copy", fmt(result.inputs[1]));
   setText("contribution-11", fmt(result.contributions[0][0]));
   setText("contribution-21", fmt(result.contributions[0][1]));
   setText("contribution-12", fmt(result.contributions[1][0]));
@@ -43,6 +45,8 @@ function render() {
   setText("biased-two", fmt(result.biasedSums[1]));
   setText("output-one", fmt(result.outputs[0]));
   setText("output-two", fmt(result.outputs[1]));
+  setText("output-one-readable", fmt(result.outputs[0]));
+  setText("output-two-readable", fmt(result.outputs[1]));
 
   $("edge-11").classList.toggle("active", step >= 1);
   $("edge-21").classList.toggle("active", step >= 1);
