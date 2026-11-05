@@ -64,6 +64,22 @@ test("approval-required capabilities cannot run without host approval", async ()
   assert.equal(invoked, false);
 });
 
+
+test("host policy can require approval and execute only after host approval", async () => {
+  let invoked = false;
+  const { runtime, planner } = setup({
+    policy: () => "approval-required",
+    invoke: async () => { invoked = true; return { approved: true }; }
+  });
+  const blocked = await runtime.execute({ task: "Inspect the compass.", planner });
+  assert.equal(blocked.error.code, "APPROVAL_REQUIRED");
+  assert.equal(invoked, false);
+
+  const approved = await runtime.execute({ task: "Inspect the compass.", planner, approvalGranted: true });
+  assert.equal(approved.status, "completed");
+  assert.equal(invoked, true);
+});
+
 test("passes cancellation to a pending planner and reports cancelled", async () => {
   const { runtime } = setup();
   const controller = new AbortController();
