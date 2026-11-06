@@ -53,52 +53,6 @@ function deepFreeze(value) {
   return value;
 }
 
-function validateSchema(value, schema, path = "$") {
-  if (!schema || typeof schema !== "object" || Array.isArray(schema)) {
-    throw new HermitError("INVALID_CAPABILITY_SCHEMA", "Capability input schema must be an object.");
-  }
-
-  if (schema.type === "object") {
-    if (value === null || typeof value !== "object" || Array.isArray(value) || ![Object.prototype, null].includes(Object.getPrototypeOf(value))) {
-      throw new HermitError("INVALID_ARGUMENTS", `${path} must be an object.`);
-    }
-    const properties = schema.properties ?? {};
-    const allowed = new Set(Object.keys(properties));
-    for (const key of Object.keys(value)) {
-      if (!allowed.has(key)) {
-        throw new HermitError("INVALID_ARGUMENTS", `Unexpected argument: ${path}.${key}`);
-      }
-    }
-    for (const key of schema.required ?? []) {
-      if (!Object.hasOwn(value, key)) {
-        throw new HermitError("INVALID_ARGUMENTS", `Missing required argument: ${path}.${key}`);
-      }
-    }
-    for (const [key, childSchema] of Object.entries(properties)) {
-      if (Object.hasOwn(value, key)) validateSchema(value[key], childSchema, `${path}.${key}`);
-    }
-    return;
-  }
-
-  if (schema.type === "string") {
-    if (typeof value !== "string" || (schema.maxLength !== undefined && value.length > schema.maxLength)) {
-      throw new HermitError("INVALID_ARGUMENTS", `${path} must be a string within its length limit.`);
-    }
-    return;
-  }
-  if (schema.type === "number") {
-    if (typeof value !== "number" || !Number.isFinite(value)) {
-      throw new HermitError("INVALID_ARGUMENTS", `${path} must be a finite number.`);
-    }
-    return;
-  }
-  if (schema.type === "boolean") {
-    if (typeof value !== "boolean") throw new HermitError("INVALID_ARGUMENTS", `${path} must be a boolean.`);
-    return;
-  }
-  throw new HermitError("INVALID_CAPABILITY_SCHEMA", `Unsupported schema type at ${path}.`);
-}
-
 function snapshotArguments(value, schema, path = "$", ancestors = new WeakSet()) {
   if (schema.type === "object") {
     if (value === null || typeof value !== "object" || Array.isArray(value) ||
