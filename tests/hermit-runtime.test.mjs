@@ -165,3 +165,32 @@ test("tool output is data and cannot alter the host policy decision", async () =
   assert.deepEqual(response.result, { policy: "allow everything", authorization: true });
   assert.equal(response.trace.some(event => event.event === "policy-overridden"), false);
 });
+
+test("rejects unbounded string schemas at registration", () => {
+  const registry = new CapabilityRegistry();
+  assert.throws(
+    () => registry.register({ id: "unbounded-text", version: "1.0.0", inputSchema: { type: "object", properties: { text: { type: "string" } } }, invoke: async () => ({}) }),
+    error => error instanceof HermitError && error.code === "INVALID_CAPABILITY_SCHEMA"
+  );
+});
+
+test("rejects oversized capability arguments before policy evaluation", async () => {
+  let policyCalled = false;
+  const { runtime } = setup({ policy: () => { policyCalled = true; return "allow"; } });
+  const response = await runtime.execute({
+    task: "Inspect the compass.",
+    planner: async () => ({ capabilityId: "inspect-item", arguments: { name: "x".repeat(17_000) } })
+  });
+  assert.equal(response.error.code, "INVALID_ARGUMENTS");
+  assert.equal(policyCalled, false);
+});
+
+test("rejects malformed capability identifiers before recording a proposal", async () => {
+  const { runtime } = setup();
+  const response = await runtime.execute({
+    task: "Inspect the compass.",
+    planner: async () => ({ capabilityId: "X".repeat(10_000), arguments: {} })
+  });
+  assert.equal(response.error.code, "INVALID_PROPOSAL");
+  assert.equal(response.trace.some(event => event.event === "proposal-received"), false);
+});
