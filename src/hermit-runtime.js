@@ -1,5 +1,6 @@
 const DEFAULT_MAX_TASK_LENGTH = 4_096;
 const DEFAULT_MAX_OUTPUT_BYTES = 16_384;
+const DEFAULT_MAX_ARGUMENT_BYTES = 16_384;
 
 export class HermitError extends Error {
   constructor(code, message, details = {}) {
@@ -35,7 +36,7 @@ function assertInputSchema(schema, path = "$", depth = 0, budget = { nodes: 0 })
     return;
   }
   if (schema.type === "string") {
-    if (schema.maxLength !== undefined && (!Number.isInteger(schema.maxLength) || schema.maxLength < 0)) {
+    if (!Number.isInteger(schema.maxLength) || schema.maxLength < 0 || schema.maxLength > DEFAULT_MAX_TASK_LENGTH) {
       throw new HermitError("INVALID_CAPABILITY_SCHEMA", `Invalid maxLength at ${path}.`);
     }
     return;
@@ -58,7 +59,7 @@ function validateSchema(value, schema, path = "$") {
   }
 
   if (schema.type === "object") {
-    if (value === null || typeof value !== "object" || Array.isArray(value)) {
+    if (value === null || typeof value !== "object" || Array.isArray(value) || ![Object.prototype, null].includes(Object.getPrototypeOf(value))) {
       throw new HermitError("INVALID_ARGUMENTS", `${path} must be an object.`);
     }
     const properties = schema.properties ?? {};
@@ -184,12 +185,21 @@ export class HermitRuntime {
       record("task-created");
       record("planning-started");
       const proposal = await raceWithSignal(() => planner({ task, signal: executionSignal }), executionSignal);
-      if (!proposal || typeof proposal !== "object" || typeof proposal.capabilityId !== "string") {
+      if (!proposal || typeof proposal !== "object" || typeof proposal.capabilityId !== "string" || !/^[a-z][a-z0-9-]{1,63}$/.test(proposal.capabilityId)) {
         throw new HermitError("INVALID_PROPOSAL", "Planner must return a capabilityId and structured arguments.");
       }
       record("proposal-received", { capabilityId: proposal.capabilityId });
       const capability = this.registry.resolve(proposal.capabilityId);
       if (!capability) throw new HermitError("UNKNOWN_CAPABILITY", "Proposed capability is not registered.", { capabilityId: proposal.capabilityId });
+      let serializedArguments;
+      try {
+        serializedArguments = JSON.stringify(proposal.arguments);
+      } catch {
+        throw new HermitError("INVALID_ARGUMENTS", "Capability arguments must be bounded JSON data.");
+      }
+      if (serializedArguments === undefined || byteLength(serializedArguments) > DEFAULT_MAX_ARGUMENT_BYTES) {
+        throw new HermitError("INVALID_ARGUMENTS", "Capability arguments must not exceed 16384 serialized bytes.");
+      }
       validateSchema(proposal.arguments, capability.inputSchema);
       record("arguments-validated", { capabilityId: capability.id, version: capability.version });
 
