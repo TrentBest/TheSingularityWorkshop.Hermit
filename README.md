@@ -54,7 +54,7 @@ Environment shell (desktop / web / server / IDE / ...)
          Actual environment
 ```
 
-This is a target architecture, not a claim that these integrations are already implemented. See [Architecture and Boundaries](docs/ARCHITECTURE.md).
+This is a target architecture, not a claim that these integrations are already implemented. See [Architecture and Boundaries](docs/ARCHITECTURE.md) and the [HeadlessAi Integration Boundary](docs/HEADLESSAI_INTEGRATION.md).
 
 ## Workshop building blocks
 
