@@ -1,0 +1,48 @@
+name: Build Hermit Pages
+
+on:
+  push:
+    branches: [development]
+  pull_request:
+    branches: [development]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hermit-pages-build
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Assemble the static Hermit learning experience
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out Hermit
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Verify the lesson and runtime tests
+        run: npm test
+
+      - name: Assemble the static HTML site
+        shell: bash
+        run: |
+          mkdir -p _site/assets
+          cp index.html _site/index.html
+          cp -R assets/. _site/assets/
+          touch _site/.nojekyll
+          test -s _site/index.html
+          test -s _site/assets/neural-network-demo.js
+          test -s _site/assets/neural-network.js
+          grep -F '<script type="module" src="./assets/neural-network-demo.js"></script>' _site/index.html
+
+      - name: Upload the Pages artifact without deploying
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: ./_site
