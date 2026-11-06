@@ -99,6 +99,55 @@ function validateSchema(value, schema, path = "$") {
   throw new HermitError("INVALID_CAPABILITY_SCHEMA", `Unsupported schema type at ${path}.`);
 }
 
+function snapshotArguments(value, schema, path = "$", ancestors = new WeakSet()) {
+  if (schema.type === "object") {
+    if (value === null || typeof value !== "object" || Array.isArray(value) ||
+        ![Object.prototype, null].includes(Object.getPrototypeOf(value))) {
+      throw new HermitError("INVALID_ARGUMENTS", `${path} must be a plain object.`);
+    }
+    if (ancestors.has(value)) throw new HermitError("INVALID_ARGUMENTS", "Capability arguments must not contain cycles.");
+    ancestors.add(value);
+    const descriptors = Object.getOwnPropertyDescriptors(value);
+    const keys = Reflect.ownKeys(descriptors);
+    if (keys.some(key => typeof key !== "string")) {
+      throw new HermitError("INVALID_ARGUMENTS", "Capability arguments must not contain symbol properties.");
+    }
+    const properties = schema.properties ?? {};
+    const allowed = new Set(Object.keys(properties));
+    const snapshot = Object.create(null);
+    for (const key of keys) {
+      const descriptor = descriptors[key];
+      if (!descriptor.enumerable || !Object.hasOwn(descriptor, "value")) {
+        throw new HermitError("INVALID_ARGUMENTS", "Capability arguments must contain enumerable data properties only.");
+      }
+      if (!allowed.has(key)) throw new HermitError("INVALID_ARGUMENTS", `Unexpected argument: ${path}.${key}`);
+      snapshot[key] = snapshotArguments(descriptor.value, properties[key], `${path}.${key}`, ancestors);
+    }
+    for (const key of schema.required ?? []) {
+      if (!Object.hasOwn(snapshot, key)) throw new HermitError("INVALID_ARGUMENTS", `Missing required argument: ${path}.${key}`);
+    }
+    ancestors.delete(value);
+    return snapshot;
+  }
+  if (schema.type === "string") {
+    if (typeof value !== "string" || value.length > schema.maxLength) {
+      throw new HermitError("INVALID_ARGUMENTS", `${path} must be a string within its length limit.`);
+    }
+    return value;
+  }
+  if (schema.type === "number") {
+    if (typeof value !== "number" || !Number.isFinite(value)) {
+      throw new HermitError("INVALID_ARGUMENTS", `${path} must be a finite number.`);
+    }
+    return value;
+  }
+  if (schema.type === "boolean") {
+    if (typeof value !== "boolean") throw new HermitError("INVALID_ARGUMENTS", `${path} must be a boolean.`);
+    return value;
+  }
+  throw new HermitError("INVALID_CAPABILITY_SCHEMA", `Unsupported schema type at ${path}.`);
+}
+
 export class CapabilityRegistry {
   #capabilities = new Map();
 
@@ -191,20 +240,15 @@ export class HermitRuntime {
       record("proposal-received", { capabilityId: proposal.capabilityId });
       const capability = this.registry.resolve(proposal.capabilityId);
       if (!capability) throw new HermitError("UNKNOWN_CAPABILITY", "Proposed capability is not registered.", { capabilityId: proposal.capabilityId });
-      let serializedArguments;
-      try {
-        serializedArguments = JSON.stringify(proposal.arguments);
-      } catch {
-        throw new HermitError("INVALID_ARGUMENTS", "Capability arguments must be bounded JSON data.");
-      }
-      if (serializedArguments === undefined || byteLength(serializedArguments) > DEFAULT_MAX_ARGUMENT_BYTES) {
+      const safeArguments = snapshotArguments(proposal.arguments, capability.inputSchema);
+      const serializedArguments = JSON.stringify(safeArguments);
+      if (byteLength(serializedArguments) > DEFAULT_MAX_ARGUMENT_BYTES) {
         throw new HermitError("INVALID_ARGUMENTS", "Capability arguments must not exceed 16384 serialized bytes.");
       }
-      validateSchema(proposal.arguments, capability.inputSchema);
       record("arguments-validated", { capabilityId: capability.id, version: capability.version });
 
       const decision = await raceWithSignal(
-        () => this.policy({ task, capability: { id: capability.id, version: capability.version, risk: capability.risk }, arguments: structuredClone(proposal.arguments) }),
+        () => this.policy({ task, capability: { id: capability.id, version: capability.version, risk: capability.risk }, arguments: structuredClone(safeArguments) }),
         executionSignal
       );
       if (!["allow", "deny", "approval-required"].includes(decision)) {
@@ -218,7 +262,7 @@ export class HermitRuntime {
 
       record("execution-started", { capabilityId: capability.id, version: capability.version });
       const result = await raceWithSignal(
-        () => capability.invoke(structuredClone(proposal.arguments), { signal: executionSignal }),
+        () => capability.invoke(structuredClone(safeArguments), { signal: executionSignal }),
         executionSignal
       );
       let serialized;
