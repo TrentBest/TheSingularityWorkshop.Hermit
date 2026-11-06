@@ -194,3 +194,46 @@ test("rejects malformed capability identifiers before recording a proposal", asy
   assert.equal(response.error.code, "INVALID_PROPOSAL");
   assert.equal(response.trace.some(event => event.event === "proposal-received"), false);
 });
+
+
+test("snapshots proposal data without invoking getters or toJSON hooks", async () => {
+  let getterCalled = false;
+  let toJsonCalled = false;
+  const { runtime } = setup();
+  const argumentsObject = {};
+  Object.defineProperty(argumentsObject, "name", {
+    enumerable: true,
+    get() { getterCalled = true; return "compass"; }
+  });
+  const accessorResponse = await runtime.execute({
+    task: "Inspect the compass.",
+    planner: async () => ({ capabilityId: "inspect-item", arguments: argumentsObject })
+  });
+  assert.equal(accessorResponse.error.code, "INVALID_ARGUMENTS");
+  assert.equal(getterCalled, false);
+
+  const hookedArguments = { name: "compass" };
+  Object.defineProperty(hookedArguments, "toJSON", {
+    enumerable: false,
+    value() { toJsonCalled = true; return { name: "compass" }; }
+  });
+  const hookResponse = await runtime.execute({
+    task: "Inspect the compass.",
+    planner: async () => ({ capabilityId: "inspect-item", arguments: hookedArguments })
+  });
+  assert.equal(hookResponse.error.code, "INVALID_ARGUMENTS");
+  assert.equal(toJsonCalled, false);
+});
+
+test("rejects cyclic proposal arguments without invoking policy", async () => {
+  let policyCalled = false;
+  const { runtime } = setup({ policy: () => { policyCalled = true; return "allow"; } });
+  const cyclic = {};
+  cyclic.self = cyclic;
+  const response = await runtime.execute({
+    task: "Inspect the compass.",
+    planner: async () => ({ capabilityId: "inspect-item", arguments: cyclic })
+  });
+  assert.equal(response.error.code, "INVALID_ARGUMENTS");
+  assert.equal(policyCalled, false);
+});
