@@ -213,7 +213,7 @@ The first executable slice lives in `src/hermit-runtime.js` and is intentionally
 Implemented in this slice:
 - an explicit capability registry with stable identity, version, input contract and registered adapter;
 - deterministic planner injection (the sample planner is fake and local);
-- bounded, immutable capability schemas and structured argument validation, including rejection of undeclared fields;
+- bounded, immutable capability schemas, bounded JSON proposal payloads (16 KiB), and structured argument validation, including rejection of undeclared fields;
 - host-supplied `allow`, `deny` or `approval-required` policy decisions;
 - approval gating before invocation;
 - cancellation and an overall execution timeout;
