@@ -1,4 +1,4 @@
-name: Build Hermit Pages
+name: Build and deploy Hermit Pages
 
 on:
   push:
@@ -11,8 +11,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: hermit-pages-build
-  cancel-in-progress: true
+  group: hermit-pages
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -42,7 +42,22 @@ jobs:
           test -s _site/assets/neural-network.js
           grep -F '<script type="module" src="./assets/neural-network-demo.js"></script>' _site/index.html
 
-      - name: Upload the Pages artifact without deploying
+      - name: Upload the static site
         uses: actions/upload-pages-artifact@v4
         with:
           path: ./_site
+
+  deploy:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/development'
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
