@@ -195,7 +195,7 @@ function snapshotJsonOutput(value, path = "$", ancestors = new WeakSet(), budget
     }
     const descriptors = Object.getOwnPropertyDescriptors(value);
     const keys = Reflect.ownKeys(descriptors);
-    if (keys.some(key => key !== "length" && (typeof key !== "string" || !/^(0|[1-9]\\d*)$/.test(key) || Number(key) >= value.length))) {
+    if (keys.some(key => key !== "length" && (typeof key !== "string" || !/^(0|[1-9]\d*)$/.test(key) || Number(key) >= value.length))) {
       throw new HermitError("INVALID_TOOL_OUTPUT", "Capability output arrays must not contain extra properties.");
     }
     const result = [];
