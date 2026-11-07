@@ -237,3 +237,60 @@ test("rejects cyclic proposal arguments without invoking policy", async () => {
   assert.equal(response.error.code, "INVALID_ARGUMENTS");
   assert.equal(policyCalled, false);
 });
+
+
+test("rejects planner proposal accessors without invoking them", async () => {
+  let getterCalled = false;
+  const proposal = { arguments: { name: "compass" } };
+  Object.defineProperty(proposal, "capabilityId", {
+    enumerable: true,
+    get() { getterCalled = true; return "inspect-item"; }
+  });
+  const { runtime } = setup();
+  const response = await runtime.execute({
+    task: "Inspect the compass.",
+    planner: async () => proposal
+  });
+  assert.equal(response.error.code, "INVALID_PROPOSAL");
+  assert.equal(getterCalled, false);
+});
+
+test("snapshots capability output without invoking getters or toJSON hooks", async () => {
+  let getterCalled = false;
+  let toJsonCalled = false;
+  const getterOutput = {};
+  Object.defineProperty(getterOutput, "description", {
+    enumerable: true,
+    get() { getterCalled = true; return "A brass compass."; }
+  });
+  const getterCase = setup({ invoke: async () => getterOutput });
+  const getterResponse = await getterCase.runtime.execute({
+    task: "Inspect the compass.",
+    planner: getterCase.planner
+  });
+  assert.equal(getterResponse.error.code, "INVALID_TOOL_OUTPUT");
+  assert.equal(getterCalled, false);
+
+  const hookedOutput = { description: "A brass compass." };
+  Object.defineProperty(hookedOutput, "toJSON", {
+    enumerable: false,
+    value() { toJsonCalled = true; return { description: "forged" }; }
+  });
+  const hookCase = setup({ invoke: async () => hookedOutput });
+  const hookResponse = await hookCase.runtime.execute({
+    task: "Inspect the compass.",
+    planner: hookCase.planner
+  });
+  assert.equal(hookResponse.error.code, "INVALID_TOOL_OUTPUT");
+  assert.equal(toJsonCalled, false);
+});
+
+test("rejects cyclic, sparse, and non-finite capability output", async () => {
+  const cyclic = {};
+  cyclic.self = cyclic;
+  for (const output of [cyclic, [, "sparse"], { value: Number.POSITIVE_INFINITY }]) {
+    const { runtime, planner } = setup({ invoke: async () => output });
+    const response = await runtime.execute({ task: "Inspect the compass.", planner });
+    assert.equal(response.error.code, "INVALID_TOOL_OUTPUT");
+  }
+});
