@@ -153,6 +153,83 @@ function raceWithSignal(operation, signal) {
   });
 }
 
+function snapshotProposal(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value) ||
+      ![Object.prototype, null].includes(Object.getPrototypeOf(value))) {
+    throw new HermitError("INVALID_PROPOSAL", "Planner must return a plain data object.");
+  }
+  const descriptors = Object.getOwnPropertyDescriptors(value);
+  const keys = Reflect.ownKeys(descriptors);
+  if (keys.some(key => typeof key !== "string" || !["capabilityId", "arguments"].includes(key))) {
+    throw new HermitError("INVALID_PROPOSAL", "Planner proposal contains unsupported properties.");
+  }
+  const snapshot = Object.create(null);
+  for (const key of ["capabilityId", "arguments"]) {
+    const descriptor = descriptors[key];
+    if (!descriptor || !descriptor.enumerable || !Object.hasOwn(descriptor, "value")) {
+      throw new HermitError("INVALID_PROPOSAL", "Planner proposal must contain enumerable data properties only.");
+    }
+    snapshot[key] = descriptor.value;
+  }
+  return snapshot;
+}
+
+function snapshotJsonOutput(value, path = "$", ancestors = new WeakSet(), budget = { nodes: 0 }) {
+  budget.nodes += 1;
+  if (budget.nodes > 4096 || path.split(".").length > 32) {
+    throw new HermitError("INVALID_TOOL_OUTPUT", "Capability output exceeds its structural limits.");
+  }
+  if (value === null || typeof value === "string" || typeof value === "boolean") return value;
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value !== "object") {
+    throw new HermitError("INVALID_TOOL_OUTPUT", "Capability output must contain only JSON data.");
+  }
+  if (ancestors.has(value)) {
+    throw new HermitError("INVALID_TOOL_OUTPUT", "Capability output must not contain cycles.");
+  }
+  ancestors.add(value);
+
+  if (Array.isArray(value)) {
+    if (Object.getPrototypeOf(value) !== Array.prototype || value.length > 4096) {
+      throw new HermitError("INVALID_TOOL_OUTPUT", "Capability output contains an unsupported array.");
+    }
+    const descriptors = Object.getOwnPropertyDescriptors(value);
+    const keys = Reflect.ownKeys(descriptors);
+    if (keys.some(key => key !== "length" && (typeof key !== "string" || !/^(0|[1-9]\\d*)$/.test(key) || Number(key) >= value.length))) {
+      throw new HermitError("INVALID_TOOL_OUTPUT", "Capability output arrays must not contain extra properties.");
+    }
+    const result = [];
+    for (let index = 0; index < value.length; index += 1) {
+      const descriptor = descriptors[String(index)];
+      if (!descriptor || !descriptor.enumerable || !Object.hasOwn(descriptor, "value")) {
+        throw new HermitError("INVALID_TOOL_OUTPUT", "Capability output arrays must be dense data arrays.");
+      }
+      result.push(snapshotJsonOutput(descriptor.value, `${path}[${index}]`, ancestors, budget));
+    }
+    ancestors.delete(value);
+    return result;
+  }
+
+  if (![Object.prototype, null].includes(Object.getPrototypeOf(value))) {
+    throw new HermitError("INVALID_TOOL_OUTPUT", "Capability output objects must be plain data objects.");
+  }
+  const descriptors = Object.getOwnPropertyDescriptors(value);
+  const keys = Reflect.ownKeys(descriptors);
+  if (keys.some(key => typeof key !== "string")) {
+    throw new HermitError("INVALID_TOOL_OUTPUT", "Capability output must not contain symbol properties.");
+  }
+  const result = Object.create(null);
+  for (const key of keys) {
+    const descriptor = descriptors[key];
+    if (!descriptor.enumerable || !Object.hasOwn(descriptor, "value")) {
+      throw new HermitError("INVALID_TOOL_OUTPUT", "Capability output must contain enumerable data properties only.");
+    }
+    result[key] = snapshotJsonOutput(descriptor.value, `${path}.${key}`, ancestors, budget);
+  }
+  ancestors.delete(value);
+  return result;
+}
+
 export class HermitRuntime {
   constructor({ registry, policy, maxTaskLength = DEFAULT_MAX_TASK_LENGTH } = {}) {
     if (!(registry instanceof CapabilityRegistry)) throw new TypeError("A CapabilityRegistry is required.");
@@ -187,9 +264,10 @@ export class HermitRuntime {
       }
       record("task-created");
       record("planning-started");
-      const proposal = await raceWithSignal(() => planner({ task, signal: executionSignal }), executionSignal);
-      if (!proposal || typeof proposal !== "object" || typeof proposal.capabilityId !== "string" || !/^[a-z][a-z0-9-]{1,63}$/.test(proposal.capabilityId)) {
-        throw new HermitError("INVALID_PROPOSAL", "Planner must return a capabilityId and structured arguments.");
+      const plannerResult = await raceWithSignal(() => planner({ task, signal: executionSignal }), executionSignal);
+      const proposal = snapshotProposal(plannerResult);
+      if (typeof proposal.capabilityId !== "string" || !/^[a-z][a-z0-9-]{1,63}$/.test(proposal.capabilityId)) {
+        throw new HermitError("INVALID_PROPOSAL", "Planner must return a valid capabilityId.");
       }
       record("proposal-received", { capabilityId: proposal.capabilityId });
       const capability = this.registry.resolve(proposal.capabilityId);
@@ -219,13 +297,8 @@ export class HermitRuntime {
         () => capability.invoke(structuredClone(safeArguments), { signal: executionSignal }),
         executionSignal
       );
-      let serialized;
-      try {
-        serialized = JSON.stringify(result);
-      } catch {
-        throw new HermitError("INVALID_TOOL_OUTPUT", "Capability output must be JSON-serializable.");
-      }
-      if (serialized === undefined) throw new HermitError("INVALID_TOOL_OUTPUT", "Capability output must be JSON-serializable.");
+      const safeResult = snapshotJsonOutput(result);
+      const serialized = JSON.stringify(safeResult);
       if (byteLength(serialized) > capability.maxOutputBytes) {
         throw new HermitError("OUTPUT_TOO_LARGE", "Capability output exceeded its registered size limit.");
       }
