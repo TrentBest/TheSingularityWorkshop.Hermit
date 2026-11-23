@@ -1,0 +1,53 @@
+# Hermit domain roadmap
+
+This roadmap distinguishes the domain vision from current executable evidence.
+
+## Foundation: persistent companion and local planning
+- [x] Define one personal full-size Hermit per developer.
+- [x] Define Mini and Titan forms as coordinated worker manifestations.
+- [x] Specify GOAP-first local planning and bounded idle behavior.
+- [x] Add deterministic, bounded GOAP planning primitive and tests.
+- [ ] Define versioned world-state, affordance and action contracts.
+- [ ] Add plan execution with per-action policy and observation reconciliation.
+- [ ] Add interruption-safe persistent task checkpoints.
+
+## Embodiment and interaction
+- [ ] Define articulated body, joint, reach, grip, force, balance and locomotion contracts.
+- [ ] Integrate Gestures and Physics through narrow adapters.
+- [ ] Define perception/affordance discovery and object interaction.
+- [ ] Demonstrate safe object inspection and reversible play.
+- [ ] Define GPU neural motion proposal interface and deterministic fallback.
+- [ ] Demonstrate glass-container interaction from observation through verification.
+
+## Workshop construction drama
+- [x] Specify semantic payload versus optional nested wrappers.
+- [x] Specify Mini/Titan scale, swarm LOD and aggregate progress.
+- [ ] Align wrapper schema with MicroBundleDomain.
+- [ ] Implement idempotent bundle-install construction event.
+- [ ] Demonstrate volcano installation with immediate semantic placement and optional choreography.
+- [ ] Add portals, worker staging, hauling and Titan rigging as presentation adapters.
+- [ ] Ensure reduced-motion/low-resource mode preserves semantic result.
+
+## Human-in-the-loop authoring
+- [x] Define creator ownership, autonomy bands and approval boundaries.
+- [ ] Build preview/diff/approve/undo for bundle edits.
+- [ ] Implement editor microbundle target/version binding.
+- [ ] Add shared-scene attribution and conflict handling.
+- [ ] Add explicit pause, interrupt, dismiss and idle controls.
+
+## Assistant development workflows
+- [x] Preserve HeadlessAi as inference transport, not authority.
+- [x] Preserve FSM_Foundry as durable ADP control plane.
+- [ ] Align exact task/evidence/approval adapters with upstream contracts.
+- [ ] Add repository tool capability contracts and adversarial tests.
+- [ ] Demonstrate human-approved edit, CiAi verification and human review.
+
+## Pages
+- [ ] Create a living domain map for Hermit, Mini crews, Titan portal and wrappers.
+- [ ] Add interactive GOAP object-inspection playground.
+- [ ] Add volcano construction choreography timeline tied to a fixture task graph.
+- [ ] Keep the neural-network lesson separate; do not imply it controls Hermit's body.
+
+## Definition of done for an embodied vertical slice
+
+A user places a glass container on a counter. Hermit notices it, approaches within safe range, inspects it, proposes a harmless interaction, receives host policy approval where required, performs it through physics-aware adapters, verifies the actual result, and yields immediately when interrupted. Tests cover success, denial, unreachable object, physics rejection, interruption and recovery.
