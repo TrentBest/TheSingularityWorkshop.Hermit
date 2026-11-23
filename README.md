@@ -1,10 +1,10 @@
 <!-- The Singularity Workshop animated moniker -->
 <p align="center"><a href="https://github.com/TrentBest"><img src="https://raw.githubusercontent.com/TrentBest/TheSingularityWorkshop.Visualize/development/docs/assets/moniker.svg" alt="The Singularity Workshop animated moniker" width="720" /></a></p>
 
-# Hermit — Environment-Resident AI Assistant Infrastructure
+# Hermit — The Workshop's Persistent Creative Companion
 
 [![Sith Policy](assets/sith-policy.svg)](https://github.com/TrentBest/TheSingularityWorkshop.Hermit/actions/workflows/sith-policy.yml)
-**An assistant should not be confined to a chat window. It should enter an environment, understand the capabilities that environment exposes, and work there under the environment's rules.**
+**A developer should never create alone unless they choose to. Hermit is their persistent, embodied creative companion inside The Singularity Workshop.**
 
 Like a hermit crab adopting a shell, Hermit is designed to inhabit different hosts without rewriting its intelligence, orchestration or capability model for each one.
 
@@ -54,7 +54,7 @@ Environment shell (desktop / web / server / IDE / ...)
          Actual environment
 ```
 
-This is a target architecture, not a claim that these integrations are already implemented. See [Architecture and Boundaries](docs/ARCHITECTURE.md) and the [HeadlessAi Integration Boundary](docs/HEADLESSAI_INTEGRATION.md).
+This is a target architecture, not a claim that every integration is already implemented. See [Architecture and Boundaries](docs/ARCHITECTURE.md), [Hermit in the Workshop](docs/WORKSHOP_DOMAIN.md), [GOAP and Idle Life](docs/GOAP_AND_IDLE.md), [Microbundle Wrappers](docs/MICROBUNDLE_WRAPPERS.md), [Human-in-the-Loop Creation](docs/HUMAN_IN_THE_LOOP.md), and the [HeadlessAi Integration Boundary](docs/HEADLESSAI_INTEGRATION.md).
 
 ## Workshop building blocks
 
@@ -73,7 +73,7 @@ This is a target architecture, not a claim that these integrations are already i
 
 These are integration candidates, not mandatory dependencies. Keep Hermit's core independently testable and depend only on narrow contracts.
 
-## First milestones
+## The Workshop experience\n\nA loaded microbundle may immediately add its semantic content to the environment, while an optional nested construction wrapper stages a visible build: Mini crews emerge from service doors, haul crates and assemble the contribution; a rare Titan crew may cross a portal for oversized rigging. The spectacle is an explanation of work, never a second installation or a reason to delay semantic correctness. Editors are microbundles too: they can request their target bundle, then edit its versioned data through host-controlled transactions.\n\nHermit's local behavior uses GOAP wherever known facts and affordances are sufficient. An LLM is consulted occasionally for semantic interpretation or creative reasoning, never for every movement, physics step, permission decision or routine action. A fully articulated body and GPU neural motion proposals are a long-term target; physics and host policy remain authoritative.\n\n## First milestones
 
 The public learning experience and the assistant-runtime proof are parallel tracks:
 
