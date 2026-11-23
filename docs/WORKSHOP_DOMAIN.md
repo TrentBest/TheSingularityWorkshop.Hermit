@@ -38,6 +38,22 @@ Idle is not disconnected or asleep. Hermit might wander, inspect an object, try 
 
 A glass container on a counter is a canonical example. Hermit can notice it, approach, inspect its shape and material, infer candidate affordances, and try a safe reversible interaction. Wearing it as a hat or holding it as a faceplate can be playful exploration when context permits. A theatrical shouted "Pull!" and a staged toss-and-aim performance is possible only when the environment explicitly supplies a safe toy/action affordance. The environment determines physical possibility; Hermit proposes and attempts, while physics and host policy determine the actual result.
 
+## Diegetic editing and a world that flexes
+
+Workshop editing should feel like manipulating the experience itself, not opening a detached settings form. Diegetic menus, handles, instruments and contextual controls are objects in the world. Their state is bound to explicit experience parameters and reversible composition operations.
+
+A user might select a menu that controls a landscape. As they adjust it, mountains can contract into a lake, the surrounding terrain can flow into a new arrangement, and the world can flex back through the inverse transformation until it returns to its starting state. The transformation should be continuous and delightful, but its underlying state must remain inspectable and deterministic.
+
+The editor contract should preserve:
+- the source parameter values and the user's current draft;
+- the mapping from controls to semantic world properties;
+- a stable baseline or checkpoint for returning to the prior composition;
+- a reversible operation history, so undo and redo do not depend on replaying an animation;
+- clear distinction between preview, committed edit and saved bundle data;
+- interruption handling, so closing a menu or switching tasks does not strand the world in a half-applied state.
+
+Hermit can observe the user's manipulation, explain what is changing, offer a nearby alternative, or help restore a prior state. It should not seize control of the menu or commit a creative choice on the user's behalf. The environment's semantic model is authoritative; animation is the visible manifestation of the transition.
+
 ## Creation as a living spectacle
 
 When a developer loads a microbundle, its semantic content and default composition should become available immediately. A volcano bundle may introduce a volcano at its default anchor, such as the remote center of the current Workshop scene. The authored result should appear without waiting for a theatrical construction sequence.
