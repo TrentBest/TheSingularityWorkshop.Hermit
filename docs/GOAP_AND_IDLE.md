@@ -37,6 +37,22 @@ Do not use a model for routine locomotion, balance, known action selection, dete
 
 A model may suggest a goal or candidate plan. It cannot register a capability, alter world state, waive policy, approve itself or bypass action validation.
 
+## Neural computation boundary
+
+Hermit does not implement neural-network mathematics, tensor storage, model graphs, training algorithms, or GPU execution. Those belong to [FSM_NeuralNetworks](https://github.com/TrentBest/TheSingularityWorkshop.FSM_NeuralNetworks).
+
+The intended relationship is consumer/provider, not shared ownership:
+
+- Hermit decides whether a neural computation is useful for a goal and submits a bounded, validated request through a registered capability.
+- NeuralNetworks owns model semantics, tensor and operation contracts, model validation, immutable parameter versions, inference, future training, backend selection/conformance and optional traces from the actual computation.
+- Foundry is the intended execution-lifecycle and scheduling owner for composed work; FSM_COS composes MicroBundles and returns a RuntimeAssembly. Neither is replaced by a Hermit scheduler.
+- The host supplies resources, permissions, request budgets and cancellation policy. Neural output is data/proposal only; it cannot grant permission or directly command the environment.
+- Gestures and Physics remain the owners of movement/embodiment interfaces and physical feasibility. A future neural motion model may propose poses or control parameters, but the host validates them through those domains before actuation.
+
+The neural model graph remains internal to NeuralNetworks and should be evaluated as one bounded capability. Hermit must not turn each graph node into a GOAP action, FSM state or Foundry workflow step. GOAP selects what outcome to pursue; NeuralNetworks computes the requested model output. These are different abstractions.
+
+**Current integration status:** Hermit's deterministic runtime currently supports an injected planner and registered capabilities, and its tests use fake inference/environment behavior. It does not yet contain a NeuralNetworks adapter. NeuralNetworks' development documentation describes a proposed MVP; its first CPU evaluator has not started, and the owner-acceptance gate remains open. Therefore this integration is intentionally deferred until the neural contract is accepted and the evaluator exists. Do not add a duplicate evaluator or claim GPU/body control integration in Hermit.
+
 ## Fully articulated body and neural movement
 
 The intended Hermit is fully articulated. GOAP chooses a goal and action such as approach, inspect, reach, grasp, carry, place, gesture or rest. A motion/gesture planner selects a movement strategy. A GPU neural network may generate or refine coordinated pose proposals. Physics, joint limits, collision, contact and balance determine feasibility. The host accepts only bounded, validated motion commands.
@@ -45,7 +61,7 @@ The neural network is a motor proposal system, not an authority system. Determin
 
 ## Persistence and memory
 
-Separate identity and appearance; current task and resumable checkpoints; learned object affordances and environment maps; user-approved preferences; interaction history and audit evidence; and transient perception or idle interests. Each category needs scope, provenance, retention, access control and deletion behavior. A model-generated guess is not a durable fact. The host owns persistence and identity; Hermit consumes a narrow adapter.
+Separate identity and appearance; current task and resumable checkpoints; learned object affordances and environment maps; user-approved preferences; interaction history and audit evidence; and transient perception or idle interests. Each category needs scope, provenance, retention, access control and deletion behavior. A model-generated guess is not a durable fact. The host owns persistence and identity; Hermit consumes a narrow adapter. NeuralNetworks explicitly uses DataWarehouse as its intended storage foundation rather than creating a competing general-purpose memory manager; Hermit should likewise use a host/storage adapter for assistant memory, not duplicate neural tensor storage.
 
 ## Failure and interruption
 
