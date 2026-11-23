@@ -231,3 +231,24 @@ Not implemented by this slice:
 The current schema validator deliberately supports only object, string, finite number and boolean fields. Registered schemas are cloned, structurally bounded and deeply frozen so callers cannot mutate the contract after registration. Expand it only alongside explicit contract tests. The runtime is a development proof, not a production security boundary: host policy and approval must remain in trusted host code, and any real adapter must independently enforce its own resource and authority limits.
 
 Verification command: `npm test`. Example: `node examples/deterministic-inspection.mjs`. CI runs the Node test suite on pushes and pull requests targeting `development`.
+
+
+## 12. Workshop embodiment and creation domain
+
+The assistant-shell architecture is necessary but not sufficient to describe Hermit in the Workshop. Hermit is the persistent personal companion of one developer. The companion's full-size identity is unique to that developer in a shared Workshop session. Mini and Titan Hermits are coordinated construction manifestations owned by a microbundle construction task, not additional humanoid-scale personal assistants.
+
+The domain contract is documented in [WORKSHOP_DOMAIN.md](WORKSHOP_DOMAIN.md). The local behavior model is specified in [GOAP_AND_IDLE.md](GOAP_AND_IDLE.md), microbundle composition and visible work in [MICROBUNDLE_WRAPPERS.md](MICROBUNDLE_WRAPPERS.md), and creator authority in [HUMAN_IN_THE_LOOP.md](HUMAN_IN_THE_LOOP.md).
+
+### GOAP before model invocation
+
+Routine action selection should be local and goal-oriented. Hermit observes a bounded world-state snapshot, resolves available affordances, chooses a permitted goal, plans with GOAP, gates each action through host policy, executes one bounded step, and verifies the observed result. An LLM is consulted only when semantic interpretation, unfamiliar affordances, conflicting creative goals or cross-domain reasoning warrant it. The model is never the source of permission or physical truth.
+
+The initial `src/goap-planner.js` is a deterministic least-cost planner over scalar facts. It is a tested planning primitive only: no action execution, sensing, physics, persistence, neural motion or production policy is implied.
+
+### Microbundle installation and spectacle
+
+Semantic bundle composition and visible construction are separate. The bundle's payload is resolved and committed through the host's composition transaction. An optional nested construction wrapper may then represent that work with Mini crews, portals and Titan-scale intervention. Presentation is idempotent and reconciles to the semantic result; it cannot apply the payload a second time or claim completion before a staged host transaction commits.
+
+### Human authority
+
+Creative intent and final acceptance belong to the human. Host policy owns capabilities and permissions. The environment owns execution truth. Hermit can propose, prototype and perform bounded authorized work, but idle curiosity cannot modify project data, and model output cannot self-approve or widen scope. FSM_Foundry remains the durable autonomous-development control plane where that integration applies.
