@@ -14,8 +14,13 @@ This roadmap distinguishes the domain vision from current executable evidence.
 - [x] Add a host-backed checkpoint repository contract with atomic compare-and-swap, monotonic revisions, guarded deletion and recovery classification tests.
 - [x] Integrate optional task-loop checkpoint writes before consequential invocation, after verified actions, and on verified completion; test that an existing task checkpoint is not overwritten.
 - [ ] Supply and verify a production durable adapter per host; implement task resumption and environment reconciliation.
+- [x] Specify cross-device continuity: shared companion identity/state separated from device presence and local capability authority.
+- [ ] Define versioned continuity records, authenticated owner identity, device enrollment/revocation and host-scoped grants.
+- [ ] Implement owner-scoped continuity storage, conditional writes, append-only events and paged change-feed cursors.
+- [ ] Resume the same Hermit through phone web and desktop AnyApp shells with independent device capabilities.
+- [ ] Add offline queue, conflict, revocation, deletion propagation and multi-device recovery tests.
 
-## Embodiment and interaction
+## Cross-device continuity\n- [x] Specify the shared-companion / local-authority architecture and threat boundaries.\n- [ ] Implement local two-shell continuity proof.\n- [ ] Implement authenticated server-side continuity and device enrollment.\n- [ ] Connect the web shell and AnyApp desktop shell to one Hermit identity.\n- [ ] Verify offline and conflict recovery.\n\n## Embodiment and interaction
 - [ ] Define articulated body, joint, reach, grip, force, balance and locomotion contracts.
 - [ ] Integrate Gestures and Physics through narrow adapters.
 - [ ] Define perception/affordance discovery and object interaction.
