@@ -53,13 +53,19 @@ export function createCheckpointRepository(adapter) {
       if (typeof resolver !== "function") {
         throw new TaskCheckpointError("RECONCILIATION_REQUIRED", "A host reconciliation function is required.");
       }
-      const loaded = await this.load(taskId);
-      if (!loaded) throw new TaskCheckpointError("CHECKPOINT_NOT_FOUND", "No checkpoint exists for this task.");
-      const { checkpoint } = loaded;
-      if (loaded.recovery === "terminal") {
+      const serialized = await adapter.read(taskId);
+      if (serialized === null || serialized === undefined) {
+        throw new TaskCheckpointError("CHECKPOINT_NOT_FOUND", "No checkpoint exists for this task.");
+      }
+      const checkpoint = parseTaskCheckpoint(serialized);
+      if (checkpoint.taskId !== taskId) {
+        throw new TaskCheckpointError("CHECKPOINT_ID_MISMATCH", "Stored checkpoint identity does not match its storage key.");
+      }
+      const recovery = classifyRecovery(checkpoint);
+      if (recovery === "terminal") {
         throw new TaskCheckpointError("CHECKPOINT_TERMINAL", "A terminal checkpoint cannot be reconciled.");
       }
-      if (loaded.recovery === "resume") {
+      if (recovery === "resume") {
         return Object.freeze({ checkpoint, recovery: "resume", changed: false });
       }
 
@@ -72,21 +78,30 @@ export function createCheckpointRepository(adapter) {
         pendingAction: checkpoint.pendingAction
       }));
       if (!decision || typeof decision !== "object" ||
-          ![Object.prototype, null].includes(Object.getPrototypeOf(decision)) ||
-          typeof decision.actionApplied !== "boolean" ||
-          !Object.hasOwn(decision, "observation")) {
-        throw new TaskCheckpointError("INVALID_RECONCILIATION", "Resolver must return actionApplied and a fresh observation.");
+          ![Object.prototype, null].includes(Object.getPrototypeOf(decision))) {
+        throw new TaskCheckpointError("INVALID_RECONCILIATION", "Resolver must return a plain decision object.");
       }
-      if (decision.actionApplied && !Object.hasOwn(decision, "result")) {
+      const descriptors = Object.getOwnPropertyDescriptors(decision);
+      const keys = Reflect.ownKeys(descriptors);
+      if (keys.some(key => typeof key !== "string" || !["actionApplied", "observation", "result"].includes(key)) ||
+          keys.some(key => !descriptors[key].enumerable || !Object.hasOwn(descriptors[key], "value")) ||
+          typeof descriptors.actionApplied?.value !== "boolean" ||
+          !Object.hasOwn(descriptors, "observation")) {
+        throw new TaskCheckpointError("INVALID_RECONCILIATION", "Resolver must return data properties actionApplied and observation, with optional result.");
+      }
+      const actionApplied = descriptors.actionApplied.value;
+      const observation = descriptors.observation.value;
+      const result = descriptors.result?.value;
+      if (actionApplied && !Object.hasOwn(descriptors, "result")) {
         throw new TaskCheckpointError("INVALID_RECONCILIATION", "A confirmed applied action must include its result.");
       }
 
       const outcomes = [...checkpoint.outcomes];
-      if (decision.actionApplied) {
+      if (actionApplied) {
         outcomes.push({
           step: checkpoint.nextStep + 1,
           capabilityId: checkpoint.pendingAction.capabilityId,
-          result: decision.result,
+          result,
           verified: true,
           reconciled: true
         });
@@ -96,8 +111,8 @@ export function createCheckpointRepository(adapter) {
         task: checkpoint.task,
         revision: checkpoint.revision + 1,
         phase: "ready",
-        nextStep: checkpoint.nextStep + (decision.actionApplied ? 1 : 0),
-        observation: decision.observation,
+        nextStep: checkpoint.nextStep + (actionApplied ? 1 : 0),
+        observation,
         outcomes,
         pendingAction: null
       });
