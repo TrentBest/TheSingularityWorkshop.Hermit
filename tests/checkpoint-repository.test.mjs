@@ -76,3 +76,62 @@ test("rejects storage key and serialized checkpoint identity mismatch", async ()
   adapter.values.set("another-task", adapter.values.get("task-durable-1"));
   await assert.rejects(repository.load("another-task"), { code: "CHECKPOINT_ID_MISMATCH" });
 });
+
+
+test("reconciles an interrupted action confirmed applied without replay", async () => {
+  const repository = createCheckpointRepository(memoryAdapter());
+  await repository.save(checkpoint(1, "execution-started"));
+  let resolverCalls = 0;
+  const recovered = await repository.reconcile("task-durable-1", async pending => {
+    resolverCalls += 1;
+    assert.equal(pending.pendingAction.idempotencyKey, "task-durable-1:0");
+    return { actionApplied: true, result: { inspected: true }, observation: { environmentRevision: 4, inspected: true } };
+  });
+  assert.equal(resolverCalls, 1);
+  assert.equal(recovered.recovery, "resume");
+  assert.equal(recovered.changed, true);
+  assert.equal(recovered.checkpoint.phase, "ready");
+  assert.equal(recovered.checkpoint.nextStep, 1);
+  assert.equal(recovered.checkpoint.outcomes[0].reconciled, true);
+  assert.equal(recovered.checkpoint.revision, 2);
+});
+
+test("reconciles an interrupted action confirmed not applied without advancing the step", async () => {
+  const repository = createCheckpointRepository(memoryAdapter());
+  await repository.save(checkpoint(1, "execution-started"));
+  const recovered = await repository.reconcile("task-durable-1", async () => ({
+    actionApplied: false, observation: { environmentRevision: 4, inspected: false }
+  }));
+  assert.equal(recovered.checkpoint.phase, "ready");
+  assert.equal(recovered.checkpoint.nextStep, 0);
+  assert.equal(recovered.checkpoint.outcomes.length, 0);
+  assert.equal(recovered.checkpoint.observation.inspected, false);
+});
+
+test("does not modify an already-ready checkpoint during recovery", async () => {
+  const repository = createCheckpointRepository(memoryAdapter());
+  await repository.save(checkpoint(1, "ready"));
+  const recovered = await repository.reconcile("task-durable-1", async () => {
+    assert.fail("Resolver must not run for a ready checkpoint.");
+  });
+  assert.equal(recovered.changed, false);
+  assert.equal(recovered.checkpoint.revision, 1);
+});
+
+test("fails closed when reconciliation is missing or malformed", async () => {
+  const repository = createCheckpointRepository(memoryAdapter());
+  await repository.save(checkpoint(1, "execution-started"));
+  await assert.rejects(repository.reconcile("task-durable-1"), { code: "RECONCILIATION_REQUIRED" });
+  await assert.rejects(repository.reconcile("task-durable-1", async () => ({
+    actionApplied: true, observation: {}
+  })), { code: "INVALID_RECONCILIATION" });
+  assert.equal((await repository.load("task-durable-1")).checkpoint.phase, "execution-started");
+});
+
+test("rejects terminal checkpoint reconciliation", async () => {
+  const repository = createCheckpointRepository(memoryAdapter());
+  await repository.save({ ...checkpoint(1), phase: "failed" });
+  await assert.rejects(repository.reconcile("task-durable-1", async () => ({
+    actionApplied: false, observation: {}
+  })), { code: "CHECKPOINT_TERMINAL" });
+});
