@@ -325,4 +325,126 @@ export class HermitRuntime {
       if (signal) signal.removeEventListener("abort", onCallerAbort);
     }
   }
+
+  /**
+   * Replans after every verified action. The planner proposes one capability
+   * at a time; policy is re-evaluated by execute() before every invocation.
+   * Observation and verification remain host/environment responsibilities.
+   */
+  async executeLoop({
+    task, planner, observe, verify, signal, timeoutMs = 10_000,
+    maxSteps = 16, approvalGranted = false
+  } = {}) {
+    const trace = [];
+    const outcomes = [];
+    const startedAt = Date.now();
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(
+      new HermitError("TIMEOUT", "Task exceeded its total execution time limit.")
+    ), timeoutMs);
+    const onAbort = () => controller.abort(new HermitError("CANCELLED", "Task cancelled."));
+    if (signal) {
+      if (signal.aborted) onAbort();
+      else signal.addEventListener("abort", onAbort, { once: true });
+    }
+    const executionSignal = controller.signal;
+    const record = (event, details = {}) => trace.push(Object.freeze({
+      event, at: new Date().toISOString(), ...details
+    }));
+    const fail = (error) => {
+      const normalized = error instanceof HermitError ? error :
+        executionSignal.aborted && executionSignal.reason instanceof HermitError
+          ? executionSignal.reason
+          : new HermitError("ADAPTER_FAILED", "Observation, planning or verification failed.");
+      record("task-failed", { code: normalized.code });
+      return Object.freeze({
+        status: normalized.code === "CANCELLED" ? "cancelled" : "failed",
+        error: Object.freeze({ code: normalized.code, message: normalized.message }),
+        outcomes: Object.freeze(outcomes), trace: Object.freeze(trace)
+      });
+    };
+
+    try {
+      if (typeof task !== "string" || task.length === 0 || task.length > this.maxTaskLength)
+        throw new HermitError("INVALID_TASK", "Task must be a non-empty bounded string.");
+      if (typeof planner !== "function" || typeof observe !== "function" || typeof verify !== "function")
+        throw new HermitError("INVALID_LOOP_ADAPTER", "Planner, observe and verify adapters are required.");
+      if (!Number.isInteger(timeoutMs) || timeoutMs < 1 || timeoutMs > 30_000)
+        throw new HermitError("INVALID_TIMEOUT", "timeoutMs must be between 1 and 30000.");
+      if (!Number.isInteger(maxSteps) || maxSteps < 1 || maxSteps > 64)
+        throw new HermitError("INVALID_STEP_LIMIT", "maxSteps must be between 1 and 64.");
+
+      record("task-created", { mode: "replan-after-verification", maxSteps });
+      let observation = snapshotJsonOutput(await raceWithSignal(
+        () => observe({ task, signal: executionSignal }), executionSignal
+      ));
+      record("observation-received", { step: 0 });
+
+      for (let step = 0; step < maxSteps; step += 1) {
+        if (executionSignal.aborted) throw executionSignal.reason;
+        const proposal = await raceWithSignal(
+          () => planner({
+            task, observation: structuredClone(observation),
+            outcomes: structuredClone(outcomes), step, signal: executionSignal
+          }), executionSignal
+        );
+
+        if (!proposal || typeof proposal !== "object" || Array.isArray(proposal) ||
+            ![Object.prototype, null].includes(Object.getPrototypeOf(proposal))) {
+          throw new HermitError("INVALID_PROPOSAL", "Loop planner must return a proposal object.");
+        }
+        if (proposal.done === true) {
+          const result = snapshotJsonOutput(proposal.result ?? { completed: true });
+          record("task-verified-complete", { steps: outcomes.length });
+          return Object.freeze({
+            status: "completed", result, outcomes: Object.freeze(outcomes),
+            trace: Object.freeze(trace)
+          });
+        }
+
+        const safeProposal = snapshotProposal(proposal);
+        const remaining = timeoutMs - (Date.now() - startedAt);
+        if (remaining <= 0) throw new HermitError("TIMEOUT", "Task exceeded its total execution time limit.");
+        record("step-proposed", { step: step + 1, capabilityId: safeProposal.capabilityId });
+
+        const action = await this.execute({
+          task, planner: async () => safeProposal, signal: executionSignal,
+          timeoutMs: Math.min(remaining, 30_000), approvalGranted
+        });
+        for (const event of action.trace) trace.push(Object.freeze({
+          ...event, step: step + 1
+        }));
+        if (action.status !== "completed") {
+          const error = new HermitError(action.error.code, action.error.message);
+          return fail(error);
+        }
+
+        const verification = await raceWithSignal(
+          () => verify({
+            task, step: step + 1, proposal: safeProposal,
+            observation: structuredClone(observation),
+            result: structuredClone(action.result), signal: executionSignal
+          }), executionSignal
+        );
+        if (!verification || typeof verification !== "object" ||
+            verification.verified !== true || !Object.hasOwn(verification, "observation")) {
+          throw new HermitError("RESULT_NOT_VERIFIED", "Environment did not verify the action result.");
+        }
+        observation = snapshotJsonOutput(verification.observation);
+        outcomes.push(Object.freeze({
+          step: step + 1, capabilityId: safeProposal.capabilityId,
+          result: action.result, verified: true
+        }));
+        record("step-verified", { step: step + 1, capabilityId: safeProposal.capabilityId });
+      }
+
+      throw new HermitError("STEP_LIMIT_REACHED", "Task did not complete within its bounded action count.");
+    } catch (error) {
+      return fail(error);
+    } finally {
+      clearTimeout(timeout);
+      if (signal) signal.removeEventListener("abort", onAbort);
+    }
+  }
+
 }
