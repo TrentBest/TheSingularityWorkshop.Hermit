@@ -54,9 +54,9 @@ function freezeDeep(value) {
  * Creates an immutable, versioned observation of one environment revision.
  * This is a data contract only: it does not infer affordances or grant actions.
  */
-export function createWorldStateSnapshot({ environmentId, revision, objects } = {}) {
+export function createWorldStateSnapshot(value = {}) {
   const root = readDataRecord(
-    { environmentId, revision, objects },
+    value,
     ["environmentId", "revision", "objects"],
     ["environmentId", "revision", "objects"],
     "snapshot"
