@@ -351,10 +351,11 @@ export class HermitRuntime {
    */
   async executeLoop({
     task, planner, observe, verify, signal, timeoutMs = 10_000,
-    maxSteps = 16, approvalGranted = false, checkpointRepository, taskId
+    maxSteps = 16, approvalGranted = false, checkpointRepository, taskId,
+    resume = false, reconcile
   } = {}) {
     const trace = [];
-    const outcomes = [];
+    let outcomes = [];
     const startedAt = Date.now();
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(
@@ -401,23 +402,62 @@ export class HermitRuntime {
       if (checkpointRepository !== undefined && (!checkpointRepository || typeof checkpointRepository.load !== "function" || typeof checkpointRepository.save !== "function"))
         throw new HermitError("INVALID_CHECKPOINT_CONFIG", "A checkpoint repository with load and save is required.");
 
-      record("task-created", { mode: "replan-after-verification", maxSteps });
-      let observation = snapshotJsonOutput(await raceWithSignal(
-        () => observe({ task, signal: executionSignal }), executionSignal
-      ));
-      record("observation-received", { step: 0 });
-      checkpointObservation = observation;
+      if (typeof resume !== "boolean") throw new HermitError("INVALID_RESUME_OPTION", "resume must be a boolean.");
+      if (reconcile !== undefined && typeof reconcile !== "function")
+        throw new HermitError("INVALID_RECONCILIATION", "reconcile must be a host function.");
+      record("task-created", { mode: "replan-after-verification", maxSteps, resume });
+
+      let observation;
+      let firstStep = 0;
       if (checkpointRepository) {
         checkpointTaskId = taskId;
         const existing = await checkpointRepository.load(taskId);
-        if (existing) throw new HermitError("CHECKPOINT_EXISTS", "Task checkpoint already exists; load and reconcile it before starting a new execution.");
-        await checkpointRepository.save({ taskId, task, revision: 1, phase: "ready", nextStep: 0, observation, outcomes, pendingAction: null }, { expectedRevision: 0 });
-        checkpointRevision = 1;
-        checkpointPhase = "ready";
-        record("checkpoint-saved", { revision: checkpointRevision, phase: "ready" });
+        if (existing) {
+          if (!resume) throw new HermitError("CHECKPOINT_EXISTS", "Task checkpoint already exists; pass resume:true to continue it.");
+          const saved = existing.checkpoint;
+          if (saved.task !== task) throw new HermitError("CHECKPOINT_TASK_MISMATCH", "Stored checkpoint task does not match the requested task.");
+          if (existing.recovery === "terminal") throw new HermitError("CHECKPOINT_TERMINAL", "A terminal checkpoint cannot be resumed.");
+          let recovered = existing;
+          if (existing.recovery === "reconcile-required") {
+            if (typeof reconcile !== "function")
+              throw new HermitError("RECONCILIATION_REQUIRED", "An interrupted action requires a host reconciliation function before resumption.");
+            recovered = await checkpointRepository.reconcile(taskId, reconcile);
+            record("checkpoint-reconciled", { revision: recovered.checkpoint.revision, nextStep: recovered.checkpoint.nextStep });
+          }
+          const checkpoint = recovered.checkpoint;
+          if (checkpoint.phase !== "ready")
+            throw new HermitError("CHECKPOINT_NOT_READY", "Checkpoint is not in a resumable ready phase.");
+          checkpointRevision = checkpoint.revision;
+          checkpointPhase = "ready";
+          firstStep = checkpoint.nextStep;
+          outcomes = checkpoint.outcomes.map(outcome => Object.freeze(outcome));
+          observation = snapshotJsonOutput(checkpoint.observation);
+          checkpointObservation = observation;
+          record("checkpoint-restored", { revision: checkpointRevision, nextStep: firstStep, outcomes: outcomes.length });
+        } else {
+          if (resume) throw new HermitError("CHECKPOINT_NOT_FOUND", "Cannot resume because no task checkpoint exists.");
+          observation = snapshotJsonOutput(await raceWithSignal(
+            () => observe({ task, signal: executionSignal }), executionSignal
+          ));
+          record("observation-received", { step: 0 });
+          checkpointObservation = observation;
+          await checkpointRepository.save({ taskId, task, revision: 1, phase: "ready", nextStep: 0, observation, outcomes, pendingAction: null }, { expectedRevision: 0 });
+          checkpointRevision = 1;
+          checkpointPhase = "ready";
+          record("checkpoint-saved", { revision: checkpointRevision, phase: "ready" });
+        }
+      } else {
+        if (resume || reconcile !== undefined)
+          throw new HermitError("INVALID_CHECKPOINT_CONFIG", "resume and reconcile require checkpointRepository and taskId.");
+        observation = snapshotJsonOutput(await raceWithSignal(
+          () => observe({ task, signal: executionSignal }), executionSignal
+        ));
+        record("observation-received", { step: 0 });
       }
+      if (firstStep > maxSteps)
+        throw new HermitError("STEP_LIMIT_REACHED", "Checkpoint cursor exceeds the configured total action-count limit.");
 
-      for (let step = 0; step < maxSteps; step += 1) {
+      for (let step = firstStep; step < maxSteps; step += 1) {
         if (executionSignal.aborted) throw executionSignal.reason;
         const proposal = await raceWithSignal(
           () => planner({
