@@ -8,7 +8,7 @@ This roadmap distinguishes the domain vision from current executable evidence.
 - [x] Specify GOAP-first local planning and bounded idle behavior.
 - [x] Add deterministic, bounded GOAP planning primitive and tests.
 - [ ] Define versioned world-state, affordance and action contracts.
-- [ ] Add plan execution with per-action policy and observation reconciliation.
+- [x] Add bounded plan execution with per-action policy, post-action verification and observation reconciliation.
 - [ ] Add interruption-safe persistent task checkpoints.
 
 ## Embodiment and interaction
