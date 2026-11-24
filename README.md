@@ -54,7 +54,7 @@ Environment shell (desktop / web / server / IDE / ...)
          Actual environment
 ```
 
-This is a target architecture, not a claim that every integration is already implemented. See [Architecture and Boundaries](docs/ARCHITECTURE.md), [Hermit in the Workshop](docs/WORKSHOP_DOMAIN.md), [GOAP and Idle Life](docs/GOAP_AND_IDLE.md), [Microbundle Wrappers](docs/MICROBUNDLE_WRAPPERS.md), [Human-in-the-Loop Creation](docs/HUMAN_IN_THE_LOOP.md), [Task Checkpoints](docs/TASK_CHECKPOINTS.md), and the [HeadlessAi Integration Boundary](docs/HEADLESSAI_INTEGRATION.md).
+This is a target architecture, not a claim that every integration is already implemented. See [Architecture and Boundaries](docs/ARCHITECTURE.md), [Hermit in the Workshop](docs/WORKSHOP_DOMAIN.md), [GOAP and Idle Life](docs/GOAP_AND_IDLE.md), [Microbundle Wrappers](docs/MICROBUNDLE_WRAPPERS.md), [Human-in-the-Loop Creation](docs/HUMAN_IN_THE_LOOP.md), [Task Checkpoints](docs/TASK_CHECKPOINTS.md), [Checkpoint Repository](docs/CHECKPOINT_REPOSITORY.md), and the [HeadlessAi Integration Boundary](docs/HEADLESSAI_INTEGRATION.md).
 
 ## Workshop building blocks
 
