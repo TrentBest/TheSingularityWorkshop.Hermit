@@ -99,7 +99,13 @@ Every category needs an owner, scope, retention policy, provenance, access polic
 - **Cancellation:** propagate cancellation across inference, planning and execution.
 - **Untrusted content:** files, webpages, tool output and model responses are data, not instructions that override policy.
 
-## 5. Integration map
+## 5. Cross-device continuity
+
+Hermit's durable identity and shared companion state must be separate from device presence and local authority. A phone browser, desktop AnyApp and future mobile app are shells for the same companion, not independent assistants. An authenticated continuity service owns versioned shared state and a change feed; each shell independently supplies its local capabilities, policy and approvals. Sharing task history never transfers permission to operate another device.
+
+The continuity contract, conflict rules, offline behavior, enrollment, revocation and verification gates are specified in [Cross-device Hermit continuity](CROSS_DEVICE_CONTINUITY.md). This is specified architecture only: account identity, network sync, browser sign-in, offline queues and AnyApp integration are not implemented yet.
+
+## 6. Integration map
 
 ```text
 Hermit.Core
@@ -116,7 +122,7 @@ Hermit.Core
 
 This is a dependency map to test, not a mandate that every arrow becomes a project reference. Keep package boundaries acyclic and avoid pulling GUI, storage or provider dependencies into the core.
 
-## 6. First runnable proof
+## 7. First runnable proof
 
 Use deterministic fake inference and a fake environment. No paid endpoint, credentials, NuGet publication or destructive action should be required.
 
@@ -132,7 +138,7 @@ Negative tests: unknown capability, malformed arguments, denied permission, miss
 
 Only after this proof should a real HeadlessAi adapter and a real host shell be added.
 
-## 7. Verification requirements
+## 8. Verification requirements
 
 | Area | Minimum evidence |
 |---|---|
@@ -150,7 +156,7 @@ Only after this proof should a real HeadlessAi adapter and a real host shell be 
 
 A green build is not proof of correct authorization. A successful inference request is not proof of a functioning assistant.
 
-## 8. Staged roadmap
+## 9. Staged roadmap
 
 ### Stage 0 — reconnaissance and contracts
 - Inventory relevant source, tests, workflows, dependency versions and branch health.
@@ -187,7 +193,7 @@ A green build is not proof of correct authorization. A successful inference requ
 - Integrate CiAi dependency/build evidence.
 - Publish only after explicit authorization.
 
-## 9. Repository discipline
+## 10. Repository discipline
 
 - Only `master` and `development` branches.
 - Active work and local project references on `development`.
@@ -197,7 +203,7 @@ A green build is not proof of correct authorization. A successful inference requ
 - Mark claims implemented, tested, specified, planned or externally owned.
 - Prefer a working vertical slice over unverified abstractions.
 
-## 10. Decisions to resolve through evidence
+## 11. Decisions to resolve through evidence
 
 1. Which first shell is best: AnyApp, WebApp/WebPage or ServerApp?
 2. Does MicroBundleDomain already provide enough lifecycle and invocation semantics for tools?
@@ -206,7 +212,7 @@ A green build is not proof of correct authorization. A successful inference requ
 5. What is shared across shells, and what remains local to each host?
 6. How should multiple Hermit instances coordinate without sharing authority or private context?
 
-## 11. Implemented deterministic runtime slice (development)
+## 12. Implemented deterministic runtime slice (development)
 
 The first executable slice lives in `src/hermit-runtime.js` and is intentionally independent of the Pages neural-network lesson.
 
@@ -233,7 +239,7 @@ The current schema validator deliberately supports only object, string, finite n
 Verification command: `npm test`. Example: `node examples/deterministic-inspection.mjs`. CI runs the Node test suite on pushes and pull requests targeting `development`.
 
 
-## 12. Workshop embodiment and creation domain
+## 13. Workshop embodiment and creation domain
 
 The assistant-shell architecture is necessary but not sufficient to describe Hermit in the Workshop. Hermit is the persistent personal companion of one developer. The companion's full-size identity is unique to that developer in a shared Workshop session. Mini and Titan Hermits are coordinated construction manifestations owned by a microbundle construction task, not additional humanoid-scale personal assistants.
 
@@ -254,7 +260,7 @@ Semantic bundle composition and visible construction are separate. The bundle's 
 Creative intent and final acceptance belong to the human. Host policy owns capabilities and permissions. The environment owns execution truth. Hermit can propose, prototype and perform bounded authorized work, but idle curiosity cannot modify project data, and model output cannot self-approve or widen scope. FSM_Foundry remains the durable autonomous-development control plane where that integration applies.
 
 
-## 13. Versioned world-state observation contract (development)
+## 14. Versioned world-state observation contract (development)
 
 The Pages fixture now emits immutable snapshots through `src/world-state.js`. The first contract is intentionally small and provider-neutral:
 
