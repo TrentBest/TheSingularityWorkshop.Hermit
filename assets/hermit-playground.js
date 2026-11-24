@@ -76,11 +76,18 @@ function renderObjects(snapshot) {
     (item.location === "workbench" ? bench : world).append(card);
   }
 
-  if (snapshot.objects.some(item => item.id === selectedObjectId)) {
-    selectObject(selectedObjectId);
-  } else {
+  if (!snapshot.objects.some(item => item.id === selectedObjectId)) {
     selectedObjectId = snapshot.objects[0]?.id ?? null;
   }
+  const selected = snapshot.objects.find(item => item.id === selectedObjectId);
+  if (selected) {
+    $("selected-object-name").textContent = selected.name;
+    $("selected-object-description").textContent = selected.description;
+  }
+  document.querySelectorAll(".object-card").forEach(card => {
+    card.classList.toggle("selected", card.dataset.objectId === selectedObjectId);
+    card.setAttribute("aria-pressed", String(card.dataset.objectId === selectedObjectId));
+  });
   setBusy(busy);
 }
 
