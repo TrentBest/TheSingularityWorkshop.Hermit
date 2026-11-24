@@ -19,7 +19,7 @@ The page also includes a three-lane architecture map: intent/planning, capabilit
 | `tests/hermit-playground.test.mjs` | Runtime-level behavior tests |
 | `tests/pages-experience.test.mjs` | Page composition and browser wiring tests |
 
-The browser adapter imports the same runtime module exercised by Node tests. The static Pages artifact therefore includes both `assets/` and the required `src/` modules.
+The browser adapter imports the same runtime module exercised by Node tests. The playground environment also emits immutable schema-versioned world snapshots (environment identity, revision and bounded object records); this is a fixture-level observation contract, not a complete ontology or physics model. The static Pages artifact therefore includes both `assets/` and the required `src/` modules.
 
 ## Available interactions
 
