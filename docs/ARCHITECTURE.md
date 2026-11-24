@@ -252,3 +252,17 @@ Semantic bundle composition and visible construction are separate. The bundle's 
 ### Human authority
 
 Creative intent and final acceptance belong to the human. Host policy owns capabilities and permissions. The environment owns execution truth. Hermit can propose, prototype and perform bounded authorized work, but idle curiosity cannot modify project data, and model output cannot self-approve or widen scope. FSM_Foundry remains the durable autonomous-development control plane where that integration applies.
+
+
+## 13. Versioned world-state observation contract (development)
+
+The Pages fixture now emits immutable snapshots through `src/world-state.js`. The first contract is intentionally small and provider-neutral:
+
+- schema version identifies the snapshot shape independently of runtime/package version;
+- environment identity and monotonically increasing local revision identify the observed world;
+- object identity is stable within a snapshot and duplicates are rejected;
+- object fields are bounded plain data, not accessors or executable behavior;
+- unknown fields and unsupported schema versions fail validation;
+- the snapshot is immutable after construction.
+
+This is a fixture contract, not yet a complete world ontology or perception model. It does not infer affordances, model joints/forces, authorize actions, or replace the host's authoritative world. Future Gestures/Physics adapters should extend through separately versioned, domain-owned contracts rather than expanding this neutral snapshot into a physics engine.
