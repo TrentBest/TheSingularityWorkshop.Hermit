@@ -6,7 +6,7 @@ Hermit should not need an LLM call to decide whether to approach a visible objec
 
 Goal-Oriented Action Planning (GOAP) is the default local decision mechanism. The environment supplies a bounded world-state snapshot; perception exposes facts and affordances; actions declare preconditions, effects, costs, duration/resource estimates and risk metadata; a goal describes a desired world state; and a planner finds a bounded sequence. The executor rechecks preconditions and policy before every consequential step. The environment reports actual effects, and Hermit updates its belief state from observations rather than assuming success.
 
-The current JavaScript planGoap module is a small deterministic least-cost planner over scalar facts. It is a planning primitive, not a full embodied agent or production physics integration. It does not execute actions or make permission decisions.
+The current JavaScript planGoap module is a small deterministic least-cost planner over scalar facts. It is a planning primitive, not a full embodied agent or production physics integration. It does not execute actions or make permission decisions. The runtime's `executeLoop` provides the separate orchestration layer: observe, request one proposal, execute through the registered capability and host policy gate, verify the actual result, then replan. It stops at a bounded action count or total time budget and fails closed if verification is absent or negative. This is adapter-driven; the environment still owns observation truth and verification semantics.
 
 ## Local loop
 
