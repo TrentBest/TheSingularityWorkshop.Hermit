@@ -356,3 +356,73 @@ test("assistant loop enforces its action-count budget", async () => {
   assert.equal(response.error.code, "STEP_LIMIT_REACHED");
   assert.equal(response.outcomes.length, 2);
 });
+
+
+test("checkpointed loop persists before invocation and only advances after verification", async () => {
+  const { createCheckpointRepository } = await import("../src/checkpoint-repository.js");
+  const values = new Map();
+  const repository = createCheckpointRepository({
+    async read(id) { return values.get(id) ?? null; },
+    async compareAndSwap(id, expected, serialized) {
+      const current = values.get(id);
+      const revision = current ? JSON.parse(current).revision : 0;
+      if (revision !== expected) return false;
+      values.set(id, serialized);
+      return true;
+    }
+  });
+  const registry = new CapabilityRegistry();
+  let checkpointAtInvoke;
+  registry.register({
+    id: "inspect-item", version: "1.0.0", inputSchema: itemSchema,
+    invoke: async () => {
+      checkpointAtInvoke = JSON.parse(values.get("checkpoint-loop-1"));
+      return { inspected: true };
+    }
+  });
+  const runtime = new HermitRuntime({ registry, policy: () => "allow" });
+  const response = await runtime.executeLoop({
+    taskId: "checkpoint-loop-1",
+    checkpointRepository: repository,
+    task: "Inspect the compass.",
+    observe: async () => ({ inspected: false }),
+    planner: async ({ observation }) => observation.inspected
+      ? { done: true, result: { completed: true } }
+      : { capabilityId: "inspect-item", arguments: { name: "compass" } },
+    verify: async ({ result }) => ({ verified: true, observation: { inspected: result.inspected } })
+  });
+  assert.equal(response.status, "completed");
+  assert.equal(checkpointAtInvoke.phase, "execution-started");
+  assert.equal(checkpointAtInvoke.pendingAction.idempotencyKey, "checkpoint-loop-1:0");
+  const final = await repository.load("checkpoint-loop-1");
+  assert.equal(final.checkpoint.phase, "completed");
+  assert.equal(final.checkpoint.revision, 4);
+  assert.equal(final.checkpoint.outcomes.length, 1);
+});
+
+test("checkpointed loop refuses to overwrite an existing task checkpoint", async () => {
+  const { createCheckpointRepository } = await import("../src/checkpoint-repository.js");
+  const values = new Map();
+  const repository = createCheckpointRepository({
+    async read(id) { return values.get(id) ?? null; },
+    async compareAndSwap(id, expected, serialized) {
+      const current = values.get(id);
+      const revision = current ? JSON.parse(current).revision : 0;
+      if (revision !== expected) return false;
+      values.set(id, serialized);
+      return true;
+    }
+  });
+  const registry = new CapabilityRegistry();
+  const runtime = new HermitRuntime({ registry, policy: () => "allow" });
+  const seed = { taskId: "checkpoint-existing", task: "Existing task", revision: 1, phase: "ready", nextStep: 0, observation: {}, outcomes: [], pendingAction: null };
+  await repository.save(seed);
+  const response = await runtime.executeLoop({
+    taskId: seed.taskId, checkpointRepository: repository, task: seed.task,
+    observe: async () => ({}), planner: async () => ({ done: true }),
+    verify: async () => ({ verified: true, observation: {} })
+  });
+  assert.equal(response.status, "failed");
+  assert.equal(response.error.code, "CHECKPOINT_EXISTS");
+  assert.equal((await repository.load(seed.taskId)).checkpoint.revision, 1);
+});
