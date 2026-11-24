@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="An interactive, visual lesson showing how values travel through a tiny neural network.">
-  <title>Hermit — A Neural Network You Can Follow</title>
+  <meta name="description" content="Meet Hermit in a small interactive Workshop environment, then explore a visual neural-network lesson.">
+  <title>Hermit — Your Workshop Companion</title>
   <style>
     :root { color-scheme: dark; --bg:#101820; --panel:#192632; --ink:#edf3f7; --muted:#aabac6; --line:#506575; --accent:#79d4c3; --warm:#f4c477; --blue:#8fc5f2; }
     * { box-sizing:border-box; }
@@ -47,6 +47,39 @@
     .output { font-size:1.6rem; color:var(--accent); font-weight:750; }
     code { color:var(--warm); }
     footer { border-top:1px solid #304453; margin-top:3rem; padding-top:1rem; color:var(--muted); font-size:.9rem; }
+
+    .hero-copy{max-width:850px;margin:0 auto 2rem;text-align:center}
+    .hero-copy .lead{font-size:1.12rem;max-width:760px}
+    .hero-links{display:flex;justify-content:center;gap:1rem;flex-wrap:wrap;margin-top:1.2rem}
+    .hero-links a{font-weight:700}
+    .playground{border-color:#47766f;background:linear-gradient(145deg,#1b3038,#14232d 65%)}
+    .playground-intro{max-width:780px}
+    .scene-layout{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(280px,.8fr);gap:1rem;margin-top:1.2rem}
+    .scene-zone{min-height:190px;padding:1rem;border:1px dashed #587181;border-radius:13px;background:#0e1a22}
+    .scene-zone h3{margin:.1rem 0 .3rem}
+    .scene-zone.drop-ready{border-color:var(--accent);background:#17312f}
+    .object-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.7rem;margin-top:1rem}
+    .object-card{display:flex;align-items:center;gap:.8rem;width:100%;text-align:left;background:#203541;border-color:#405969;padding:.85rem}
+    .object-card.selected{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+    .object-card strong,.object-card small{display:block}
+    .object-card small{color:var(--muted);font-weight:400}
+    .object-glyph{display:grid;place-items:center;flex:0 0 42px;height:42px;border-radius:12px;background:#304b59;color:var(--warm);font-size:1.5rem}
+    .object-detail{margin-top:1rem;padding:1rem;border-radius:12px;background:#0d1921;border:1px solid #304453}
+    .object-detail h3{margin:.1rem 0 .25rem}
+    .approval{display:flex;align-items:flex-start;gap:.7rem;margin-top:1rem;padding:1rem;border:1px solid #6b5938;border-radius:12px;background:#2a251b}
+    .approval input{width:auto;margin:.25rem 0 0}
+    .approval label{margin:0;font-weight:500}
+    .approval strong{display:block;color:var(--warm)}
+    .scene-status{min-height:3.2rem;margin:1rem 0 0;padding:.85rem 1rem;border-left:3px solid var(--blue);background:#0d1921;color:var(--ink)}
+    .scene-status[data-kind="success"]{border-color:var(--accent)}
+    .scene-status[data-kind="warning"]{border-color:var(--warm)}
+    .trace{margin:.8rem 0 0;padding-left:1.3rem;color:var(--muted);font-size:.92rem}
+    .trace li{padding:.2rem 0}
+    .trace strong{color:var(--ink)}
+    .section-nav{display:flex;gap:1rem;flex-wrap:wrap;margin:1.5rem 0 2rem;padding:.8rem 1rem;border-block:1px solid #304453}
+    .section-nav a{font-size:.92rem;font-weight:650}
+    @media(max-width:760px){.scene-layout{grid-template-columns:1fr}}
+
     @media (prefers-reduced-motion: reduce) { *,*::before,*::after { scroll-behavior:auto !important; animation:none !important; transition:none !important; } }
   </style>
 </head>
@@ -54,12 +87,60 @@
 <main>
   <p class="brand-moniker" aria-label="The Singularity Workshop"><a href="https://github.com/TrentBest"><img src="https://raw.githubusercontent.com/TrentBest/TheSingularityWorkshop.Visualize/development/docs/assets/moniker.svg" alt="The Singularity Workshop animated moniker" width="720"></a></p>
   <header>
-    <div class="eyebrow">Hermit · Learn by watching</div>
-    <h1>A neural network you can follow</h1>
-    <p>A neural network does not understand a number by magic. It transforms inputs through a sequence of explicit calculations. This tiny network has two inputs and two outputs. Change the inputs, then step through the arithmetic.</p>
+    <div class="eyebrow">Hermit · A persistent creative companion</div>
+    <h1>Meet Hermit in the Workshop</h1>
+    <p>Give Hermit a little world to work in. Place objects in the scene, ask Hermit to inspect them, and decide when a change to the environment is approved. Watch the actual runtime evaluate capabilities, apply host policy, execute an action, and verify the result.</p>
+    <nav class="hero-links" aria-label="Experience navigation"><a href="#hermit-playground">Enter the Workshop</a><a href="#neural-lesson">Explore the neural lesson</a><a href="./docs/ROADMAP.md">Domain roadmap</a><a href="https://github.com/TrentBest/TheSingularityWorkshop.Hermit/tree/development">Source and tests</a></nav>
   </header>
 
-  <section class="panel" aria-labelledby="experiment-title">
+
+  <section id="hermit-playground" class="panel playground" aria-labelledby="playground-title">
+    <div class="eyebrow">Live local environment · Deterministic runtime</div>
+    <h2 id="playground-title">1. Give Hermit something to work with</h2>
+    <p class="playground-intro">Choose an object or drag it onto the interaction pad. Hermit can inspect through a read-only capability. Moving an object changes the simulated world and requires your explicit approval; host policy is checked again before execution.</p>
+    <div class="scene-layout">
+      <div>
+        <div class="scene-zone" data-drop-zone="world" aria-label="Workshop objects">
+          <h3>Workshop floor</h3>
+          <p>Objects available for Hermit to observe.</p>
+          <div id="world-objects" class="object-list"></div>
+        </div>
+        <div class="scene-zone" data-drop-zone="workbench" style="margin-top:1rem" aria-label="Workbench destination">
+          <h3>Workbench</h3>
+          <p>Objects arrive here only after Hermit executes an approved move and verifies the world state.</p>
+          <div id="workbench-objects" class="object-list"></div>
+        </div>
+      </div>
+      <aside>
+        <div class="object-detail" id="interaction-pad" data-drop-zone="interaction" aria-label="Hermit interaction pad">
+          <div class="eyebrow">Selected object</div>
+          <h3 id="selected-object-name">Brass compass</h3>
+          <p id="selected-object-description">A navigation instrument with a hinged lid and a freely moving needle.</p>
+          <div class="buttons">
+            <button id="inspect-button" type="button">Ask Hermit to inspect</button>
+            <button id="move-button" type="button">Move to workbench</button>
+            <button id="reset-scene" type="button">Reset scene</button>
+          </div>
+          <div class="approval">
+            <input id="approval-granted" type="checkbox" aria-describedby="approval-copy">
+            <label for="approval-granted"><strong>Approve this move</strong><span id="approval-copy">A move changes the environment and requires your explicit approval.</span></label>
+          </div>
+        </div>
+        <p id="scene-status" class="scene-status" role="status" aria-live="polite">Preparing the Workshop environment…</p>
+        <div class="object-detail">
+          <h3>Hermit's action trace</h3>
+          <p>Follow the real runtime sequence, including host policy and post-action verification.</p>
+          <ol id="activity-trace" class="trace" aria-live="polite"></ol>
+        </div>
+      </aside>
+    </div>
+    <p><strong>Boundary:</strong> this is a deterministic browser-hosted environment with fake objects and local capability adapters. It is not connected to a live model, physical robot, GPU motion system, or your computer's files. Dragging selects; it does not bypass Hermit's action and approval gates.</p>
+  </section>
+
+  <section id="neural-lesson" class="panel" aria-labelledby="experiment-title">
+    <div class="eyebrow">Learning module · Computation made visible</div>
+    <h2>2. A neural network you can follow</h2>
+    <h3 id="experiment-title">Choose the inputs</h3>
     <h2 id="experiment-title">1. Choose the inputs</h2>
     <p>These values are the signals entering the network. Try changing either one and watch every downstream value update.</p>
     <div class="controls">
@@ -75,7 +156,7 @@
   </section>
 
   <section class="panel" aria-labelledby="network-title">
-    <h2 id="network-title">2. Watch the signal travel</h2>
+    <h2 id="network-title">3. Watch the signal travel</h2>
     <p>Every line carries an input multiplied by its weight. Dashed lines indicate negative weights. The values shown are calculated by the same function that drives this picture.</p>
     <div class="visual-wrap">
       <svg id="network-visual" viewBox="0 0 900 390" role="img" aria-labelledby="svg-title svg-desc">
@@ -103,7 +184,7 @@
   </section>
 
   <section class="panel" aria-labelledby="calculation-title">
-    <h2 id="calculation-title">3. Follow the calculation</h2>
+    <h2 id="calculation-title">4. Follow the calculation</h2>
     <div class="stage" data-stage="0"><strong>Inputs</strong><p>The network receives x₁ = <span id="input-one-value-copy">0.600</span> and x₂ = <span id="input-two-value-copy">0.200</span>.</p></div>
     <div class="stage" data-stage="1"><strong>Weighted contributions</strong><p>Each input is multiplied by the weight on its connection. For example, x₁ contributes x₁ × 0.5 to neuron 1.</p></div>
     <div class="stage" data-stage="2"><strong>Weighted sums</strong><p>Contributions arriving at each neuron are added.</p><div class="math">z₁ = <span id="sum-one">0.220</span><br>z₂ = <span id="sum-two">−0.020</span></div></div>
@@ -116,18 +197,19 @@
   </section>
 
   <section>
-    <h2>4. What did we just do?</h2>
+    <h2>5. What did we just do?</h2>
     <p><strong>A neuron</strong> receives values, multiplies each by a learned or chosen weight, adds the contributions, adds a bias, and applies an activation function. A layer is a collection of neurons performing this process.</p>
     <p><strong>Inference</strong> is using the current weights and biases to calculate an output. This lesson performs inference only. <strong>Learning</strong> is a separate process that changes weights and biases based on examples and an optimization rule. Nothing in this demonstration trains the network.</p>
     <p>The weights are deliberately fixed so you can isolate the computation. Later lessons can introduce hidden layers, different activation functions, training examples, loss, gradients, and optimization one concept at a time.</p>
   </section>
 
   <footer>
-    <p>This is an educational, deterministic demonstration. It does not connect to a live AI model, use a GPU, or take actions in an environment.</p>
+    <p>The Workshop playground uses Hermit’s deterministic runtime against a local simulated environment. The separate neural-network lesson performs fixed-weight inference only; neither experience connects to a live AI model, physical robot, or GPU.</p>
     <p><a href="https://github.com/TrentBest/TheSingularityWorkshop.Hermit">Hermit source repository</a> · <a href="https://github.com/TrentBest/TheSingularityWorkshop.Hermit/issues/3">Pages learning experience work item</a></p>
     <p align="center"><img src="https://raw.githubusercontent.com/TrentBest/FSM_API/master/Documentation/Branding/TheSingularityWorkshop.png" alt="The Singularity Workshop" width="320"></p>
   </footer>
 </main>
+<script type="module" src="./assets/hermit-playground.js"></script>
 <script type="module" src="./assets/neural-network-demo.js"></script>
 </body>
 </html>
