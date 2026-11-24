@@ -7,7 +7,8 @@ This roadmap distinguishes the domain vision from current executable evidence.
 - [x] Define Mini and Titan forms as coordinated worker manifestations.
 - [x] Specify GOAP-first local planning and bounded idle behavior.
 - [x] Add deterministic, bounded GOAP planning primitive and tests.
-- [x] Add a versioned, immutable world-state snapshot contract for the deterministic Pages fixture.\n- [ ] Define versioned affordance and action contracts and align them with Gestures/Physics ownership.
+- [x] Add a versioned, immutable world-state snapshot contract for the deterministic Pages fixture.
+- [ ] Define versioned affordance and action contracts and align them with Gestures/Physics ownership.
 - [x] Add bounded plan execution with per-action policy, post-action verification and observation reconciliation.
 - [ ] Add interruption-safe persistent task checkpoints.
 
