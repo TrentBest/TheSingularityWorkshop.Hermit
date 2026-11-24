@@ -13,7 +13,8 @@ This roadmap distinguishes the domain vision from current executable evidence.
 - [x] Define and test versioned task-checkpoint serialization and recovery classification.
 - [x] Add a host-backed checkpoint repository contract with atomic compare-and-swap, monotonic revisions, guarded deletion and recovery classification tests.
 - [x] Integrate optional task-loop checkpoint writes before consequential invocation, after verified actions, and on verified completion; test that an existing task checkpoint is not overwritten.
-- [ ] Supply and verify a production durable adapter per host; implement task resumption and environment reconciliation.
+- [x] Implement safe `executeLoop` resumption from ready checkpoints, including host-mediated reconciliation for interrupted actions; test restored state, task mismatch and terminal guards.
+- [ ] Supply and verify a production durable adapter per host.
 - [x] Specify cross-device continuity: shared companion identity/state separated from device presence and local capability authority.
 - [ ] Define versioned continuity records, authenticated owner identity, device enrollment/revocation and host-scoped grants.
 - [ ] Implement owner-scoped continuity storage, conditional writes, append-only events and paged change-feed cursors.
