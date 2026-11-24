@@ -67,3 +67,17 @@ test("rejects accessors, cycles and oversized checkpoints without executing hook
   assert.throws(() => createTaskCheckpoint({ ...base, observation: { data: "x".repeat(66_000) } }), error =>
     error instanceof TaskCheckpointError && error.code === "CHECKPOINT_TOO_LARGE");
 });
+
+
+test("accepts dense JSON arrays and rejects sparse or decorated arrays", () => {
+  const valid = createTaskCheckpoint({ ...base, observation: { values: [0, 12, "ready"] } });
+  assert.deepEqual(valid.observation.values, [0, 12, "ready"]);
+
+  const sparse = [];
+  sparse.length = 1;
+  assert.throws(() => createTaskCheckpoint({ ...base, observation: { values: sparse } }), TaskCheckpointError);
+
+  const decorated = [1];
+  decorated.extra = true;
+  assert.throws(() => createTaskCheckpoint({ ...base, observation: { values: decorated } }), TaskCheckpointError);
+});
