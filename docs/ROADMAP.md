@@ -12,7 +12,8 @@ This roadmap distinguishes the domain vision from current executable evidence.
 - [x] Add bounded plan execution with per-action policy, post-action verification and observation reconciliation.
 - [x] Define and test versioned task-checkpoint serialization and recovery classification.
 - [x] Add a host-backed checkpoint repository contract with atomic compare-and-swap, monotonic revisions, guarded deletion and recovery classification tests.
-- [ ] Supply and verify a production durable adapter per host; integrate task-loop checkpoint callbacks and task resumption with environment reconciliation.
+- [x] Integrate optional task-loop checkpoint writes before consequential invocation, after verified actions, and on verified completion; test that an existing task checkpoint is not overwritten.
+- [ ] Supply and verify a production durable adapter per host; implement task resumption and environment reconciliation.
 
 ## Embodiment and interaction
 - [ ] Define articulated body, joint, reach, grip, force, balance and locomotion contracts.
