@@ -27,6 +27,21 @@ test("Hermit playground is wired to the deterministic runtime module", () => {
   assert.match(playground, /step-verified/);
 });
 
+test("the architecture map explains intent, trust, environment, and current integration limits", () => {
+  assert.match(page, /id="domain-map"/);
+  assert.match(page, /Intent and planning/);
+  assert.match(page, /Capability and trust/);
+  assert.match(page, /Environment and evidence/);
+  assert.match(page, /Gestures\/Physics adapters/);
+});
+
+test("the page has unique IDs and one top-level heading", () => {
+  const ids = [...page.matchAll(/\\bid="([^"]+)"/g)].map(match => match[1]);
+  assert.equal(ids.length, new Set(ids).size, "HTML id attributes must be unique");
+  assert.equal((page.match(/<h1\\b/g) ?? []).length, 1);
+  assert.match(page, /aria-labelledby="neural-lesson-title"/);
+});
+
 test("the Pages scene exposes keyboard-operable object selection and host approval", () => {
   assert.match(page, /id="world-objects"/);
   assert.match(page, /id="workbench-objects"/);
