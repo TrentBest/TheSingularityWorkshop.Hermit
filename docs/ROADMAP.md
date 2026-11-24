@@ -43,7 +43,7 @@ This roadmap distinguishes the domain vision from current executable evidence.
 - [ ] Demonstrate human-approved edit, CiAi verification and human review.
 
 ## Pages
-- [ ] Create a living domain map for Hermit, Mini crews, Titan portal and wrappers.
+- [x] Add a living page-level architecture map for Hermit intent, trust, environment and evidence boundaries.\n- [ ] Extend the map with Mini crews, Titan portal and microbundle wrappers when their task/event contracts are implemented.
 - [x] Add a deterministic Pages playground backed by Hermit's registered inspect/move capabilities, host policy, explicit approval, and post-action verification.
 - [ ] Add volcano construction choreography timeline tied to a fixture task graph.
 - [x] Keep the neural-network lesson separate; do not imply it controls Hermit's body.
