@@ -318,6 +318,20 @@ export class HermitRuntime {
         : executionSignal.aborted && executionSignal.reason instanceof HermitError
           ? executionSignal.reason
           : new HermitError("ADAPTER_FAILED", "Capability or planner execution failed.");
+      if (checkpointRepository && checkpointPhase === "ready") {
+        try {
+          checkpointRevision += 1;
+          const phase = normalized.code === "CANCELLED" ? "cancelled" : "failed";
+          await checkpointRepository.save({
+            taskId: checkpointTaskId, task, revision: checkpointRevision, phase,
+            nextStep: outcomes.length, observation: checkpointObservation, outcomes, pendingAction: null
+          }, { expectedRevision: checkpointRevision - 1 });
+          checkpointPhase = phase;
+          record("checkpoint-saved", { revision: checkpointRevision, phase });
+        } catch (checkpointError) {
+          record("checkpoint-save-failed", { code: checkpointError.code ?? "CHECKPOINT_FAILED" });
+        }
+      }
       record("task-failed", { code: normalized.code });
       return Object.freeze({
         status: normalized.code === "CANCELLED" ? "cancelled" : "failed",
@@ -355,7 +369,11 @@ export class HermitRuntime {
     const record = (event, details = {}) => trace.push(Object.freeze({
       event, at: new Date().toISOString(), ...details
     }));
-    const fail = (error) => {
+    let checkpointRevision = 0;
+    let checkpointPhase = null;
+    let checkpointTaskId = null;
+    let checkpointObservation;
+    const fail = async (error) => {
       const normalized = error instanceof HermitError ? error :
         executionSignal.aborted && executionSignal.reason instanceof HermitError
           ? executionSignal.reason
@@ -388,12 +406,14 @@ export class HermitRuntime {
         () => observe({ task, signal: executionSignal }), executionSignal
       ));
       record("observation-received", { step: 0 });
-      let checkpointRevision = 0;
+      checkpointObservation = observation;
       if (checkpointRepository) {
+        checkpointTaskId = taskId;
         const existing = await checkpointRepository.load(taskId);
         if (existing) throw new HermitError("CHECKPOINT_EXISTS", "Task checkpoint already exists; load and reconcile it before starting a new execution.");
         await checkpointRepository.save({ taskId, task, revision: 1, phase: "ready", nextStep: 0, observation, outcomes, pendingAction: null }, { expectedRevision: 0 });
         checkpointRevision = 1;
+        checkpointPhase = "ready";
         record("checkpoint-saved", { revision: checkpointRevision, phase: "ready" });
       }
 
@@ -439,6 +459,7 @@ export class HermitRuntime {
               nextStep: step, observation, outcomes,
               pendingAction: { capabilityId, arguments: actionArguments, idempotencyKey: `${taskId}:${step}` }
             }, { expectedRevision: checkpointRevision - 1 });
+            checkpointPhase = "execution-started";
             record("checkpoint-saved", { revision: checkpointRevision, phase: "execution-started", step: step + 1 });
           } : undefined
         });
@@ -447,7 +468,7 @@ export class HermitRuntime {
         }));
         if (action.status !== "completed") {
           const error = new HermitError(action.error.code, action.error.message);
-          return fail(error);
+          return await fail(error);
         }
 
         const verificationResult = await raceWithSignal(
@@ -463,6 +484,7 @@ export class HermitRuntime {
           throw new HermitError("RESULT_NOT_VERIFIED", "Environment did not verify the action result.");
         }
         observation = snapshotJsonOutput(verification.observation);
+        checkpointObservation = observation;
         outcomes.push(Object.freeze({
           step: step + 1, capabilityId: safeProposal.capabilityId,
           result: action.result, verified: true
@@ -474,13 +496,14 @@ export class HermitRuntime {
             taskId, task, revision: checkpointRevision, phase: "ready",
             nextStep: step + 1, observation, outcomes, pendingAction: null
           }, { expectedRevision: checkpointRevision - 1 });
+          checkpointPhase = "ready";
           record("checkpoint-saved", { revision: checkpointRevision, phase: "ready", step: step + 1 });
         }
       }
 
       throw new HermitError("STEP_LIMIT_REACHED", "Task did not complete within its bounded action count.");
     } catch (error) {
-      return fail(error);
+      return await fail(error);
     } finally {
       clearTimeout(timeout);
       if (signal) signal.removeEventListener("abort", onAbort);
