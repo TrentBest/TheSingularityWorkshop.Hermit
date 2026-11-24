@@ -602,9 +602,9 @@ test("rejects task mismatch and terminal checkpoints before observing or plannin
   const mismatch = await runtime.executeLoop({ ...common, task: "Different task." });
   assert.equal(mismatch.error.code, "CHECKPOINT_TASK_MISMATCH");
   assert.equal(adapterCalls, 0);
-  await repository.remove(seed.taskId, { expectedRevision: 1 });
-  await repository.save({ ...seed, phase: "completed" });
-  const terminal = await runtime.executeLoop({ ...common, task: seed.task });
+  const terminalSeed = { ...seed, taskId: "resume-terminal", phase: "completed" };
+  await repository.save(terminalSeed);
+  const terminal = await runtime.executeLoop({ ...common, taskId: terminalSeed.taskId, task: seed.task });
   assert.equal(terminal.error.code, "CHECKPOINT_TERMINAL");
   assert.equal(adapterCalls, 0);
 });
