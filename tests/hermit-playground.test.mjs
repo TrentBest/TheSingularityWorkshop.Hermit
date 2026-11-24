@@ -47,3 +47,17 @@ test("host policy can deny even an explicitly approved world-changing action", a
   assert.equal(response.error.code, "POLICY_DENIED");
   assert.equal(snapshot.objects.find(item => item.id === "crate").location, "workshop");
 });
+
+test("world snapshots carry a stable schema identity and advance only after a verified world mutation", async () => {
+  const playground = createHermitPlayground();
+  const before = await playground.snapshot();
+  assert.equal(before.schemaVersion, 1);
+  assert.equal(before.environmentId, "hermit-workshop");
+  assert.equal(before.revision, 0);
+
+  const moved = await playground.moveToWorkbench("glass", { approvalGranted: true });
+  const after = await playground.snapshot();
+  assert.equal(moved.status, "completed");
+  assert.equal(after.revision, 1);
+  assert.equal(after.objects.find(item => item.id === "glass").location, "workbench");
+});
