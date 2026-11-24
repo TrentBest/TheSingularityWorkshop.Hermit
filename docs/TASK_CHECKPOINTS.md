@@ -29,7 +29,7 @@ An execution-started checkpoint carries a stable idempotency key. It is a correl
 
 This is a tested data and recovery-classification contract, not durable task persistence or automatic restart. There is no storage adapter, atomic write protocol, encryption, retention policy, checkpoint callback in `executeLoop`, or automatic replay. The host remains responsible for durable storage, authorization, conflict handling, and reconciliation with the authoritative environment.
 
-The runtime roadmap keeps interruption-safe persistent task execution open until those behaviors are implemented and tested end to end.
+Automatic executeLoop resumption remains open. The next step is to reload a ready checkpoint, restore its verified outcomes and next-step cursor, and require host reconciliation before resuming an interrupted action. Cross-device use additionally requires authenticated identity, owner-scoped durable storage and device-local authority; see [Cross-device Hermit continuity](CROSS_DEVICE_CONTINUITY.md).
 
 ## Verification
 
