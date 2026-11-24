@@ -426,3 +426,61 @@ test("checkpointed loop refuses to overwrite an existing task checkpoint", async
   assert.equal(response.error.code, "CHECKPOINT_EXISTS");
   assert.equal((await repository.load(seed.taskId)).checkpoint.revision, 1);
 });
+
+
+test("checkpointed loop persists terminal failure when no action is in flight", async () => {
+  const { createCheckpointRepository } = await import("../src/checkpoint-repository.js");
+  const values = new Map();
+  const repository = createCheckpointRepository({
+    async read(id) { return values.get(id) ?? null; },
+    async compareAndSwap(id, expected, serialized) {
+      const current = values.get(id);
+      const revision = current ? JSON.parse(current).revision : 0;
+      if (revision !== expected) return false;
+      values.set(id, serialized);
+      return true;
+    }
+  });
+  const runtime = new HermitRuntime({ registry: new CapabilityRegistry(), policy: () => "allow" });
+  const response = await runtime.executeLoop({
+    taskId: "checkpoint-failure", checkpointRepository: repository,
+    task: "Inspect the compass.", observe: async () => ({ ready: true }),
+    planner: async () => { throw new Error("planner unavailable"); },
+    verify: async () => ({ verified: true, observation: {} })
+  });
+  assert.equal(response.status, "failed");
+  const stored = await repository.load("checkpoint-failure");
+  assert.equal(stored.checkpoint.phase, "failed");
+  assert.equal(stored.recovery, "terminal");
+});
+
+test("checkpointed loop preserves in-flight marker after verification failure", async () => {
+  const { createCheckpointRepository } = await import("../src/checkpoint-repository.js");
+  const values = new Map();
+  const repository = createCheckpointRepository({
+    async read(id) { return values.get(id) ?? null; },
+    async compareAndSwap(id, expected, serialized) {
+      const current = values.get(id);
+      const revision = current ? JSON.parse(current).revision : 0;
+      if (revision !== expected) return false;
+      values.set(id, serialized);
+      return true;
+    }
+  });
+  const registry = new CapabilityRegistry();
+  registry.register({
+    id: "inspect-item", version: "1.0.0", inputSchema: itemSchema,
+    invoke: async () => ({ inspected: true })
+  });
+  const runtime = new HermitRuntime({ registry, policy: () => "allow" });
+  const response = await runtime.executeLoop({
+    taskId: "checkpoint-uncertain", checkpointRepository: repository,
+    task: "Inspect the compass.", observe: async () => ({}),
+    planner: async () => ({ capabilityId: "inspect-item", arguments: { name: "compass" } }),
+    verify: async () => { throw new Error("environment unavailable"); }
+  });
+  assert.equal(response.status, "failed");
+  const stored = await repository.load("checkpoint-uncertain");
+  assert.equal(stored.checkpoint.phase, "execution-started");
+  assert.equal(stored.recovery, "reconcile-required");
+});
