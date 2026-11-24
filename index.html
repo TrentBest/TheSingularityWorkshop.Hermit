@@ -77,6 +77,15 @@
     .trace li{padding:.2rem 0}
     .trace strong{color:var(--ink)}
     .section-nav{display:flex;gap:1rem;flex-wrap:wrap;margin:1.5rem 0 2rem;padding:.8rem 1rem;border-block:1px solid #304453}
+    .domain-map{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem;margin:1.2rem 0}
+    .domain-lane{padding:1.1rem;border:1px solid #405766;border-radius:13px;background:#101d26}
+    .domain-lane h3{margin:.1rem 0 .7rem;color:var(--accent)}
+    .domain-lane ol{padding-left:1.35rem;margin:.5rem 0}
+    .domain-lane li{padding:.35rem 0;color:var(--muted)}
+    .domain-lane strong{color:var(--ink)}
+    .domain-status{padding:.7rem .8rem;border-left:3px solid var(--accent);background:#192b32;color:var(--muted);font-size:.9rem}
+    .domain-status.target{border-color:var(--warm);background:#2a251b}
+    @media(max-width:760px){.domain-map{grid-template-columns:1fr}}
     .section-nav a{font-size:.92rem;font-weight:650}
     @media(max-width:760px){.scene-layout{grid-template-columns:1fr}}
 
@@ -137,11 +146,46 @@
     <p><strong>Boundary:</strong> this is a deterministic browser-hosted environment with fake objects and local capability adapters. It is not connected to a live model, physical robot, GPU motion system, or your computer's files. Dragging selects; it does not bypass Hermit's action and approval gates.</p>
   </section>
 
-  <section id="neural-lesson" class="panel" aria-labelledby="experiment-title">
+  <section id="domain-map" class="panel" aria-labelledby="domain-map-title">
+    <div class="eyebrow">Architecture map · Follow the authority</div>
+    <h2 id="domain-map-title">How Hermit works beneath the experience</h2>
+    <p>A useful mental model is a three-part journey: intent becomes a bounded proposal, trusted host policy decides what may happen, and the environment supplies the truth that confirms the result.</p>
+    <div class="domain-map">
+      <article class="domain-lane">
+        <h3>1. Intent and planning</h3>
+        <ol>
+          <li><strong>You</strong> provide the goal and retain creative ownership.</li>
+          <li><strong>Hermit</strong> observes the available world and chooses a bounded task.</li>
+          <li><strong>Planner / GOAP</strong> proposes the next useful action from known facts and affordances.</li>
+        </ol>
+        <p class="domain-status">In this playground: a deterministic local planner is injected. Persistent goals, perception and idle life remain future work.</p>
+      </article>
+      <article class="domain-lane">
+        <h3>2. Capability and trust</h3>
+        <ol>
+          <li><strong>Registry</strong> resolves a stable capability identity and input contract.</li>
+          <li><strong>Runtime</strong> validates arguments and bounds before invocation.</li>
+          <li><strong>Host policy</strong> allows, denies or requires explicit approval.</li>
+        </ol>
+        <p class="domain-status">Demonstrated here: registered inspect/move capabilities, validation, host policy and approval gating.</p>
+      </article>
+      <article class="domain-lane">
+        <h3>3. Environment and evidence</h3>
+        <ol>
+          <li><strong>Adapter</strong> performs only the registered operation.</li>
+          <li><strong>Environment</strong> owns the actual resulting state.</li>
+          <li><strong>Verification and trace</strong> reconcile the observed result before completion is reported.</li>
+        </ol>
+        <p class="domain-status">Demonstrated here: a local fixture world, post-action verification and an inspectable execution trace.</p>
+      </article>
+    </div>
+    <p class="domain-status target"><strong>Next integration boundary:</strong> versioned world-state and affordance contracts, then narrow Gestures/Physics adapters. Neural motion proposals, MicroBundle construction choreography, persistent memory and real host shells are not implemented by this page.</p>
+  </section>
+
+  <section id="neural-lesson" class="panel" aria-labelledby="neural-lesson-title">
     <div class="eyebrow">Learning module · Computation made visible</div>
-    <h2>2. A neural network you can follow</h2>
-    <h3 id="experiment-title">Choose the inputs</h3>
-    <h2 id="experiment-title">1. Choose the inputs</h2>
+    <h2 id="neural-lesson-title">2. A neural network you can follow</h2>
+    <h3>Choose the inputs</h3>
     <p>These values are the signals entering the network. Try changing either one and watch every downstream value update.</p>
     <div class="controls">
       <div><label for="input-one">Input x₁</label><input id="input-one" type="number" min="-2" max="2" step="0.1" value="0.6"></div>
