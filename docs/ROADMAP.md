@@ -44,9 +44,10 @@ This roadmap distinguishes the domain vision from current executable evidence.
 
 ## Pages
 - [ ] Create a living domain map for Hermit, Mini crews, Titan portal and wrappers.
-- [ ] Add interactive GOAP object-inspection playground.
+- [x] Add a deterministic Pages playground backed by Hermit's registered inspect/move capabilities, host policy, explicit approval, and post-action verification.
 - [ ] Add volcano construction choreography timeline tied to a fixture task graph.
-- [ ] Keep the neural-network lesson separate; do not imply it controls Hermit's body.
+- [x] Keep the neural-network lesson separate; do not imply it controls Hermit's body.
+- [x] Assemble Pages as a validated static artifact with documentation and deploy only from development pushes or manual runs.
 
 ## Definition of done for an embodied vertical slice
 
