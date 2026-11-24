@@ -73,5 +73,6 @@ test("rejects storage key and serialized checkpoint identity mismatch", async ()
   const adapter = memoryAdapter();
   const repository = createCheckpointRepository(adapter);
   await repository.save(checkpoint(1));
+  adapter.values.set("another-task", adapter.values.get("task-durable-1"));
   await assert.rejects(repository.load("another-task"), { code: "CHECKPOINT_ID_MISMATCH" });
 });
