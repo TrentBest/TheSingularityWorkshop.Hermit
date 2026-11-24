@@ -294,3 +294,65 @@ test("rejects cyclic, sparse, and non-finite capability output", async () => {
     assert.equal(response.error.code, "INVALID_TOOL_OUTPUT");
   }
 });
+
+
+test("bounded assistant loop replans after each verified action and gates every step", async () => {
+  const registry = new CapabilityRegistry();
+  const calls = [];
+  registry.register({
+    id: "inspect-item", version: "1.0.0", inputSchema: itemSchema,
+    invoke: async ({ name }) => { calls.push(name); return { name, inspected: true }; }
+  });
+  const runtime = new HermitRuntime({ registry, policy: async () => "allow" });
+  const response = await runtime.executeLoop({
+    task: "Inspect then report the compass.",
+    observe: async () => ({ inspected: false }),
+    planner: async ({ observation, step }) => observation.inspected
+      ? { done: true, result: { summary: "Compass inspected." } }
+      : { capabilityId: "inspect-item", arguments: { name: step === 0 ? "compass" : "unexpected" } },
+    verify: async ({ result }) => ({ verified: true, observation: { inspected: result.inspected } })
+  });
+  assert.equal(response.status, "completed");
+  assert.deepEqual(calls, ["compass"]);
+  assert.equal(response.outcomes.length, 1);
+  assert.ok(response.trace.some(event => event.event === "step-verified"));
+});
+
+test("assistant loop fails closed when environment does not verify an action", async () => {
+  let invoked = false;
+  const registry = new CapabilityRegistry();
+  registry.register({
+    id: "inspect-item", version: "1.0.0", inputSchema: itemSchema,
+    invoke: async () => { invoked = true; return { inspected: true }; }
+  });
+  const runtime = new HermitRuntime({ registry, policy: () => "allow" });
+  const response = await runtime.executeLoop({
+    task: "Inspect the compass.",
+    observe: async () => ({}),
+    planner: async () => ({ capabilityId: "inspect-item", arguments: { name: "compass" } }),
+    verify: async () => ({ verified: false, observation: {} })
+  });
+  assert.equal(invoked, true);
+  assert.equal(response.status, "failed");
+  assert.equal(response.error.code, "RESULT_NOT_VERIFIED");
+  assert.equal(response.outcomes.length, 0);
+});
+
+test("assistant loop enforces its action-count budget", async () => {
+  const registry = new CapabilityRegistry();
+  registry.register({
+    id: "inspect-item", version: "1.0.0", inputSchema: itemSchema,
+    invoke: async () => ({ ok: true })
+  });
+  const runtime = new HermitRuntime({ registry, policy: () => "allow" });
+  const response = await runtime.executeLoop({
+    task: "Keep inspecting.",
+    maxSteps: 2,
+    observe: async () => ({}),
+    planner: async () => ({ capabilityId: "inspect-item", arguments: { name: "compass" } }),
+    verify: async ({ step }) => ({ verified: true, observation: { count: step } })
+  });
+  assert.equal(response.status, "failed");
+  assert.equal(response.error.code, "STEP_LIMIT_REACHED");
+  assert.equal(response.outcomes.length, 2);
+});
