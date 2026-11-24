@@ -1,4 +1,5 @@
 import { CapabilityRegistry, HermitRuntime } from "./hermit-runtime.js";
+import { createWorldStateSnapshot } from "./world-state.js";
 
 const DEFAULT_OBJECTS = [
   { id: "compass", name: "Brass compass", description: "A navigation instrument with a hinged lid and a freely moving needle.", location: "workshop" },
@@ -13,7 +14,9 @@ const objectSchema = {
 };
 
 export function createHermitPlayground({ objects = DEFAULT_OBJECTS, policy } = {}) {
-  const world = new Map(objects.map(item => [item.id, structuredClone(item)]));
+  const initialSnapshot = createWorldStateSnapshot({ environmentId: "hermit-workshop", revision: 0, objects });
+  const world = new Map(initialSnapshot.objects.map(item => [item.id, { ...item }]));
+  let worldRevision = initialSnapshot.revision;
   const registry = new CapabilityRegistry();
 
   registry.register({
@@ -46,7 +49,8 @@ export function createHermitPlayground({ objects = DEFAULT_OBJECTS, policy } = {
       if (!item) throw new Error("That object is not present in the environment.");
       if (target !== "workbench") throw new Error("The requested destination is not available.");
       item.location = target;
-      return { objectId, name: item.name, location: item.location };
+      worldRevision += 1;
+      return { objectId, name: item.name, location: item.location, revision: worldRevision };
     }
   });
 
@@ -54,7 +58,9 @@ export function createHermitPlayground({ objects = DEFAULT_OBJECTS, policy } = {
     capability.id === "inspect-object" ? "allow" : "approval-required");
   const runtime = new HermitRuntime({ registry, policy: hostPolicy });
 
-  const observe = async () => ({
+  const observe = async () => createWorldStateSnapshot({
+    environmentId: "hermit-workshop",
+    revision: worldRevision,
     objects: [...world.values()].map(item => ({ ...item }))
   });
 
