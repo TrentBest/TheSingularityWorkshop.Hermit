@@ -36,9 +36,9 @@ test("the architecture map explains intent, trust, environment, and current inte
 });
 
 test("the page has unique IDs and one top-level heading", () => {
-  const ids = [...page.matchAll(/\\bid="([^"]+)"/g)].map(match => match[1]);
+  const ids = [...page.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]);
   assert.equal(ids.length, new Set(ids).size, "HTML id attributes must be unique");
-  assert.equal((page.match(/<h1\\b/g) ?? []).length, 1);
+  assert.equal((page.match(/<h1\b/g) ?? []).length, 1);
   assert.match(page, /aria-labelledby="neural-lesson-title"/);
 });
 
