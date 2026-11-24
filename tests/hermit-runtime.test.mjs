@@ -484,3 +484,127 @@ test("checkpointed loop preserves in-flight marker after verification failure", 
   assert.equal(stored.checkpoint.phase, "execution-started");
   assert.equal(stored.recovery, "reconcile-required");
 });
+
+
+test("resumes a ready checkpoint from its saved observation, outcomes and cursor", async () => {
+  const { createCheckpointRepository } = await import("../src/checkpoint-repository.js");
+  const values = new Map();
+  const repository = createCheckpointRepository({
+    async read(id) { return values.get(id) ?? null; },
+    async compareAndSwap(id, expected, serialized) {
+      const current = values.get(id);
+      const revision = current ? JSON.parse(current).revision : 0;
+      if (revision !== expected) return false;
+      values.set(id, serialized);
+      return true;
+    }
+  });
+  const seed = {
+    taskId: "resume-ready", task: "Inspect the compass.", revision: 4,
+    phase: "ready", nextStep: 1,
+    observation: { inspected: true, environmentRevision: 9 },
+    outcomes: [{ step: 1, capabilityId: "inspect-item", result: { inspected: true }, verified: true }],
+    pendingAction: null
+  };
+  await repository.save(seed, { expectedRevision: 3 });
+  const runtime = new HermitRuntime({ registry: new CapabilityRegistry(), policy: () => "allow" });
+  let observed = false;
+  let planned;
+  const response = await runtime.executeLoop({
+    taskId: seed.taskId, checkpointRepository: repository, resume: true,
+    task: seed.task, observe: async () => { observed = true; return {}; },
+    planner: async context => { planned = context; return { done: true, result: { continued: true } }; },
+    verify: async () => ({ verified: true, observation: {} })
+  });
+  assert.equal(response.status, "completed");
+  assert.equal(observed, false);
+  assert.deepEqual(planned.observation, seed.observation);
+  assert.deepEqual(planned.outcomes, seed.outcomes);
+  assert.equal(planned.step, 1);
+  const final = await repository.load(seed.taskId);
+  assert.equal(final.checkpoint.phase, "completed");
+  assert.equal(final.checkpoint.revision, 5);
+});
+
+test("refuses interrupted checkpoint resume until the host reconciles it", async () => {
+  const { createCheckpointRepository } = await import("../src/checkpoint-repository.js");
+  const values = new Map();
+  const repository = createCheckpointRepository({
+    async read(id) { return values.get(id) ?? null; },
+    async compareAndSwap(id, expected, serialized) {
+      const current = values.get(id);
+      const revision = current ? JSON.parse(current).revision : 0;
+      if (revision !== expected) return false;
+      values.set(id, serialized);
+      return true;
+    }
+  });
+  const seed = {
+    taskId: "resume-interrupted", task: "Inspect the compass.", revision: 1,
+    phase: "execution-started", nextStep: 0, observation: { inspected: false }, outcomes: [],
+    pendingAction: { capabilityId: "inspect-item", arguments: { name: "compass" }, idempotencyKey: "resume-interrupted:0" }
+  };
+  await repository.save(seed);
+  const runtime = new HermitRuntime({ registry: new CapabilityRegistry(), policy: () => "allow" });
+  let observed = false;
+  const base = {
+    taskId: seed.taskId, checkpointRepository: repository, resume: true,
+    task: seed.task, observe: async () => { observed = true; return {}; },
+    planner: async () => ({ done: true }),
+    verify: async () => ({ verified: true, observation: {} })
+  };
+  const blocked = await runtime.executeLoop(base);
+  assert.equal(blocked.error.code, "RECONCILIATION_REQUIRED");
+  assert.equal(observed, false);
+  let reconciled = false;
+  const resumed = await runtime.executeLoop({
+    ...base,
+    reconcile: async pending => {
+      reconciled = true;
+      assert.equal(pending.pendingAction.idempotencyKey, "resume-interrupted:0");
+      return { actionApplied: false, observation: { inspected: false, reconciled: true } };
+    }
+  });
+  assert.equal(reconciled, true);
+  assert.equal(resumed.status, "completed");
+  assert.equal(observed, false);
+  const final = await repository.load(seed.taskId);
+  assert.equal(final.checkpoint.phase, "completed");
+  assert.equal(final.checkpoint.nextStep, 0);
+});
+
+test("rejects task mismatch and terminal checkpoints before observing or planning", async () => {
+  const { createCheckpointRepository } = await import("../src/checkpoint-repository.js");
+  const values = new Map();
+  const repository = createCheckpointRepository({
+    async read(id) { return values.get(id) ?? null; },
+    async compareAndSwap(id, expected, serialized) {
+      const current = values.get(id);
+      const revision = current ? JSON.parse(current).revision : 0;
+      if (revision !== expected) return false;
+      values.set(id, serialized);
+      return true;
+    }
+  });
+  const runtime = new HermitRuntime({ registry: new CapabilityRegistry(), policy: () => "allow" });
+  const seed = {
+    taskId: "resume-guards", task: "Original task.", revision: 1,
+    phase: "ready", nextStep: 0, observation: {}, outcomes: [], pendingAction: null
+  };
+  await repository.save(seed);
+  let adapterCalls = 0;
+  const common = {
+    taskId: seed.taskId, checkpointRepository: repository, resume: true,
+    observe: async () => { adapterCalls += 1; return {}; },
+    planner: async () => { adapterCalls += 1; return { done: true }; },
+    verify: async () => ({ verified: true, observation: {} })
+  };
+  const mismatch = await runtime.executeLoop({ ...common, task: "Different task." });
+  assert.equal(mismatch.error.code, "CHECKPOINT_TASK_MISMATCH");
+  assert.equal(adapterCalls, 0);
+  await repository.remove(seed.taskId, { expectedRevision: 1 });
+  await repository.save({ ...seed, phase: "completed" });
+  const terminal = await runtime.executeLoop({ ...common, task: seed.task });
+  assert.equal(terminal.error.code, "CHECKPOINT_TERMINAL");
+  assert.equal(adapterCalls, 0);
+});
