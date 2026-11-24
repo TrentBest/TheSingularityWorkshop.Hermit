@@ -61,6 +61,7 @@ This is a target architecture, not a claim that every integration is already imp
 | Project | Existing responsibility | Hermit's relationship |
 |---|---|---|
 | [HeadlessAi](https://github.com/TrentBest/TheSingularityWorkshop.HeadlessAi) | Provider-neutral AI endpoint invocation | Inference transport; host retains planning and authority |
+| [FSM_NeuralNetworks](https://github.com/TrentBest/TheSingularityWorkshop.FSM_NeuralNetworks) | Neural model, tensor, operation and inference contracts | Bounded computation capability; Hermit owns goals, policy and orchestration |
 | [FSM_API](https://github.com/TrentBest/FSM_API) | State and processing lifecycle | Task and workflow lifecycle |
 | [FSM_COS](https://github.com/TrentBest/TheSingularityWorkshop.FSM_COS) | Runtime composition | Assemble requested capabilities, not run the assistant loop |
 | [MicroBundleDomain](https://github.com/TrentBest/TheSingularityWorkshop.MicroBundleDomain) | Neutral capability contract | Candidate capability packaging and discovery |
@@ -108,7 +109,7 @@ node examples/deterministic-inspection.mjs
 
 The first runtime proof is a small JavaScript implementation in `src/hermit-runtime.js`, separate from the Pages neural-network lesson. It demonstrates a deterministic planner, explicit capability registry, structured argument validation, host-supplied policy, approval gating, bounded execution, cancellation/timeout propagation, bounded JSON output and an execution trace.
 
-This is an initial executable slice, not yet a production assistant runtime. It has no live model adapter, durable memory, real host shell, multi-step planning loop, or provider integration. The current tests exercise the deterministic fake environment only. No package publishing is configured or authorized.
+The runtime also exposes `executeLoop`: it observes the host environment, asks the planner for one capability at a time, runs the existing policy/approval gate for each action, and requires host verification before it records an outcome or replans. The loop has a total time budget and a hard action-count limit. This is still a deterministic adapter-driven proof, not a production assistant: it has no live model adapter, durable memory, real host shell, or provider integration. The tests use fake inference and environment adapters only. No package publishing is configured or authorized.
 
 ---
 
