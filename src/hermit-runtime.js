@@ -379,6 +379,20 @@ export class HermitRuntime {
         executionSignal.aborted && executionSignal.reason instanceof HermitError
           ? executionSignal.reason
           : new HermitError("ADAPTER_FAILED", "Observation, planning or verification failed.");
+      if (checkpointRepository && checkpointPhase === "ready") {
+        try {
+          checkpointRevision += 1;
+          const phase = normalized.code === "CANCELLED" ? "cancelled" : "failed";
+          await checkpointRepository.save({
+            taskId: checkpointTaskId, task, revision: checkpointRevision, phase,
+            nextStep: outcomes.length, observation: checkpointObservation, outcomes, pendingAction: null
+          }, { expectedRevision: checkpointRevision - 1 });
+          checkpointPhase = phase;
+          record("checkpoint-saved", { revision: checkpointRevision, phase });
+        } catch (checkpointError) {
+          record("checkpoint-save-failed", { code: checkpointError.code ?? "CHECKPOINT_FAILED" });
+        }
+      }
       record("task-failed", { code: normalized.code });
       return Object.freeze({
         status: normalized.code === "CANCELLED" ? "cancelled" : "failed",
