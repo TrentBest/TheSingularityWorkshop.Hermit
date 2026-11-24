@@ -54,7 +54,7 @@ Environment shell (desktop / web / server / IDE / ...)
          Actual environment
 ```
 
-This is a target architecture, not a claim that every integration is already implemented. See [Architecture and Boundaries](docs/ARCHITECTURE.md), [Hermit in the Workshop](docs/WORKSHOP_DOMAIN.md), [GOAP and Idle Life](docs/GOAP_AND_IDLE.md), [Microbundle Wrappers](docs/MICROBUNDLE_WRAPPERS.md), [Human-in-the-Loop Creation](docs/HUMAN_IN_THE_LOOP.md), and the [HeadlessAi Integration Boundary](docs/HEADLESSAI_INTEGRATION.md).
+This is a target architecture, not a claim that every integration is already implemented. See [Architecture and Boundaries](docs/ARCHITECTURE.md), [Hermit in the Workshop](docs/WORKSHOP_DOMAIN.md), [GOAP and Idle Life](docs/GOAP_AND_IDLE.md), [Microbundle Wrappers](docs/MICROBUNDLE_WRAPPERS.md), [Human-in-the-Loop Creation](docs/HUMAN_IN_THE_LOOP.md), [Task Checkpoints](docs/TASK_CHECKPOINTS.md), and the [HeadlessAi Integration Boundary](docs/HEADLESSAI_INTEGRATION.md).
 
 ## Workshop building blocks
 
@@ -74,7 +74,13 @@ This is a target architecture, not a claim that every integration is already imp
 
 These are integration candidates, not mandatory dependencies. Keep Hermit's core independently testable and depend only on narrow contracts.
 
-## The Workshop experience\n\nA loaded microbundle may immediately add its semantic content to the environment, while an optional nested construction wrapper stages a visible build: Mini crews emerge from service doors, haul crates and assemble the contribution; a rare Titan crew may cross a portal for oversized rigging. The spectacle is an explanation of work, never a second installation or a reason to delay semantic correctness. Editors are microbundles too: they can request their target bundle, then edit its versioned data through host-controlled transactions.\n\nHermit's local behavior uses GOAP wherever known facts and affordances are sufficient. An LLM is consulted occasionally for semantic interpretation or creative reasoning, never for every movement, physics step, permission decision or routine action. A fully articulated body and GPU neural motion proposals are a long-term target; physics and host policy remain authoritative.\n\n## First milestones
+## The Workshop experience
+
+A loaded microbundle may immediately add its semantic content to the environment, while an optional nested construction wrapper stages a visible build: Mini crews emerge from service doors, haul crates and assemble the contribution; a rare Titan crew may cross a portal for oversized rigging. The spectacle is an explanation of work, never a second installation or a reason to delay semantic correctness. Editors are microbundles too: they can request their target bundle, then edit its versioned data through host-controlled transactions.
+
+Hermit's local behavior uses GOAP wherever known facts and affordances are sufficient. An LLM is consulted occasionally for semantic interpretation or creative reasoning, never for every movement, physics step, permission decision or routine action. A fully articulated body and GPU neural motion proposals are a long-term target; physics and host policy remain authoritative.
+
+## First milestones
 
 The public learning experience and the assistant-runtime proof are parallel tracks:
 
@@ -114,6 +120,8 @@ node examples/deterministic-inspection.mjs
 The runtime proof is a small JavaScript implementation in `src/hermit-runtime.js`. The Pages playground composes it through `src/hermit-playground.js` and a browser adapter in `assets/hermit-playground.js`. It demonstrates a deterministic planner, explicit capability registry, structured argument validation, host-supplied policy, approval gating, bounded execution, cancellation/timeout propagation, bounded JSON output and an execution trace.
 
 The runtime also exposes `executeLoop`: it observes the host environment, asks the planner for one capability at a time, runs the existing policy/approval gate for each action, and requires host verification before it records an outcome or replans. The loop has a total time budget and a hard action-count limit. This is still a deterministic adapter-driven proof, not a production assistant: it has no live model adapter, durable memory, real host shell, or provider integration. The tests use fake inference and environment adapters only. The Pages build tests both experiences, assembles the HTML, browser assets, runtime modules and documentation into `_site`, and uploads a GitHub Pages artifact. Deployment is limited to pushes on `development` and manual workflow runs. No package publishing is configured or authorized.
+
+The versioned checkpoint module is a tested serialization and recovery-classification contract only. It does not yet provide durable storage, automatic resume, or safe replay; interrupted in-flight actions require host reconciliation before any retry.
 
 ---
 

@@ -10,7 +10,8 @@ This roadmap distinguishes the domain vision from current executable evidence.
 - [x] Add a versioned, immutable world-state snapshot contract for the deterministic Pages fixture.
 - [ ] Define versioned affordance and action contracts and align them with Gestures/Physics ownership.
 - [x] Add bounded plan execution with per-action policy, post-action verification and observation reconciliation.
-- [ ] Add interruption-safe persistent task checkpoints.
+- [x] Define and test versioned task-checkpoint serialization and recovery classification.
+- [ ] Add durable, interruption-safe checkpoint writes and task resumption with environment reconciliation.
 
 ## Embodiment and interaction
 - [ ] Define articulated body, joint, reach, grip, force, balance and locomotion contracts.
