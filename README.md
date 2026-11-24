@@ -121,7 +121,7 @@ The runtime proof is a small JavaScript implementation in `src/hermit-runtime.js
 
 The runtime also exposes `executeLoop`: it observes the host environment, asks the planner for one capability at a time, runs the existing policy/approval gate for each action, and requires host verification before it records an outcome or replans. The loop has a total time budget and a hard action-count limit. This is still a deterministic adapter-driven proof, not a production assistant: it has no live model adapter, durable memory, real host shell, or provider integration. The tests use fake inference and environment adapters only. The Pages build tests both experiences, assembles the HTML, browser assets, runtime modules and documentation into `_site`, and uploads a GitHub Pages artifact. Deployment is limited to pushes on `development` and manual workflow runs. No package publishing is configured or authorized.
 
-The versioned checkpoint module is a tested serialization and recovery-classification contract only. It does not yet provide durable storage, automatic resume, or safe replay; interrupted in-flight actions require host reconciliation before any retry.
+The versioned checkpoint contract now has a host-supplied repository boundary and optional `executeLoop` integration. The loop persists before capability invocation, advances only after host verification, and marks verified completion. The repository's durability depends on the host adapter; no production adapter or automatic resume/reconciliation is supplied. An interrupted in-flight action remains reconciliation-required and is never automatically replayed.
 
 ---
 
