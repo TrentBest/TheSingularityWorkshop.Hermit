@@ -29,8 +29,8 @@ a deterministic test fixture, not durable storage.
 
 ## Execution-loop integration
 
-`HermitRuntime.executeLoop` accepts an optional `checkpointRepository` and stable `taskId`. Supply both together. For a new task, the loop refuses to overwrite an existing checkpoint, records the initial observation as `ready`, writes an `execution-started` checkpoint after policy/approval succeeds but immediately before capability invocation, and returns to `ready` only after the host verifies the result. A verified completion is persisted as `completed`.
+`HermitRuntime.executeLoop` accepts an optional `checkpointRepository` and stable `taskId`. Supply both together. For a new task, the loop refuses to overwrite an existing checkpoint, records the initial observation as `ready`, writes an `execution-started` checkpoint after policy/approval succeeds but immediately before capability invocation, and returns to `ready` only after the host verifies the result. A verified completion is persisted as `completed`. A failure or cancellation that occurs while the checkpoint is `ready` is persisted as a terminal `failed` or `cancelled` checkpoint.
 
-If invocation or verification is interrupted after the `execution-started` write, the checkpoint remains `reconcile-required`; the loop does not retry the action. If policy denies the action, invocation is never reached and the last checkpoint remains `ready`. A failed persistence write prevents the consequential invocation.
+If invocation or verification fails or is interrupted after the `execution-started` write, the checkpoint remains `reconcile-required`; the loop does not retry the action or falsely label the uncertain side effect terminal. If policy denies the action, invocation is never reached and the last checkpoint remains `ready`. A failed persistence write prevents the consequential invocation.
 
 This integration provides durable boundary writes only when the supplied host adapter actually satisfies the atomic durability contract. It does not yet implement automatic resume, recovery reconciliation, a production adapter, encryption or retention policy.
