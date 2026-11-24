@@ -421,7 +421,14 @@ export class HermitRuntime {
           if (existing.recovery === "reconcile-required") {
             if (typeof reconcile !== "function")
               throw new HermitError("RECONCILIATION_REQUIRED", "An interrupted action requires a host reconciliation function before resumption.");
-            recovered = await checkpointRepository.reconcile(taskId, reconcile);
+            try {
+              if (typeof checkpointRepository.reconcile !== "function")
+                throw new HermitError("INVALID_CHECKPOINT_CONFIG", "Repository does not support host-mediated reconciliation.");
+              recovered = await checkpointRepository.reconcile(taskId, reconcile);
+            } catch (error) {
+              if (error instanceof HermitError) throw error;
+              throw new HermitError(error?.code ?? "RECONCILIATION_FAILED", "Host-mediated checkpoint reconciliation failed.");
+            }
             record("checkpoint-reconciled", { revision: recovered.checkpoint.revision, nextStep: recovered.checkpoint.nextStep });
           }
           const checkpoint = recovered.checkpoint;
