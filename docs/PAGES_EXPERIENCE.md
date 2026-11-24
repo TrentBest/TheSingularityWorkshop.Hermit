@@ -8,6 +8,8 @@ The home page introduces the Workshop companion and opens with a deterministic l
 
 ## Playground composition
 
+The page also includes a three-lane architecture map: intent/planning, capability/trust, and environment/evidence. It labels which behaviors the local fixture demonstrates and which integrations remain future work, so the diagram does not imply that planned adapters are already connected.
+
 | Layer | Responsibility |
 |---|---|
 | `index.html` | Semantic page structure, accessible controls, environment zones, status, and trace |
