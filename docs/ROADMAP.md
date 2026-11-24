@@ -11,7 +11,8 @@ This roadmap distinguishes the domain vision from current executable evidence.
 - [ ] Define versioned affordance and action contracts and align them with Gestures/Physics ownership.
 - [x] Add bounded plan execution with per-action policy, post-action verification and observation reconciliation.
 - [x] Define and test versioned task-checkpoint serialization and recovery classification.
-- [ ] Add durable, interruption-safe checkpoint writes and task resumption with environment reconciliation.
+- [x] Add a host-backed checkpoint repository contract with atomic compare-and-swap, monotonic revisions, guarded deletion and recovery classification tests.
+- [ ] Supply and verify a production durable adapter per host; integrate task-loop checkpoint callbacks and task resumption with environment reconciliation.
 
 ## Embodiment and interaction
 - [ ] Define articulated body, joint, reach, grip, force, balance and locomotion contracts.
