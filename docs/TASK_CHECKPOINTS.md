@@ -27,9 +27,9 @@ An execution-started checkpoint carries a stable idempotency key. It is a correl
 
 ## Deliberate limitations
 
-This is a tested data and recovery-classification contract, not durable task persistence or automatic restart. There is no storage adapter, atomic write protocol, encryption, retention policy, checkpoint callback in `executeLoop`, or automatic replay. The host remains responsible for durable storage, authorization, conflict handling, and reconciliation with the authoritative environment.
+This is a tested data/recovery contract with optional `executeLoop` persistence and safe resumption over a host-supplied repository. The repository adapter must provide atomic compare-and-swap and durable commit semantics; the in-repository tests use an in-memory adapter and do not prove production durability. There is no built-in storage backend, encryption, retention policy, or automatic replay. The host remains responsible for durable storage, authorization, conflict handling, and reconciliation with the authoritative environment.
 
-Automatic executeLoop resumption remains open. The next step is to reload a ready checkpoint, restore its verified outcomes and next-step cursor, and require host reconciliation before resuming an interrupted action. Cross-device use additionally requires authenticated identity, owner-scoped durable storage and device-local authority; see [Cross-device Hermit continuity](CROSS_DEVICE_CONTINUITY.md).
+`executeLoop` now accepts `resume: true` to restore a ready checkpoint's observation, verified outcomes and next-step cursor. It rejects task mismatches and terminal checkpoints before observing or planning. An `execution-started` checkpoint requires the host's `reconcile` callback; the host must establish whether the pending action applied, and the runtime resumes only from the repository's resulting ready checkpoint. Resumption never blindly replays an interrupted action. Production storage and cross-device use still require authenticated identity, owner-scoped durable storage and device-local authority; see [Cross-device Hermit continuity](CROSS_DEVICE_CONTINUITY.md).
 
 ## Verification
 
