@@ -389,12 +389,12 @@ export class HermitRuntime {
           }), executionSignal
         );
 
-        if (!proposal || typeof proposal !== "object" || Array.isArray(proposal) ||
-            ![Object.prototype, null].includes(Object.getPrototypeOf(proposal))) {
+        const safeDecision = snapshotJsonOutput(proposal);
+        if (!safeDecision || typeof safeDecision !== "object" || Array.isArray(safeDecision)) {
           throw new HermitError("INVALID_PROPOSAL", "Loop planner must return a proposal object.");
         }
-        if (proposal.done === true) {
-          const result = snapshotJsonOutput(proposal.result ?? { completed: true });
+        if (safeDecision.done === true) {
+          const result = snapshotJsonOutput(safeDecision.result ?? { completed: true });
           record("task-verified-complete", { steps: outcomes.length });
           return Object.freeze({
             status: "completed", result, outcomes: Object.freeze(outcomes),
@@ -402,7 +402,7 @@ export class HermitRuntime {
           });
         }
 
-        const safeProposal = snapshotProposal(proposal);
+        const safeProposal = snapshotProposal(safeDecision);
         const remaining = timeoutMs - (Date.now() - startedAt);
         if (remaining <= 0) throw new HermitError("TIMEOUT", "Task exceeded its total execution time limit.");
         record("step-proposed", { step: step + 1, capabilityId: safeProposal.capabilityId });
@@ -419,13 +419,14 @@ export class HermitRuntime {
           return fail(error);
         }
 
-        const verification = await raceWithSignal(
+        const verificationResult = await raceWithSignal(
           () => verify({
             task, step: step + 1, proposal: safeProposal,
             observation: structuredClone(observation),
             result: structuredClone(action.result), signal: executionSignal
           }), executionSignal
         );
+        const verification = snapshotJsonOutput(verificationResult);
         if (!verification || typeof verification !== "object" ||
             verification.verified !== true || !Object.hasOwn(verification, "observation")) {
           throw new HermitError("RESULT_NOT_VERIFIED", "Environment did not verify the action result.");
