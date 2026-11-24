@@ -78,7 +78,7 @@ These are integration candidates, not mandatory dependencies. Keep Hermit's core
 
 The public learning experience and the assistant-runtime proof are parallel tracks:
 
-- **Public learning track:** [Build Hermit's first GitHub Pages learning experience](https://github.com/TrentBest/TheSingularityWorkshop.Hermit/issues/3). Begin with a fixed 2-input / 2-output inference lesson whose living SVG is driven by the actual calculation.
+- **Public learning track:** the [Hermit Pages experience](https://github.com/TrentBest/TheSingularityWorkshop.Hermit/tree/development) now opens with a deterministic Workshop playground backed by Hermit's real capability registry and bounded execution loop. A separate 2-input / 2-output inference lesson remains available below it.
 - **Runtime track:** [Build the first deterministic Hermit assistant vertical slice](https://github.com/TrentBest/TheSingularityWorkshop.Hermit/issues/1), using fake inference and a fake environment.
 
 The broader runtime progression is:
@@ -90,9 +90,13 @@ The broader runtime progression is:
 5. First real Workshop shell.
 6. Additional portable shells after the first proves the contracts.
 
-The Pages lesson is a separate educational presentation. It does not imply that neural inference is already integrated into Hermit's assistant runtime.
+The neural-network lesson is a separate educational presentation. It does not imply that neural inference is integrated into Hermit's assistant runtime. The Workshop playground exercises the existing deterministic runtime against local fixture objects; it is not a live model, physical robot, GPU motion system, or host-computer integration.
 
 Every milestone must distinguish implemented, tested, specified and planned functionality. No NuGet publication without explicit authorization.
+
+## Pages experience
+
+See [the Pages experience guide](docs/PAGES_EXPERIENCE.md) for the scene model, capability boundary, host approval behavior, build assembly, and current limitations.
 
 ## Development
 
@@ -107,9 +111,9 @@ npm test
 node examples/deterministic-inspection.mjs
 ```
 
-The first runtime proof is a small JavaScript implementation in `src/hermit-runtime.js`, separate from the Pages neural-network lesson. It demonstrates a deterministic planner, explicit capability registry, structured argument validation, host-supplied policy, approval gating, bounded execution, cancellation/timeout propagation, bounded JSON output and an execution trace.
+The runtime proof is a small JavaScript implementation in `src/hermit-runtime.js`. The Pages playground composes it through `src/hermit-playground.js` and a browser adapter in `assets/hermit-playground.js`. It demonstrates a deterministic planner, explicit capability registry, structured argument validation, host-supplied policy, approval gating, bounded execution, cancellation/timeout propagation, bounded JSON output and an execution trace.
 
-The runtime also exposes `executeLoop`: it observes the host environment, asks the planner for one capability at a time, runs the existing policy/approval gate for each action, and requires host verification before it records an outcome or replans. The loop has a total time budget and a hard action-count limit. This is still a deterministic adapter-driven proof, not a production assistant: it has no live model adapter, durable memory, real host shell, or provider integration. The tests use fake inference and environment adapters only. No package publishing is configured or authorized.
+The runtime also exposes `executeLoop`: it observes the host environment, asks the planner for one capability at a time, runs the existing policy/approval gate for each action, and requires host verification before it records an outcome or replans. The loop has a total time budget and a hard action-count limit. This is still a deterministic adapter-driven proof, not a production assistant: it has no live model adapter, durable memory, real host shell, or provider integration. The tests use fake inference and environment adapters only. The Pages build tests both experiences, assembles the HTML, browser assets, runtime modules and documentation into `_site`, and uploads a GitHub Pages artifact. Deployment is limited to pushes on `development` and manual workflow runs. No package publishing is configured or authorized.
 
 ---
 
