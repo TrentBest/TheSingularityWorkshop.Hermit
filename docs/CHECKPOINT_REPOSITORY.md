@@ -22,10 +22,27 @@ identity.
   the pending action using its idempotency key. Hermit never automatically replays it.
 - `completed`, `failed`, `cancelled` → `terminal`.
 
-The repository does not itself resume a task, invoke capabilities, encrypt data, define
-retention, or provide a production storage engine. Atomicity and durability are adapter
-responsibilities and must be verified for each host. The included in-memory adapter is
-a deterministic test fixture, not durable storage.
+The repository exposes `reconcile(taskId, resolver)` for the in-flight case. The host
+resolver receives the pending action identity, arguments, idempotency key, prior
+observation and task progress. It must inspect the real environment and return
+`{ actionApplied, observation, result? }`:
+
+- `actionApplied: true` requires a result; the repository records a reconciled,
+  verified outcome and advances the step.
+- `actionApplied: false` records no outcome and leaves the step unchanged, allowing
+  the planner to reconsider the action from the fresh observation.
+
+Both decisions clear the pending action and atomically transition the checkpoint back
+to `ready` using compare-and-swap. Missing, malformed, terminal, or conflicting
+reconciliation fails closed. The resolver is trusted host code: it must not infer that
+an action happened merely because it was requested, and it must establish the
+observation/result from authoritative environment evidence.
+
+This operation prepares a checkpoint for resumption; it does not itself restart the
+execution loop, invoke capabilities, encrypt data, define retention, or provide a
+production storage engine. Atomicity and durability are adapter responsibilities and
+must be verified for each host. The included in-memory adapter is a deterministic test
+fixture, not durable storage.
 
 ## Execution-loop integration
 
@@ -33,4 +50,8 @@ a deterministic test fixture, not durable storage.
 
 If invocation or verification fails or is interrupted after the `execution-started` write, the checkpoint remains `reconcile-required`; the loop does not retry the action or falsely label the uncertain side effect terminal. If policy denies the action, invocation is never reached and the last checkpoint remains `ready`. A failed persistence write prevents the consequential invocation.
 
-This integration provides durable boundary writes only when the supplied host adapter actually satisfies the atomic durability contract. It does not yet implement automatic resume, recovery reconciliation, a production adapter, encryption or retention policy.
+This integration provides durable boundary writes only when the supplied host adapter actually satisfies the atomic durability contract. The repository now supports explicit host-mediated reconciliation of interrupted
+actions, but the runtime does not yet automatically resume a recovered checkpoint.
+A host must load/reconcile the checkpoint and deliberately re-enter execution from
+the returned progress. No production adapter, encryption or retention policy is
+provided.
