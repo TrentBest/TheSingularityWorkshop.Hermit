@@ -16,12 +16,22 @@ This roadmap distinguishes the domain vision from current executable evidence.
 - [x] Implement safe `executeLoop` resumption from ready checkpoints, including host-mediated reconciliation for interrupted actions; test restored state, task mismatch and terminal guards.
 - [ ] Supply and verify a production durable adapter per host.
 - [x] Specify cross-device continuity: shared companion identity/state separated from device presence and local capability authority.
+- [x] Implement a process-local two-shell reference store with shared versioned state, idempotent events and shared checkpoint adapter.
+- [x] Test that phone/web and desktop/AnyApp shell fixtures share identity and task progress without sharing local capabilities; test stale-write rejection.
 - [ ] Define versioned continuity records, authenticated owner identity, device enrollment/revocation and host-scoped grants.
-- [ ] Implement owner-scoped continuity storage, conditional writes, append-only events and paged change-feed cursors.
-- [ ] Resume the same Hermit through phone web and desktop AnyApp shells with independent device capabilities.
+- [ ] Implement owner-scoped durable continuity storage, process-safe conditional writes, append-only events and paged change-feed cursors.
+- [ ] Integrate real authenticated web and AnyApp shells with one Hermit identity and independent host policy.
 - [ ] Add offline queue, conflict, revocation, deletion propagation and multi-device recovery tests.
 
-## Cross-device continuity\n- [x] Specify the shared-companion / local-authority architecture and threat boundaries.\n- [ ] Implement local two-shell continuity proof.\n- [ ] Implement authenticated server-side continuity and device enrollment.\n- [ ] Connect the web shell and AnyApp desktop shell to one Hermit identity.\n- [ ] Verify offline and conflict recovery.\n\n## Embodiment and interaction
+## Cross-device continuity
+- [x] Specify the shared-companion / local-authority architecture and threat boundaries.
+- [x] Implement a process-local two-shell continuity reference proof.
+- [x] Verify shared identity, shared state, duplicate event suppression, shared checkpoint restore, local capability isolation and stale-write rejection in automated tests.
+- [ ] Implement authenticated server-side continuity and device enrollment.
+- [ ] Connect the web shell and AnyApp desktop shell to one Hermit identity.
+- [ ] Verify offline and conflict recovery.
+
+## Embodiment and interaction
 - [ ] Define articulated body, joint, reach, grip, force, balance and locomotion contracts.
 - [ ] Integrate Gestures and Physics through narrow adapters.
 - [ ] Define perception/affordance discovery and object interaction.
