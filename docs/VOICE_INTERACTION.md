@@ -14,7 +14,7 @@ The Pages shell now demonstrates:
 - A capability explanation generated from the browser shell's validated host-provided catalog; it describes read-only inspection versus approval-gated movement and gives example phrases without invoking either action.
 - Automatic invocation only for the fixture's read-only inspection action. A world-changing move is surfaced as an approval request and still requires the host's explicit approval control.
 
-The demo grammar is intentionally narrow. It does not pretend to understand arbitrary natural-language questions or invoke a live language model. Capability discovery reads the browser shell's declarative fixture catalog and is limited to its two registered interactions, not a claim that Hermit has access to capabilities outside this fixture.
+The demo grammar is intentionally narrow. It does not pretend to understand arbitrary natural-language questions or invoke a live language model. Capability discovery reads the browser shell's declarative fixture catalog and is limited to its two registered interactions, not a claim that Hermit has access to capabilities outside this fixture. Voice action parsing also checks that the active shell advertises the requested capability; an unavailable action fails closed, and catalog risk/approval metadata prevents automatic execution of gated actions.
 
 ## Architecture
 
