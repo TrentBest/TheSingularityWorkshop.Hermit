@@ -46,7 +46,7 @@ async function submitIntent(value) {
   const objects = window.hermitWorldSnapshot?.objects ?? [];
   let intent;
   try {
-    intent = resolvePlaygroundVoiceIntent(value, objects);
+    intent = resolvePlaygroundVoiceIntent(value, objects, window.hermitCapabilityCatalog);
   } catch (error) {
     setVoiceStatus(error.message);
     return;
