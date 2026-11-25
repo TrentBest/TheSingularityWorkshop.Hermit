@@ -32,6 +32,11 @@ This roadmap distinguishes the domain vision from current executable evidence.
 - [ ] Connect the web shell and AnyApp desktop shell to one Hermit identity.
 - [ ] Verify offline and conflict recovery.
 
+## Capability discovery
+- [x] Define and test a provider-neutral, versioned host capability catalog with shell-scoped discovery, bounded declarative input schemas, risk metadata and explicit approval metadata.
+- [ ] Inject host-owned capability catalogs into browser, AnyApp and VR shells; keep authorization and execution in each host's policy boundary.
+- [ ] Render live capability discovery through GUI and route selected capability IDs through Hermit's validated planner and execution loop.
+
 ## Voice interaction
 - [x] Define host-neutral speech synthesis and streaming recognition adapter contracts with explicit cancellation and error outcomes.
 - [x] Add browser speech output and optional recognition to the Pages shell, with a typed fallback.
