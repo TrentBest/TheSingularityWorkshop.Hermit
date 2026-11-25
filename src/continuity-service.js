@@ -137,10 +137,7 @@ export function createContinuityService({ authenticate, authorizeDevice, store }
 
   async function handleEventAppend({ context, body }) {
     try {
-      const principal = await authenticate(context);
-      if (!principal || typeof principal.ownerId !== "string" || principal.ownerId.length === 0) {
-        serviceFail("UNAUTHENTICATED", "A trusted authenticated owner principal is required.");
-      }
+      const principal = await authenticatedPrincipal(context);
       const request = validateEventAppend(body, principal);
       let allowed;
       try {
