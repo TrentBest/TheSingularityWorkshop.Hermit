@@ -71,16 +71,17 @@ export function createCapabilityDispatcher({
   if (requestApproval !== undefined && typeof requestApproval !== "function") {
     invalid("requestApproval must be a host function when supplied.");
   }
+  const activeShell = shell.trim();
   const trustedHandlers = snapshotHandlers(handlers);
 
   return Object.freeze({
     async invoke(capabilityId, input = {}) {
-      const capability = validatedCatalog.capabilities.find(item => item.shell === shell && item.id === capabilityId);
+      const capability = validatedCatalog.capabilities.find(item => item.shell === activeShell && item.id === capabilityId);
       if (!capability) return Object.freeze({ status: "unsupported", capabilityId });
 
       let validatedInput;
       try {
-        validatedInput = validateCapabilityInput(validatedCatalog, shell, capabilityId, input);
+        validatedInput = validateCapabilityInput(validatedCatalog, activeShell, capabilityId, input);
       } catch {
         return Object.freeze({ status: "invalid-input", capabilityId });
       }
