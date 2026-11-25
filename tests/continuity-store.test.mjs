@@ -80,7 +80,7 @@ test("executeLoop hands a verified task from phone shell to desktop shell", asyn
   const { HermitRuntime, CapabilityRegistry } = await import("../src/hermit-runtime.js");
   const store = createInMemoryContinuityStore({ ownerId: "owner-1", hermitId: "hermit-1" });
   const phone = store.createShell({ deviceId: "phone-1", hostType: "web", capabilities: ["inspect-item"] });
-  const desktop = store.createShell({ deviceId: "desktop-1", hostType: "anyapp", capabilities: ["inspect-item", "filesystem"] });
+  const desktop = store.createShell({ deviceId: "desktop-1", hostType: "anyapp", capabilities: ["inspect-item", "filesystem", "save-note"] });
   const phoneRepository = createCheckpointRepository(phone.checkpointAdapter);
   const desktopRepository = createCheckpointRepository(desktop.checkpointAdapter);
   const registry = new CapabilityRegistry();
@@ -145,7 +145,7 @@ test("a shell cannot invoke a capability granted only to another shell", async (
   let invoked = false;
   const registry = new CapabilityRegistry();
   registry.register({
-    id: "filesystem-read", version: "1.0.0", inputSchema: { type: "object", properties: {} },
+    id: "filesystem", version: "1.0.0", inputSchema: { type: "object", properties: {} },
     invoke: async () => { invoked = true; return { ok: true }; }
   });
   const phoneRuntime = new HermitRuntime({
@@ -153,10 +153,11 @@ test("a shell cannot invoke a capability granted only to another shell", async (
   });
   const result = await phoneRuntime.execute({
     task: "Read a desktop file.",
-    planner: async () => ({ capabilityId: "filesystem-read", arguments: {} })
+    planner: async () => ({ capabilityId: "filesystem", arguments: {} })
   });
   assert.equal(result.status, "failed");
   assert.equal(result.error.code, "POLICY_DENIED");
   assert.equal(invoked, false);
-  assert.equal(desktop.hasCapability("filesystem-read"), false, "unregistered local labels do not grant authority");
+  assert.equal(phone.hasCapability("filesystem"), false);
+  assert.equal(desktop.hasCapability("filesystem"), true);
 });
