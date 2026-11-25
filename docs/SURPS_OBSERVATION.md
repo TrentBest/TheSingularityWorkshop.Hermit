@@ -2,11 +2,11 @@
 
 ## Status
 
-Implemented as a selected content-neutral, read-only host adapter contract in `src/surps-observation.js`. The fixture tests use synthetic data. This is **not** a live SURPS package integration and does not claim the canonical SURPS repository's concrete types have been mapped.
+Implemented as a selected-content-aware, read-only host projection contract in `src/surps-observation.js`. The fixture tests use synthetic data. This is **not** a live SURPS package integration and does not claim the canonical SURPS repository's concrete types have been mapped.
 
 ## Contract
 
-The host supplies one trusted `readSession(sessionId, { signal })` function. Hermit wraps its result in a bounded immutable observation containing:
+The host supplies one trusted `readSession(sessionId, { signal })` function. It projects the selected MicroBundle's identity/version (for the current fixture, `surps.microbundle.core.spying@0.1.0`) alongside participant records assembled from their owning domains. Hermit wraps that result in a bounded immutable observation containing:
 
 - selected MicroBundle identity and version;
 - session identity and monotonic session revision;
@@ -14,7 +14,7 @@ The host supplies one trusted `readSession(sessionId, { signal })` function. Her
 - participant identity, display name, role, condition summary and location;
 - explicitly scoped knowledge entries, each with an identity and source reference.
 
-The projection intentionally excludes characteristics, skills, derived values, rule procedures, inventory mutation, action resolution and arbitrary extension bags. Those belong to SURPS and its domain providers. The observation is context for planning and portrayal, not a substitute rules model.
+The projection intentionally excludes characteristics, skills, derived values, rule procedures, inventory mutation, action resolution and arbitrary extension bags. Those remain in canonical SURPS and owner-domain records. This contract is a host projection that combines the selected MicroBundle's identity/version with participant and knowledge records supplied by their owning domains; it is context for planning and portrayal, not a substitute rules model.
 
 ## Safety properties
 
