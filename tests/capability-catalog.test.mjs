@@ -165,3 +165,14 @@ test("capability inputs reject hidden non-enumerable properties", () => {
   Object.defineProperty(hidden, "covert", { value: true, enumerable: false });
   assert.throws(() => validateCapabilityInput(catalog(), "browser", "scene.inspect", hidden), /hidden properties/);
 });
+
+test("validated catalog snapshots can be validated again without changing semantics", () => {
+  const first = validateCapabilityCatalog(catalog());
+  const second = validateCapabilityCatalog(first);
+  assert.deepEqual(second, first);
+  assert.equal(Object.isFrozen(second.capabilities[0].inputSchema), true);
+  assert.deepEqual(
+    validateCapabilityInput(second, "browser", "scene.inspect", { objectId: "vessel-1" }),
+    { objectId: "vessel-1" }
+  );
+});
