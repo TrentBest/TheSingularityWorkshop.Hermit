@@ -54,7 +54,7 @@ Environment shell (desktop / web / server / IDE / ...)
          Actual environment
 ```
 
-This is a target architecture, not a claim that every integration is already implemented. See [Architecture and Boundaries](docs/ARCHITECTURE.md), [Hermit in the Workshop](docs/WORKSHOP_DOMAIN.md), [GOAP and Idle Life](docs/GOAP_AND_IDLE.md), [Microbundle Wrappers](docs/MICROBUNDLE_WRAPPERS.md), [Human-in-the-Loop Creation](docs/HUMAN_IN_THE_LOOP.md), [Task Checkpoints](docs/TASK_CHECKPOINTS.md), [Checkpoint Repository](docs/CHECKPOINT_REPOSITORY.md), [Cross-device Hermit Continuity](docs/CROSS_DEVICE_CONTINUITY.md), and the [HeadlessAi Integration Boundary](docs/HEADLESSAI_INTEGRATION.md).
+This is a target architecture, not a claim that every integration is already implemented. See [Architecture and Boundaries](docs/ARCHITECTURE.md), [Hermit in the Workshop](docs/WORKSHOP_DOMAIN.md), [GOAP and Idle Life](docs/GOAP_AND_IDLE.md), [Microbundle Wrappers](docs/MICROBUNDLE_WRAPPERS.md), [Human-in-the-Loop Creation](docs/HUMAN_IN_THE_LOOP.md), [Task Checkpoints](docs/TASK_CHECKPOINTS.md), [Checkpoint Repository](docs/CHECKPOINT_REPOSITORY.md), [Cross-device Hermit Continuity](docs/CROSS_DEVICE_CONTINUITY.md), the [HeadlessAi Integration Boundary](docs/HEADLESSAI_INTEGRATION.md), and [Voice Interaction](docs/VOICE_INTERACTION.md).
 
 ## Workshop building blocks
 
@@ -84,7 +84,7 @@ Hermit's local behavior uses GOAP wherever known facts and affordances are suffi
 
 The public learning experience and the assistant-runtime proof are parallel tracks:
 
-- **Public learning track:** the [Hermit Pages experience](https://github.com/TrentBest/TheSingularityWorkshop.Hermit/tree/development) now opens with a deterministic Workshop playground backed by Hermit's real capability registry and bounded execution loop. A separate 2-input / 2-output inference lesson remains available below it.
+- **Public learning track:** the [Hermit Pages experience](https://github.com/TrentBest/TheSingularityWorkshop.Hermit/tree/development) opens with a deterministic Workshop playground backed by Hermit's capability registry and bounded execution loop. It now includes speech output, optional browser recognition, a typed request fallback, and a small voice-intent demonstration that preserves host approval. A separate 2-input / 2-output inference lesson remains available below it.
 - **Runtime track:** [Build the first deterministic Hermit assistant vertical slice](https://github.com/TrentBest/TheSingularityWorkshop.Hermit/issues/1), using fake inference and a fake environment.
 
 The broader runtime progression is:
