@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "fixtureStatus": "synthetic-host-observation-not-live-session",
+  "sourceId": "surps.microbundle.core.spying",
+  "sourceVersion": "0.1.0",
+  "sessionId": "embassy-reception",
+  "revision": 12,
+  "activeCharacterId": "player",
+  "participants": [
+    {
+      "id": "player",
+      "name": "Mara",
+      "role": "player-character",
+      "condition": "Ready",
+      "location": "Embassy reception",
+      "knownFacts": [
+        {
+          "id": "player-observed-cufflink",
+          "state": "Observed",
+          "text": "A courier wears a silver cufflink.",
+          "source": "player-observation-1"
+        }
+      ]
+    },
+    {
+      "id": "companion",
+      "name": "Ivo",
+      "role": "companion",
+      "condition": "Uninjured",
+      "location": "Kitchen entrance",
+      "knownFacts": [
+        {
+          "id": "companion-contact",
+          "state": "Reported",
+          "text": "The kitchen contact agreed to meet at the kitchen entrance.",
+          "source": "companion-conversation-2"
+        }
+      ]
+    },
+    {
+      "id": "courier",
+      "name": "The courier",
+      "role": "npc",
+      "condition": "Alert",
+      "location": "West gallery",
+      "knownFacts": [
+        {
+          "id": "courier-private-intent",
+          "state": "Claimed",
+          "text": "The courier intends to use the west service exit.",
+          "source": "courier-private-intent"
+        }
+      ]
+    },
+    {
+      "id": "kitchen-contact",
+      "name": "Nessa",
+      "role": "npc",
+      "condition": "Busy",
+      "location": "Kitchen entrance",
+      "knownFacts": [
+        {
+          "id": "contact-observed-courier",
+          "state": "Observed",
+          "text": "The courier asked for a private meeting near the kitchen entrance.",
+          "source": "contact-observation-1"
+        }
+      ]
+    }
+  ]
+}
