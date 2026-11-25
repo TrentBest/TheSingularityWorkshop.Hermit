@@ -215,3 +215,48 @@ test("host authorization is rechecked after approval and revocation stops dispat
   assert.equal(invoked, false);
 });
 
+
+
+test("handler results are detached frozen JSON snapshots", async () => {
+  const source = { object: { location: "workbench" }, items: ["compass"] };
+  const dispatcher = createCapabilityDispatcher({
+    catalog: catalog(),
+    shell: "browser",
+    handlers: { "scene.inspect": async () => source },
+    authorize: async () => ({ allowed: true })
+  });
+  const result = await dispatcher.invoke("scene.inspect", { objectId: "vessel-1" });
+  source.object.location = "elsewhere";
+  source.items.push("crate");
+  assert.equal(result.status, "completed");
+  assert.deepEqual(result.result, { object: { location: "workbench" }, items: ["compass"] });
+  assert.equal(Object.isFrozen(result.result), true);
+  assert.equal(Object.isFrozen(result.result.object), true);
+  assert.equal(Object.isFrozen(result.result.items), true);
+});
+
+test("non-JSON, accessor, cyclic and oversized handler results fail closed", async t => {
+  const cases = [
+    ["undefined", () => undefined],
+    ["accessor", () => Object.defineProperty({}, "secret", { enumerable: true, get() { throw new Error("must not run"); } })],
+    ["cycle", () => { const value = {}; value.self = value; return value; }],
+    ["non-finite", () => ({ value: Number.NaN })],
+    ["oversized", () => ({ value: "x".repeat(17_000) })]
+  ];
+  for (const [name, makeResult] of cases) {
+    await t.test(name, async () => {
+      const dispatcher = createCapabilityDispatcher({
+        catalog: catalog(),
+        shell: "browser",
+        handlers: { "scene.inspect": async () => makeResult() },
+        authorize: async () => ({ allowed: true })
+      });
+      const result = await dispatcher.invoke("scene.inspect", { objectId: "vessel-1" });
+      assert.deepEqual(result, {
+        status: "failed",
+        capabilityId: "scene.inspect",
+        reason: "host-handler-failed"
+      });
+    });
+  }
+});
