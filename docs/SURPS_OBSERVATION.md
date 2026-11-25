@@ -1,0 +1,34 @@
+# SURPS observation bridge (development)
+
+## Status
+
+Implemented as a provider-neutral, read-only host adapter contract in `src/surps-observation.js`. The fixture tests use synthetic data. This is **not** a live SURPS package integration and does not claim the canonical SURPS repository's concrete types have been mapped.
+
+## Contract
+
+The host supplies one trusted `readSession(sessionId, { signal })` function. Hermit wraps its result in a bounded immutable observation containing:
+
+- provider identity and provider version;
+- session identity and monotonic session revision;
+- the active player-character identity;
+- participant identity, display name, role, condition summary and location;
+- explicitly scoped knowledge entries, each with an identity and source reference.
+
+The projection intentionally excludes characteristics, skills, derived values, rule procedures, inventory mutation, action resolution and arbitrary extension bags. Those belong to SURPS and its domain providers. The observation is context for planning and portrayal, not a substitute rules model.
+
+## Safety properties
+
+- Plain data only; accessors, symbols and unsupported properties are rejected without invoking getters.
+- Stable participant and knowledge identities must be unique within a snapshot.
+- The active identity must refer to a player-character.
+- Participant and knowledge counts and text fields are bounded.
+- The adapter is read-only and binds each request to the requested session identity.
+- A single adapter instance rejects revision rollback for a session.
+- Every result is revalidated and copied into a deeply frozen snapshot.
+- No observation value grants a capability or authorizes an action.
+
+The adapter's revision memory is process-local. A durable host must enforce authoritative revision ordering and session access on every read. Cancellation is forwarded to the host adapter, which must honor it.
+
+## Next integration gate
+
+Before replacing the fixture with real SURPS data, map the canonical SURPS development branch's exported session, participant, knowledge/provenance and revision contracts. Implement a thin projection in the SURPS/host adapter, then add contract tests against actual SURPS fixtures. Do not guess type names or serialize private rulebook internals into Hermit's neutral contract.
