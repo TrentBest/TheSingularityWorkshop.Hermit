@@ -49,7 +49,9 @@ jobs:
           test -s _site/assets/neural-network.js
           test -s _site/assets/hermit-voice.js
           test -s _site/src/voice.js
+          test -s _site/src/capability-catalog.js
           test -s _site/docs/VOICE_INTERACTION.md
+          test -s _site/docs/CAPABILITY_CATALOG.md
           test -s _site/docs/ROADMAP.md
           test -s _site/docs/PAGES_EXPERIENCE.md
           grep -F '<script type="module" src="./assets/hermit-playground.js"></script>' _site/index.html
