@@ -18,6 +18,7 @@ This roadmap distinguishes the domain vision from current executable evidence.
 - [x] Specify cross-device continuity: shared companion identity/state separated from device presence and local capability authority.
 - [x] Implement a process-local two-shell reference store with shared versioned state, idempotent events and shared checkpoint adapter.
 - [x] Test that phone/web and desktop/AnyApp shell fixtures share identity and task progress without sharing local capabilities; test stale-write rejection.
+- [x] Demonstrate end-to-end `executeLoop` continuation from phone/web to desktop/AnyApp using one shared checkpoint authority.
 - [ ] Define versioned continuity records, authenticated owner identity, device enrollment/revocation and host-scoped grants.
 - [ ] Implement owner-scoped durable continuity storage, process-safe conditional writes, append-only events and paged change-feed cursors.
 - [ ] Integrate real authenticated web and AnyApp shells with one Hermit identity and independent host policy.
