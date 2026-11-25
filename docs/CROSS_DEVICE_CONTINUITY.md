@@ -26,6 +26,20 @@ The validators bound record size and page size, reject accessors/cycles/sparse a
 
 Automated tests cover trusted-principal scoping, owner mismatch, unsupported schema versions, invalid cursors/page limits, bounded state payloads, event identifiers, unsafe object structures and change-feed ordering. This module does not authenticate users, authorize/enroll/revoke devices, issue cursors, implement a network API, enforce storage transactions or provide durable persistence. Those responsibilities remain with a future host/service adapter.
 
+## Host-injected continuity service (implemented orchestration)
+
+`src/continuity-service.js` now provides a provider-neutral request orchestration boundary around the protocol validators. The host injects three dependencies:
+
+- `authenticate(context)` resolves a trusted principal; request-body owner claims never establish identity.
+- `authorizeDevice({ principal, deviceId, hostType, operation })` must confirm that the installation is enrolled, active and permitted for the requested operation. A false result or adapter error fails closed.
+- `store` supplies owner-scoped `readState`, atomic `compareAndSwapState`, idempotent `appendEvent` and cursor-based `readChanges` operations.
+
+The service exposes `handleSync`, `handleStateWrite` and `handleEventAppend`. It authenticates and authorizes before storage access, passes the authenticated owner ID to every store operation, maps failed conditional writes to an explicit stale-revision conflict, validates change pages and checks that returned records remain in the authenticated owner scope. Sync responses project shared state to its revision and values rather than forwarding arbitrary adapter metadata. Storage failures are normalized without returning internal exception details.
+
+Tests use deterministic fake host adapters to cover missing authentication, rejected device authorization, owner-claim mismatch, stale writes, duplicate event delivery, cross-owner adapter leakage, oversized change pages and storage-error redaction.
+
+**Boundary:** this is service orchestration, not a production security claim. It does not implement authentication, device enrollment/revocation, token issuance, network routing, durable transactions, event persistence or cursor issuance. Those guarantees must be implemented by the injected host adapters and their backing infrastructure. In particular, the storage adapter must make CAS and event idempotency atomic across processes; a boolean or in-memory fixture is not sufficient for production.
+
 ## Experience goal
 
 A user can begin a conversation or task with Hermit in a phone browser, close that browser, open AnyApp on a desktop, and continue with the same companion and its verified progress. A later device-specific AnyApp is another shell, not another independently initialized Hermit.
