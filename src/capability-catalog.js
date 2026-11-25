@@ -58,10 +58,13 @@ function validateInputSchema(schema) {
     if (!/^[A-Za-z][A-Za-z0-9_]{0,63}$/.test(name)) fail("inputSchema has an invalid property name.");
     const definition = ownDataObject(properties[name], "inputSchema property");
     if (!["string", "number", "integer", "boolean"].includes(definition.type)) fail("inputSchema property types must be scalar.");
+    if (definition.type !== "string" && definition.maxLength !== undefined) fail("maxLength is supported only for string properties.");
     if (definition.type === "string" && definition.maxLength !== undefined &&
         (!Number.isInteger(definition.maxLength) || definition.maxLength < 1 || definition.maxLength > 4000)) {
       fail("string maxLength must be between 1 and 4000.");
     }
+    if (!["number", "integer"].includes(definition.type) &&
+        (definition.minimum !== undefined || definition.maximum !== undefined)) fail("numeric bounds are supported only for number and integer properties.");
     if (["number", "integer"].includes(definition.type)) {
       if (definition.minimum !== undefined && !Number.isFinite(definition.minimum)) fail("numeric minimum must be finite.");
       if (definition.maximum !== undefined && !Number.isFinite(definition.maximum)) fail("numeric maximum must be finite.");
@@ -77,6 +80,12 @@ function validateInputSchema(schema) {
           !["string", "boolean"].includes(typeof item) && !(typeof item === "number" && Number.isFinite(item)))) {
         fail("property enum must contain 1–32 finite scalar values.");
       }
+      const matchesType = item => definition.type === "string" ? typeof item === "string" &&
+        (definition.maxLength === undefined || item.length <= definition.maxLength) :
+        definition.type === "boolean" ? typeof item === "boolean" :
+        definition.type === "integer" ? Number.isInteger(item) :
+        definition.type === "number" ? typeof item === "number" && Number.isFinite(item) : false;
+      if (definition.enum.some(item => !matchesType(item))) fail("property enum values must match the declared property type.");
       if (new Set(definition.enum).size !== definition.enum.length) fail("property enum values must be unique.");
     }
   }
