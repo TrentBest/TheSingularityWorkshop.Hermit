@@ -108,7 +108,7 @@ export function createSurpsObservation(value = {}) {
 
   return freezeDeep({
     schemaVersion: SURPS_OBSERVATION_SCHEMA_VERSION,
-    provider: { id: sourceId, version: sourceVersion },
+    source: { id: sourceId, version: sourceVersion },
     sessionId,
     revision: root.revision,
     activeCharacterId,
@@ -119,15 +119,15 @@ export function createSurpsObservation(value = {}) {
 export function validateSurpsObservation(value) {
   const root = readRecord(value,
     ["schemaVersion", "source", "sessionId", "revision", "activeCharacterId", "participants"],
-    ["schemaVersion", "provider", "sessionId", "revision", "activeCharacterId", "participants"],
+    ["schemaVersion", "source", "sessionId", "revision", "activeCharacterId", "participants"],
     "snapshot");
   if (root.schemaVersion !== SURPS_OBSERVATION_SCHEMA_VERSION) {
     fail(`unsupported schemaVersion: ${root.schemaVersion}.`);
   }
-  const provider = readRecord(root.provider, ["id", "version"], ["id", "version"], "source");
+  const source = readRecord(root.source, ["id", "version"], ["id", "version"], "source");
   return createSurpsObservation({
-    sourceId: provider.id,
-    sourceVersion: provider.version,
+    sourceId: source.id,
+    sourceVersion: source.version,
     sessionId: root.sessionId,
     revision: root.revision,
     activeCharacterId: root.activeCharacterId,
