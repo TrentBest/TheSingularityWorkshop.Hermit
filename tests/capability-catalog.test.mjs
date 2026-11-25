@@ -88,6 +88,12 @@ test("input schemas are deliberately bounded and reject unsupported schema featu
   const reversed = catalog();
   reversed.capabilities[0].inputSchema.properties.count = { type: "integer", minimum: 9, maximum: 2 };
   assert.throws(() => validateCapabilityCatalog(reversed), /bounds are reversed/);
+  const mismatchedEnum = catalog();
+  mismatchedEnum.capabilities[0].inputSchema.properties.objectId.enum = [42];
+  assert.throws(() => validateCapabilityCatalog(mismatchedEnum), /match the declared property type/);
+  const wrongKeyword = catalog();
+  wrongKeyword.capabilities[0].inputSchema.properties.count = { type: "boolean", minimum: 0 };
+  assert.throws(() => validateCapabilityCatalog(wrongKeyword), /numeric bounds are supported only/);
 });
 
 test("catalog rejects unsafe arrays and invalid enum values", () => {
