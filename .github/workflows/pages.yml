@@ -47,10 +47,14 @@ jobs:
           test -s _site/assets/hermit-playground.js
           test -s _site/assets/neural-network-demo.js
           test -s _site/assets/neural-network.js
+          test -s _site/assets/hermit-voice.js
+          test -s _site/src/voice.js
+          test -s _site/docs/VOICE_INTERACTION.md
           test -s _site/docs/ROADMAP.md
           test -s _site/docs/PAGES_EXPERIENCE.md
           grep -F '<script type="module" src="./assets/hermit-playground.js"></script>' _site/index.html
           grep -F '<script type="module" src="./assets/neural-network-demo.js"></script>' _site/index.html
+          grep -F '<script type="module" src="./assets/hermit-voice.js"></script>' _site/index.html
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # pinned commit SHA
