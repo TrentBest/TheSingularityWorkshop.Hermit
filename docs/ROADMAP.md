@@ -98,6 +98,7 @@ This roadmap distinguishes the domain vision from current executable evidence.
 - [ ] Extend the map with Mini crews, Titan portal and microbundle wrappers when their task/event contracts are implemented.
 - [x] Add a deterministic Pages playground backed by Hermit's registered inspect/move capabilities, host policy, explicit approval, and post-action verification.
 - [x] Add a voice interface with speech output, optional recognition, typed fallback, and approval-preserving fixture intent routing.
+- [x] Add a diegetic party-awareness scene using versioned participant context, isolated knowledge, and CORE Spying evidence-state labels.
 - [ ] Add volcano construction choreography timeline tied to a fixture task graph.
 - [x] Keep the neural-network lesson separate; do not imply it controls Hermit's body.
 - [x] Assemble Pages as a validated static artifact with documentation and deploy only from development pushes or manual runs.
