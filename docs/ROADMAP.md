@@ -79,6 +79,8 @@ This roadmap distinguishes the domain vision from current executable evidence.
 - [ ] Add volcano construction choreography timeline tied to a fixture task graph.
 - [x] Keep the neural-network lesson separate; do not imply it controls Hermit's body.
 - [x] Assemble Pages as a validated static artifact with documentation and deploy only from development pushes or manual runs.
+- [x] Compare Hermit and GUI Pages workflow deployment mechanics and record the pre-step failure evidence.
+- [ ] Identify and resolve the Hermit-specific Pages deployment job admission failure; verify a completed deployment.
 
 ## Definition of done for an embodied vertical slice
 
