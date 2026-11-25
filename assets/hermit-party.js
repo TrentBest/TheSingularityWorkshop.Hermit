@@ -1,43 +1,28 @@
-import {
-  createSurpsObservationAdapter,
-  createParticipantRoleContext
-} from "../src/surps-observation.js";
+import { createSurpsObservationAdapter } from "../src/surps-observation.js";
+import { createSurpsRoleContext } from "../src/surps-role-context.js";
 
-const sessionFixture = {
-  sourceId: "surps.microbundle.core.spying",
-  sourceVersion: "0.1.0",
-  sessionId: "embassy-reception",
-  revision: 12,
-  activeCharacterId: "player",
-  participants: [
-    {
-      id: "player", name: "Mara", role: "player-character",
-      condition: "Ready", location: "Embassy reception",
-      knownFacts: [
-        { id: "player-observed-cufflink", state: "Observed", text: "A courier wears a silver cufflink.", source: "player-observation-1" }
-      ]
-    },
-    {
-      id: "companion", name: "Ivo", role: "companion",
-      condition: "Uninjured", location: "Kitchen entrance",
-      knownFacts: [
-        { id: "companion-contact", state: "Reported", text: "The kitchen contact agreed to meet.", source: "companion-conversation-2" }
-      ]
-    },
-    {
-      id: "courier", name: "The courier", role: "npc",
-      condition: "Alert", location: "West gallery",
-      knownFacts: [
-        { id: "courier-private-intent", state: "Claimed", text: "The courier intends to use the west service exit.", source: "courier-private-intent" }
-      ]
-    }
-  ]
-};
+async function loadJson(path) {
+  const response = await fetch(new URL(path, import.meta.url), { cache: "no-store" });
+  if (!response.ok) throw new Error(`Unable to load ${path}: ${response.status}`);
+  return response.json();
+}
 
+const [sessionFixture, profileDocument] = await Promise.all([
+  loadJson("./embassy-reception-session.fixture.json"),
+  loadJson("./embassy-reception-role-profiles.json")
+]);
+const profiles = new Map(profileDocument.profiles.map(profile => [profile.participantId, profile]));
 const host = createSurpsObservationAdapter({
   readSession: async requestedSessionId => {
     if (requestedSessionId !== sessionFixture.sessionId) throw new Error("Unknown session.");
-    return structuredClone(sessionFixture);
+    return {
+      sourceId: sessionFixture.sourceId,
+      sourceVersion: sessionFixture.sourceVersion,
+      sessionId: sessionFixture.sessionId,
+      revision: sessionFixture.revision,
+      activeCharacterId: sessionFixture.activeCharacterId,
+      participants: structuredClone(sessionFixture.participants)
+    };
   }
 });
 
@@ -46,6 +31,7 @@ let selectedParticipantId = sessionFixture.activeCharacterId;
 let observation;
 
 function setSelected(id) {
+  if (!profiles.has(id)) return;
   selectedParticipantId = id;
   document.querySelectorAll("[data-party-member]").forEach(button => {
     button.setAttribute("aria-pressed", String(button.dataset.partyMember === id));
@@ -54,8 +40,6 @@ function setSelected(id) {
 
 async function refreshObservation() {
   observation = await host.observe(sessionFixture.sessionId);
-  $("hermit-party-provenance").textContent =
-    `Selected content: ${observation.source.id} · ${observation.source.version} · Session revision ${observation.revision}`;
 }
 
 document.querySelectorAll("[data-party-member]").forEach(button => {
@@ -65,28 +49,48 @@ document.querySelectorAll("[data-party-member]").forEach(button => {
 $("party-ask").addEventListener("click", async () => {
   const ask = $("party-ask");
   ask.disabled = true;
-  $("hermit-party-response").textContent = "Let me check what this person actually knows…";
+  $("hermit-party-response").textContent = "Hermit is selecting a bounded role context…";
   try {
     await refreshObservation();
-    const context = createParticipantRoleContext(observation, selectedParticipantId);
+    const profile = profiles.get(selectedParticipantId);
+    if (!profile) throw new Error("No role profile is registered for this participant.");
+    const context = createSurpsRoleContext(observation, profile);
     const { participant } = context;
+    const role = context.profile;
     const facts = participant.knownFacts;
-    const detail = facts.length
-      ? facts.map(fact => `${fact.state}: ${fact.text}`).join(" ")
-      : "I don't have any recorded knowledge for them in this observation.";
-    $("hermit-party-response").textContent =
-      participant.role === "npc"
-        ? `${participant.name} knows: ${detail}`
-        : `${participant.name} can tell us: ${detail}`;
+    const knowledge = facts.length
+      ? facts.map(fact => `${fact.state}: ${fact.text}`).join("\n")
+      : "No knowledge has been admitted to this role context.";
+
+    const sections = [
+      `Hermit · ${role.mode} · ${participant.name}`,
+      `Voice: ${role.voiceGuidance}`,
+      `Motives: ${role.motives.join("; ") || "None declared"}`,
+      `Goals: ${role.goals.join("; ") || "None declared"}`,
+      `Scoped knowledge:\n${knowledge}`
+    ];
+    if (role.exampleLine) {
+      sections.push(`Deterministic sample portrayal (not LLM-generated): “${role.exampleLine}”`);
+    }
+    $("hermit-party-response").textContent = sections.join("\n\n");
+    $("hermit-party-provenance").textContent =
+      `Agent ${context.agent.id} · Profile ${role.id}@${role.version} · ` +
+      `${role.source.repository}/${role.source.path} · ` +
+      `Content ${context.session.selectedContent.id}@${context.session.selectedContent.version} · ` +
+      `Session ${context.session.id} revision ${context.session.revision}`;
   } catch {
     $("hermit-party-response").textContent =
-      "I couldn't verify this participant's context. I won't guess.";
+      "I couldn't verify this participant's role context. I won't guess or blend another participant's knowledge.";
   } finally {
     ask.disabled = false;
   }
 });
 
-refreshObservation().catch(() => {
+refreshObservation().then(() => {
+  $("hermit-party-provenance").textContent =
+    `Synthetic host fixture · ${observation.source.id}@${observation.source.version} · ` +
+    `Session ${observation.sessionId} revision ${observation.revision}`;
+}).catch(() => {
   $("hermit-party-response").textContent =
     "I couldn't load the session observation. I won't invent what anyone knows.";
 });
