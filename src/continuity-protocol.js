@@ -44,7 +44,7 @@ function cloneSafe(value, label, seen = new Set()) {
     }
   } else {
     assertPlainRecord(value, label);
-    result = Object.create(null);
+    result = {};
     for (const key of Reflect.ownKeys(value)) {
       if (typeof key !== "string" || FORBIDDEN_KEYS.has(key)) {
         fail("INVALID_PAYLOAD", `${label} contains an unsupported property name.`);
