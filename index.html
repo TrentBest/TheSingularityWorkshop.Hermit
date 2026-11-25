@@ -146,6 +146,26 @@
     <p><strong>Boundary:</strong> this is a deterministic browser-hosted environment with fake objects and local capability adapters. It is not connected to a live model, physical robot, GPU motion system, or your computer's files. Dragging selects; it does not bypass Hermit's action and approval gates.</p>
   </section>
 
+  <section id="voice-interface" class="panel" aria-labelledby="voice-interface-title">
+    <div class="eyebrow">Voice interface · Intent becomes interaction</div>
+    <h2 id="voice-interface-title">Speak with Hermit</h2>
+    <p>Ask Hermit to inspect something or move it to the workbench. Speech output uses the host voice engine. Recognition is optional and detected at runtime; typing remains available when this browser does not expose a recognizer.</p>
+    <div class="buttons">
+      <button id="voice-speak" type="button">Hear Hermit</button>
+      <button id="voice-stop" type="button">Stop speaking</button>
+      <button id="voice-listen" type="button">Listen</button>
+      <button id="voice-stop-listening" type="button">Stop listening</button>
+    </div>
+    <label for="voice-request">What would you like Hermit to do?</label>
+    <input id="voice-request" type="text" maxlength="4000" placeholder="Inspect the glass vessel" autocomplete="off">
+    <div class="buttons">
+      <button id="voice-submit" type="button">Ask Hermit</button>
+    </div>
+    <p id="voice-interim" role="status" aria-live="polite">Voice transcript will appear here.</p>
+    <p id="voice-status" class="scene-status" role="status" aria-live="polite">Preparing voice adapters…</p>
+    <p><strong>Safety:</strong> inspection is read-only. Moving an object only prepares the request; you must still approve the world-changing action in the host interface. This page uses a small deterministic command grammar, not a live language model.</p>
+  </section>
+
   <section id="domain-map" class="panel" aria-labelledby="domain-map-title">
     <div class="eyebrow">Architecture map · Follow the authority</div>
     <h2 id="domain-map-title">How Hermit works beneath the experience</h2>
@@ -254,6 +274,7 @@
   </footer>
 </main>
 <script type="module" src="./assets/hermit-playground.js"></script>
+<script type="module" src="./assets/hermit-voice.js"></script>
 <script type="module" src="./assets/neural-network-demo.js"></script>
 </body>
 </html>
