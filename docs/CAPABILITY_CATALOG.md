@@ -33,9 +33,10 @@ Hermit needs to discover what the current shell can actually present and do. A b
 - `validateCapabilityCatalog(catalog)` — validates version 1, stable unique IDs, bounded descriptions/examples, risk and approval metadata, optional scalar-only input schemas, and presentation hints. The returned snapshot is frozen.
 - `discoverCapabilities(catalog, shell)` — returns only entries declared for the active shell.
 - `findCapability(catalog, shell, id)` — resolves an ID only within that shell.
+- `validateCapabilityInput(catalog, shell, id, input)` — validates untrusted arguments against the selected capability's declared schema, rejects unknown/missing properties, accessors, symbols, wrong scalar types, bounds and enum violations, then returns a detached frozen snapshot.
 - `describeCapabilities(catalog, shell)` — produces a presentation-safe description for discovery UI.
 
-The schema is intentionally a small supported subset, not a general JSON Schema engine. Unknown fields and schema keywords fail closed. Catalogs are bounded to 64 entries; examples to 8 per entry; input properties to 32. Capability descriptions contain no handler, callback, URL, script, or executable payload.
+The schema is intentionally a small supported subset, not a general JSON Schema engine. `validateCapabilityInput` is the argument gate before a trusted host adapter is called; it is not an authorization decision. Unknown fields and schema keywords fail closed. Catalogs are bounded to 64 entries; examples to 8 per entry; input properties to 32. Argument validation accepts only own data properties and returns a frozen copy so host adapters do not receive the caller's mutable object. Capability descriptions contain no handler, callback, URL, script, or executable payload.
 
 ## Authority boundary
 
