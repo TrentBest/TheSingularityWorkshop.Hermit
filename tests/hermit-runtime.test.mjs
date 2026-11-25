@@ -506,6 +506,7 @@ test("resumes a ready checkpoint from its saved observation, outcomes and cursor
     outcomes: [{ step: 1, capabilityId: "inspect-item", result: { inspected: true }, verified: true }],
     pendingAction: null
   };
+  values.set(seed.taskId, JSON.stringify({ ...seed, revision: 3 }));
   await repository.save(seed, { expectedRevision: 3 });
   const runtime = new HermitRuntime({ registry: new CapabilityRegistry(), policy: () => "allow" });
   let observed = false;
@@ -627,6 +628,7 @@ test("resumed checkpoint can complete when its cursor equals the action budget",
     taskId: "resume-budget-complete", task: "Finish the compass.", revision: 3,
     phase: "ready", nextStep: 2, observation: { finished: true }, outcomes: [], pendingAction: null
   };
+  values.set(seed.taskId, JSON.stringify({ ...seed, revision: 2 }));
   await repository.save(seed, { expectedRevision: 2 });
   const runtime = new HermitRuntime({ registry: new CapabilityRegistry(), policy: () => "allow" });
   let plannedStep;
@@ -659,6 +661,7 @@ test("a smaller resume budget does not terminalize a ready checkpoint", async ()
     taskId: "resume-budget-preserve", task: "Continue the compass.", revision: 5,
     phase: "ready", nextStep: 2, observation: { progress: 2 }, outcomes: [], pendingAction: null
   };
+  values.set(seed.taskId, JSON.stringify({ ...seed, revision: 4 }));
   await repository.save(seed, { expectedRevision: 4 });
   const runtime = new HermitRuntime({ registry: new CapabilityRegistry(), policy: () => "allow" });
   const response = await runtime.executeLoop({
