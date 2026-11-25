@@ -44,8 +44,9 @@ test("read-only capability is authorized before the trusted host handler runs", 
     catalog: catalog(),
     shell: "browser",
     handlers: {
-      "scene.inspect": async ({ input, approvalGranted }) => {
+      "scene.inspect": async ({ input, approvalGranted, context }) => {
         order.push("handler");
+        assert.equal(context, undefined);
         assert.equal(approvalGranted, false);
         return { objectId: input.objectId, observed: true };
       }
@@ -58,7 +59,7 @@ test("read-only capability is authorized before the trusted host handler runs", 
     }
   });
 
-  const result = await dispatcher.invoke("scene.inspect", { objectId: "vessel-1" });
+  const result = await dispatcher.invoke("scene.inspect", { objectId: "vessel-1" }, { allowed: true, admin: true });
   assert.deepEqual(order, ["authorize", "handler"]);
   assert.deepEqual(result, {
     status: "completed",
