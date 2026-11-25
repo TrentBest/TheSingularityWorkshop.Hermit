@@ -1,6 +1,7 @@
 import { createHermitPlayground } from "../src/hermit-playground.js";
 
 const playground = createHermitPlayground();
+window.hermitCapabilityCatalog = playground.capabilityCatalog();
 const $ = id => document.getElementById(id);
 let selectedObjectId = "compass";
 let busy = false;
