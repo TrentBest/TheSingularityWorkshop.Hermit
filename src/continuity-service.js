@@ -80,11 +80,7 @@ export function createContinuityService({ authenticate, authorizeDevice, store }
         store.readState(principal.ownerId),
         store.readChanges(principal.ownerId, request.cursor, request.limit)
       ]);
-      assertOwnerRecord(state, principal.ownerId, "State adapter");
-      if (!Number.isSafeInteger(state.revision) || state.revision < 0 ||
-          !state.values || typeof state.values !== "object" || Array.isArray(state.values)) {
-        serviceFail("INVALID_STORE_RESPONSE", "State adapter returned an invalid shared-state record.");
-      }
+      const safeState = validateStateRecord(state, principal.ownerId);
       const page = validateChangePage(rawPage, principal.ownerId);
       if (page.changes.length > request.limit) {
         serviceFail("INVALID_STORE_RESPONSE", "Change adapter returned more entries than requested.");
@@ -93,8 +89,8 @@ export function createContinuityService({ authenticate, authorizeDevice, store }
         schemaVersion: 1,
         ownerId: principal.ownerId,
         state: Object.freeze({
-          revision: state.revision,
-          values: state.values
+          revision: safeState.revision,
+          values: safeState.values
         }),
         changes: page.changes,
         nextCursor: page.nextCursor
@@ -110,10 +106,7 @@ export function createContinuityService({ authenticate, authorizeDevice, store }
 
   async function handleStateWrite({ context, body }) {
     try {
-      const principal = await authenticate(context);
-      if (!principal || typeof principal.ownerId !== "string" || principal.ownerId.length === 0) {
-        serviceFail("UNAUTHENTICATED", "A trusted authenticated owner principal is required.");
-      }
+      const principal = await authenticatedPrincipal(context);
       const request = validateStateWrite(body, principal);
       let allowed;
       try {
@@ -129,10 +122,11 @@ export function createContinuityService({ authenticate, authorizeDevice, store }
       );
       if (result === false) serviceFail("STALE_REVISION", "Shared state changed; reload and reconcile before retrying.");
       assertOwnerRecord(result, principal.ownerId, "State write adapter");
-      if (!Number.isSafeInteger(result.revision) || result.revision !== request.baseRevision + 1) {
+      const safeResult = validateStateRecord(result, principal.ownerId);
+      if (safeResult.revision !== request.baseRevision + 1) {
         serviceFail("INVALID_STORE_RESPONSE", "State write adapter returned an invalid revision.");
       }
-      return Object.freeze({ ownerId: principal.ownerId, revision: result.revision });
+      return Object.freeze({ ownerId: principal.ownerId, revision: safeResult.revision });
     } catch (error) {
       if (error instanceof ContinuityServiceError) throw error;
       if (error instanceof ContinuityProtocolError) {
