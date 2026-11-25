@@ -81,13 +81,17 @@ export function createSurpsObservation(value = {}) {
     }
     const factIds = new Set();
     const knownFacts = record.knownFacts.map((fact, factIndex) => {
-      const entry = readRecord(fact, ["id", "text", "source"], ["id", "text", "source"],
+      const entry = readRecord(fact, ["id", "state", "text", "source"], ["id", "state", "text", "source"],
         `participants[${index}].knownFacts[${factIndex}]`);
       const factId = boundedString(entry.id, MAX_ID_LENGTH, "fact.id", /^[a-zA-Z0-9][a-zA-Z0-9._:-]*$/);
       if (factIds.has(factId)) fail(`duplicate knowledge identity: ${factId}.`);
       factIds.add(factId);
+      if (!["Observed", "Inferred", "Claimed", "Verified", "Reported"].includes(entry.state)) {
+        fail("fact.state must be an allowed information/evidence state.");
+      }
       return {
         id: factId,
+        state: entry.state,
         text: boundedString(entry.text, MAX_TEXT_LENGTH, "fact.text"),
         source: boundedString(entry.source, MAX_ID_LENGTH, "fact.source")
       };
