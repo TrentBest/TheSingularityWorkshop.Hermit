@@ -19,7 +19,7 @@ const session = {
       condition: "Ready",
       location: "Embassy reception",
       knownFacts: [
-        { id: "player-observed-cufflink", text: "A courier wears a silver cufflink.", source: "player-observation-1" }
+        { id: "player-observed-cufflink", state: "Observed", text: "A courier wears a silver cufflink.", source: "player-observation-1" }
       ]
     },
     {
@@ -29,7 +29,7 @@ const session = {
       condition: "Uninjured",
       location: "Kitchen entrance",
       knownFacts: [
-        { id: "companion-contact", text: "The kitchen contact agreed to meet.", source: "companion-conversation-2" }
+        { id: "companion-contact", state: "Reported", text: "The kitchen contact agreed to meet.", source: "companion-conversation-2" }
       ]
     },
     {
@@ -39,7 +39,7 @@ const session = {
       condition: "Alert",
       location: "West gallery",
       knownFacts: [
-        { id: "courier-secret", text: "The courier intends to use the west service exit.", source: "courier-private-intent" }
+        { id: "courier-secret", state: "Claimed", text: "The courier intends to use the west service exit.", source: "courier-private-intent" }
       ]
     }
   ]
