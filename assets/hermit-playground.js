@@ -173,7 +173,8 @@ $("reset-scene").addEventListener("click", async () => {
   window.location.reload();
 });
 
-refresh().then(() => {
+window.hermitWorldReady = refresh().then(() => {
   renderTrace([]);
   setStatus("Environment ready. Select or drag an object to the interaction pad.");
+  return window.hermitWorldSnapshot;
 });
