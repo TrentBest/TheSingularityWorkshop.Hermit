@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   createSpeechRecognitionAdapter,
   createSpeechSynthesisAdapter,
+  describePlaygroundCapabilities,
   resolvePlaygroundVoiceIntent,
   VoiceAdapterError
 } from "../src/voice.js";
@@ -123,4 +124,25 @@ test("voice intent grammar fails closed for unknown or unsupported requests", ()
   assert.equal(resolvePlaygroundVoiceIntent("delete the glass vessel", objects).status, "unsupported");
   assert.equal(resolvePlaygroundVoiceIntent("inspect the moon", objects).status, "not-found");
   assert.throws(() => resolvePlaygroundVoiceIntent("", objects), error => error.code === "INVALID_TEXT");
+});
+
+
+test("Hermit explains available capabilities without executing or authorizing them", () => {
+  const objects = [
+    { id: "glass", name: "Glass vessel" },
+    { id: "compass", name: "Brass compass" }
+  ];
+  const capabilities = describePlaygroundCapabilities(objects);
+  assert.equal(capabilities.length, 2);
+  assert.equal(capabilities[0].available, true);
+  assert.equal(capabilities[0].approvalRequired, false);
+  assert.equal(capabilities[1].approvalRequired, true);
+
+  for (const request of ["help", "What can you do?", "How can I?", "show me your capabilities"]) {
+    const result = resolvePlaygroundVoiceIntent(request, objects);
+    assert.equal(result.status, "discovery");
+    assert.match(result.message, /read-only/);
+    assert.match(result.message, /explicit approval/);
+    assert.equal(result.capabilities.length, 2);
+  }
 });
