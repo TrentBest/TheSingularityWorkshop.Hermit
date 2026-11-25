@@ -5,7 +5,8 @@ import {
   describeCapabilities,
   discoverCapabilities,
   findCapability,
-  validateCapabilityCatalog
+  validateCapabilityCatalog,
+  validateCapabilityInput
 } from "../src/capability-catalog.js";
 
 const catalog = () => ({
@@ -122,4 +123,39 @@ test("catalog rejects invalid shell, risk, approval and oversized examples", () 
   const tooMany = catalog();
   tooMany.capabilities[0].examples = Array(9).fill("Do the thing");
   assert.throws(() => validateCapabilityCatalog(tooMany), /at most 8/);
+});
+
+test("capability arguments are validated, detached and frozen before host handoff", () => {
+  const value = catalog();
+  const input = { objectId: "vessel-1" };
+  const validated = validateCapabilityInput(value, "browser", "scene.inspect", input);
+  assert.deepEqual(validated, input);
+  assert.notEqual(validated, input);
+  assert.equal(Object.isFrozen(validated), true);
+  assert.throws(() => validateCapabilityInput(value, "browser", "scene.inspect", {}), /missing required/);
+  assert.throws(() => validateCapabilityInput(value, "browser", "scene.inspect", { objectId: "x".repeat(81) }), /maximum length/);
+  assert.throws(() => validateCapabilityInput(value, "browser", "scene.inspect", { objectId: "vessel-1", extra: true }), /undeclared property/);
+  assert.throws(() => validateCapabilityInput(value, "browser", "scene.move", { objectId: "vessel-1" }), /not advertised/);
+});
+
+test("capability arguments enforce scalar types, numeric bounds and enums", () => {
+  const value = catalog();
+  value.capabilities[0].inputSchema.properties.count = { type: "integer", minimum: 1, maximum: 3 };
+  value.capabilities[0].inputSchema.properties.enabled = { type: "boolean" };
+  value.capabilities[0].inputSchema.properties.mode = { type: "string", enum: ["safe", "preview"] };
+  const input = { objectId: "vessel-1", count: 2, enabled: false, mode: "safe" };
+  assert.deepEqual(validateCapabilityInput(value, "browser", "scene.inspect", input), input);
+  assert.throws(() => validateCapabilityInput(value, "browser", "scene.inspect", { ...input, count: 4 }), /numeric bounds/);
+  assert.throws(() => validateCapabilityInput(value, "browser", "scene.inspect", { ...input, count: 1.5 }), /wrong type/);
+  assert.throws(() => validateCapabilityInput(value, "browser", "scene.inspect", { ...input, mode: "execute" }), /enum value/);
+  assert.throws(() => validateCapabilityInput(value, "browser", "scene.inspect", { ...input, enabled: 0 }), /wrong type/);
+});
+
+test("capability arguments reject accessors and symbols without invoking them", () => {
+  const value = catalog();
+  const accessor = {};
+  Object.defineProperty(accessor, "objectId", { get() { throw new Error("must not execute"); } });
+  assert.throws(() => validateCapabilityInput(value, "browser", "scene.inspect", accessor), /accessors/);
+  const symbolic = { objectId: "vessel-1", [Symbol("hidden")]: true };
+  assert.throws(() => validateCapabilityInput(value, "browser", "scene.inspect", symbolic), /symbol keys/);
 });
