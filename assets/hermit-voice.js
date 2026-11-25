@@ -55,6 +55,22 @@ async function submitIntent(value) {
   setVoiceStatus(intent.message);
   if (intent.objectId) chooseObject(intent.objectId);
 
+  if (intent.status === "discovery") {
+    const list = $("voice-capabilities");
+    list.replaceChildren();
+    for (const capability of intent.capabilities) {
+      const item = document.createElement("li");
+      const title = document.createElement("strong");
+      const detail = document.createElement("span");
+      title.textContent = capability.title + (capability.approvalRequired ? " · approval required" : " · read-only");
+      detail.textContent = capability.description + " Example: “" + capability.example + "”.";
+      item.append(title, document.createTextNode(" — "), detail);
+      list.append(item);
+    }
+    await speak(intent.message);
+    return;
+  }
+
   if (intent.status === "ready") {
     await speak(intent.message);
     $("inspect-button").click();
