@@ -170,4 +170,16 @@ test("voice capability discovery uses the supplied shell catalog, not a global f
 
   const browser = resolvePlaygroundVoiceIntent("help", objects, desktopCatalog, "browser");
   assert.equal(browser.capabilities.length, 0);
+  const unavailable = resolvePlaygroundVoiceIntent("inspect the glass vessel", objects, desktopCatalog, "desktop");
+  assert.equal(unavailable.status, "unsupported");
+
+  const gatedCatalog = {
+    version: 1,
+    capabilities: [{
+      id: "inspect-object", shell: "desktop", title: "Inspect", description: "Inspect with host approval.",
+      risk: "consequential", approvalRequired: true, examples: ["Inspect the glass vessel"]
+    }]
+  };
+  const gated = resolvePlaygroundVoiceIntent("inspect the glass vessel", objects, gatedCatalog, "desktop");
+  assert.equal(gated.status, "approval-required");
 });
