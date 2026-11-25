@@ -24,7 +24,7 @@ jobs:
       - name: Check out the default branch
         uses: actions/checkout@v7
         with:
-          ref: ${{ github.event_name == 'delete' && github.event.repository.default_branch || github.ref }}
+          ref: ${{ github.event_name == 'delete' && github.event.repository.default_branch || github.ref_name }}
           fetch-depth: 0
 
       - name: Evaluate every repository branch and update the living badge
@@ -167,6 +167,8 @@ jobs:
             git add assets/sith-policy.svg assets/sith-policy.json
             if ! git diff --cached --quiet; then
               git commit -m "chore: refresh Sith policy evidence"
+              git fetch origin "$target_branch"
+              git rebase "origin/$target_branch"
               git push origin "HEAD:$target_branch"
             fi
           else
