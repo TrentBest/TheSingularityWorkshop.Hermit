@@ -54,12 +54,12 @@ function freezeDeep(value) {
  */
 export function createSurpsObservation(value = {}) {
   const root = readRecord(value,
-    ["providerId", "providerVersion", "sessionId", "revision", "activeCharacterId", "participants"],
-    ["providerId", "providerVersion", "sessionId", "revision", "activeCharacterId", "participants"],
+    ["sourceId", "sourceVersion", "sessionId", "revision", "activeCharacterId", "participants"],
+    ["sourceId", "sourceVersion", "sessionId", "revision", "activeCharacterId", "participants"],
     "root");
 
-  const providerId = boundedString(root.providerId, MAX_ID_LENGTH, "providerId", /^[a-zA-Z0-9][a-zA-Z0-9._:-]*$/);
-  const providerVersion = boundedString(root.providerVersion, 64, "providerVersion");
+  const sourceId = boundedString(root.sourceId, MAX_ID_LENGTH, "sourceId", /^[a-zA-Z0-9][a-zA-Z0-9._:-]*$/);
+  const sourceVersion = boundedString(root.sourceVersion, 64, "sourceVersion");
   const sessionId = boundedString(root.sessionId, MAX_ID_LENGTH, "sessionId", /^[a-zA-Z0-9][a-zA-Z0-9._:-]*$/);
   if (!Number.isSafeInteger(root.revision) || root.revision < 0) fail("revision must be a non-negative safe integer.");
   if (!Array.isArray(root.participants) || root.participants.length < 1 || root.participants.length > MAX_PARTICIPANTS) {
@@ -108,7 +108,7 @@ export function createSurpsObservation(value = {}) {
 
   return freezeDeep({
     schemaVersion: SURPS_OBSERVATION_SCHEMA_VERSION,
-    provider: { id: providerId, version: providerVersion },
+    provider: { id: sourceId, version: sourceVersion },
     sessionId,
     revision: root.revision,
     activeCharacterId,
@@ -118,16 +118,16 @@ export function createSurpsObservation(value = {}) {
 
 export function validateSurpsObservation(value) {
   const root = readRecord(value,
-    ["schemaVersion", "provider", "sessionId", "revision", "activeCharacterId", "participants"],
+    ["schemaVersion", "source", "sessionId", "revision", "activeCharacterId", "participants"],
     ["schemaVersion", "provider", "sessionId", "revision", "activeCharacterId", "participants"],
     "snapshot");
   if (root.schemaVersion !== SURPS_OBSERVATION_SCHEMA_VERSION) {
     fail(`unsupported schemaVersion: ${root.schemaVersion}.`);
   }
-  const provider = readRecord(root.provider, ["id", "version"], ["id", "version"], "provider");
+  const provider = readRecord(root.provider, ["id", "version"], ["id", "version"], "source");
   return createSurpsObservation({
-    providerId: provider.id,
-    providerVersion: provider.version,
+    sourceId: provider.id,
+    sourceVersion: provider.version,
     sessionId: root.sessionId,
     revision: root.revision,
     activeCharacterId: root.activeCharacterId,
@@ -169,7 +169,7 @@ export function createParticipantRoleContext(observation, participantId) {
   if (!participant) fail("participant identity is not present in this observation.");
   return freezeDeep({
     schemaVersion: 1,
-    provider: snapshot.provider,
+    source: snapshot.source,
     sessionId: snapshot.sessionId,
     observedRevision: snapshot.revision,
     participant: structuredClone(participant)
