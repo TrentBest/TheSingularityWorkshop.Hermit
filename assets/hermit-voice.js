@@ -137,6 +137,10 @@ $("voice-stop-listening").addEventListener("click", () => {
   setVoiceStatus("Speech recognition stopped.");
 });
 
+$("voice-help-example").addEventListener("click", () => {
+  $("voice-request").value = "What can you do?";
+  void submitIntent($("voice-request").value);
+});
 $("voice-submit").addEventListener("click", () => {
   void submitIntent($("voice-request").value);
 });
