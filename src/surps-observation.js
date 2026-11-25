@@ -148,7 +148,7 @@ export function createSurpsObservationAdapter({ readSession } = {}) {
       if (signal?.aborted) throw signal.reason ?? new Error("Observation cancelled.");
       const raw = await readSession(sessionId, { signal });
       if (signal?.aborted) throw signal.reason ?? new Error("Observation cancelled.");
-      const snapshot = validateSurpsObservation(raw);
+      const snapshot = createSurpsObservation(raw);
       if (snapshot.sessionId !== sessionId) fail("host returned a different session identity.");
       const previous = latestRevisionBySession.get(sessionId);
       if (previous !== undefined && snapshot.revision < previous) fail("session revision moved backwards.");
