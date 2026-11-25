@@ -59,6 +59,9 @@ test("Pages exposes speech output, optional recognition, and a typed intent fall
   assert.match(page, /id="voice-speak"/);
   assert.match(page, /id="voice-listen"/);
   assert.match(page, /id="voice-request"/);
+  assert.match(page, /id="voice-capabilities"/);
+  assert.match(page, /id="voice-help-example"/);
+  assert.match(voice, /status === "discovery"/);
   assert.match(page, /<script type="module" src="\.\/assets\/hermit-voice\.js"><\/script>/);
   assert.match(playground, /approvalGranted/);
 });
