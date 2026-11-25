@@ -244,7 +244,7 @@ export function resolvePlaygroundVoiceIntent(value, objects = [], catalog = PLAY
     return {
       status: "discovery",
       capabilities,
-      message: capabilities.map(item => item.title + ": " + item.description + " Try: " + item.example + ".").join(" ")
+      message: capabilities.map(item => item.title + (item.approvalRequired ? " (approval required): " : " (read-only): ") + item.description + " Try: " + item.example + ".").join(" ")
     };
   }
   const move = text.match(/^move (?:the )?(.+?) to (?:the )?workbench$/);
