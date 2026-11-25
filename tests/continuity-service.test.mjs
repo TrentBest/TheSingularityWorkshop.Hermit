@@ -58,6 +58,7 @@ test("sync authenticates before validating owner scope and returns owner-scoped 
   const result = await service.handleSync({ context, body: { ...body, cursor: null, limit: 10 } });
   assert.equal(result.ownerId, "owner-1");
   assert.equal(result.nextCursor, "cursor-1");
+  assert.deepEqual(result.state, { revision: 0, values: {} });
   assert.deepEqual(calls.map(call => call[0]), ["readState", "readChanges"]);
   await code("UNAUTHENTICATED", () =>
     service.handleSync({ context: {}, body: { ...body, ownerId: "owner-1" } }));
@@ -130,4 +131,16 @@ test("adapter failures are normalized without exposing storage internals", async
     service.handleSync({ context, body: { ...body, cursor: null } }),
     error => error.code === "STORE_FAILURE" && !error.message.includes("secret")
   );
+});
+
+test("host authorization failures are distinguished from storage failures", async () => {
+  const { store } = fixture();
+  const service = createContinuityService({
+    authenticate: async () => ({ ownerId: "owner-1" }),
+    authorizeDevice: async () => { throw new Error("revocation lookup unavailable"); },
+    store
+  });
+  await code("DEVICE_UNAUTHORIZED", () => service.handleStateWrite({
+    context, body: { ...body, baseRevision: 0, values: {} }
+  }));
 });
