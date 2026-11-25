@@ -146,3 +146,28 @@ test("Hermit explains available capabilities without executing or authorizing th
     assert.equal(result.capabilities.length, 2);
   }
 });
+
+
+test("voice capability discovery uses the supplied shell catalog, not a global fixture list", () => {
+  const desktopCatalog = {
+    version: 1,
+    capabilities: [{
+      id: "desktop.open-project",
+      shell: "desktop",
+      title: "Open a project",
+      description: "Open a project in the current desktop workspace.",
+      risk: "read-only",
+      approvalRequired: false,
+      examples: ["Open the Hermit project"]
+    }]
+  };
+  const objects = [{ id: "glass", name: "Glass vessel" }];
+  const desktop = resolvePlaygroundVoiceIntent("What can you do?", objects, desktopCatalog, "desktop");
+  assert.equal(desktop.status, "discovery");
+  assert.equal(desktop.capabilities.length, 1);
+  assert.equal(desktop.capabilities[0].id, "desktop.open-project");
+  assert.match(desktop.message, /read-only/);
+
+  const browser = resolvePlaygroundVoiceIntent("help", objects, desktopCatalog, "browser");
+  assert.equal(browser.capabilities.length, 0);
+});
