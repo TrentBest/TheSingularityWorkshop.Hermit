@@ -65,3 +65,13 @@ test("shared state snapshots cannot mutate the continuity authority", async () =
   assert.throws(() => { snapshot.values.nested.value = "tampered"; }, TypeError);
   assert.equal((await shell.readState()).values.nested.value, "authoritative");
 });
+
+test("shared records reject non-JSON and oversized payloads", async () => {
+  const store = createInMemoryContinuityStore({ ownerId: "owner-1", hermitId: "hermit-1" });
+  const shell = store.createShell({ deviceId: "phone-1", hostType: "web" });
+  const cyclic = {};
+  cyclic.self = cyclic;
+  await assert.rejects(shell.compareAndSwapState(0, cyclic), TypeError);
+  await assert.rejects(shell.compareAndSwapState(0, { value: "x".repeat(65_537) }), TypeError);
+  assert.equal((await shell.readState()).revision, 0);
+});
