@@ -175,3 +175,28 @@ test("authentication adapter failures are normalized consistently for every oper
     context, body: { ...body, eventId: "evt-auth", eventType: "note" }
   }));
 });
+
+test("revocation is rechecked on every operation and blocks storage immediately", async () => {
+  const calls = [];
+  let revoked = false;
+  const store = {
+    async readState(ownerId) { calls.push("read"); return { ownerId, revision: 0, values: {} }; },
+    async readChanges(ownerId) { return { schemaVersion: 1, ownerId, changes: [], nextCursor: "c1" }; },
+    async compareAndSwapState(ownerId, revision) { calls.push("write"); return { ownerId, revision: revision + 1, values: {} }; },
+    async appendEvent(ownerId) { calls.push("append"); return { ownerId, appended: true }; }
+  };
+  const service = createContinuityService({
+    authenticate: async () => ({ ownerId: "owner-1" }),
+    authorizeDevice: async () => !revoked,
+    store
+  });
+  await service.handleSync({ context, body: { ...body, cursor: null } });
+  revoked = true;
+  await code("DEVICE_UNAUTHORIZED", () => service.handleStateWrite({
+    context, body: { ...body, baseRevision: 0, values: {} }
+  }));
+  await code("DEVICE_UNAUTHORIZED", () => service.handleEventAppend({
+    context, body: { ...body, eventId: "evt-revoked", eventType: "note" }
+  }));
+  assert.deepEqual(calls, ["read"]);
+});
