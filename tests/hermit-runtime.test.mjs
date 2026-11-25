@@ -608,3 +608,68 @@ test("rejects task mismatch and terminal checkpoints before observing or plannin
   assert.equal(terminal.error.code, "CHECKPOINT_TERMINAL");
   assert.equal(adapterCalls, 0);
 });
+
+
+test("resumed checkpoint can complete when its cursor equals the action budget", async () => {
+  const { createCheckpointRepository } = await import("../src/checkpoint-repository.js");
+  const values = new Map();
+  const repository = createCheckpointRepository({
+    async read(id) { return values.get(id) ?? null; },
+    async compareAndSwap(id, expected, serialized) {
+      const current = values.get(id);
+      const revision = current ? JSON.parse(current).revision : 0;
+      if (revision !== expected) return false;
+      values.set(id, serialized);
+      return true;
+    }
+  });
+  const seed = {
+    taskId: "resume-budget-complete", task: "Finish the compass.", revision: 3,
+    phase: "ready", nextStep: 2, observation: { finished: true }, outcomes: [], pendingAction: null
+  };
+  await repository.save(seed, { expectedRevision: 2 });
+  const runtime = new HermitRuntime({ registry: new CapabilityRegistry(), policy: () => "allow" });
+  let plannedStep;
+  const response = await runtime.executeLoop({
+    taskId: seed.taskId, checkpointRepository: repository, resume: true,
+    task: seed.task, maxSteps: 2,
+    observe: async () => { throw new Error("must restore checkpoint"); },
+    planner: async ({ step }) => { plannedStep = step; return { done: true, result: { finished: true } }; },
+    verify: async () => ({ verified: true, observation: {} })
+  });
+  assert.equal(response.status, "completed");
+  assert.equal(plannedStep, 2);
+  assert.equal((await repository.load(seed.taskId)).checkpoint.phase, "completed");
+});
+
+test("a smaller resume budget does not terminalize a ready checkpoint", async () => {
+  const { createCheckpointRepository } = await import("../src/checkpoint-repository.js");
+  const values = new Map();
+  const repository = createCheckpointRepository({
+    async read(id) { return values.get(id) ?? null; },
+    async compareAndSwap(id, expected, serialized) {
+      const current = values.get(id);
+      const revision = current ? JSON.parse(current).revision : 0;
+      if (revision !== expected) return false;
+      values.set(id, serialized);
+      return true;
+    }
+  });
+  const seed = {
+    taskId: "resume-budget-preserve", task: "Continue the compass.", revision: 5,
+    phase: "ready", nextStep: 2, observation: { progress: 2 }, outcomes: [], pendingAction: null
+  };
+  await repository.save(seed, { expectedRevision: 4 });
+  const runtime = new HermitRuntime({ registry: new CapabilityRegistry(), policy: () => "allow" });
+  const response = await runtime.executeLoop({
+    taskId: seed.taskId, checkpointRepository: repository, resume: true,
+    task: seed.task, maxSteps: 1,
+    observe: async () => ({}), planner: async () => ({ done: true }),
+    verify: async () => ({ verified: true, observation: {} })
+  });
+  assert.equal(response.status, "failed");
+  assert.equal(response.error.code, "STEP_LIMIT_REACHED");
+  const stored = await repository.load(seed.taskId);
+  assert.equal(stored.checkpoint.phase, "ready");
+  assert.equal(stored.checkpoint.revision, 5);
+});
