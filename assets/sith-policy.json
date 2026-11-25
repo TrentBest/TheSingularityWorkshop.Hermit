@@ -11,7 +11,7 @@
   ],
   "branch_count": 2,
   "status": "COMPLIANT",
-  "evaluated_at": "2026-11-25T05:34:45Z",
-  "workflow_run": "https://github.com/TrentBest/TheSingularityWorkshop.Hermit/actions/runs/45554512752",
-  "triggering_commit": "48a01db43c05a867a8dd75a47f40a86c6075d155"
+  "evaluated_at": "2026-11-25T05:35:07Z",
+  "workflow_run": "https://github.com/TrentBest/TheSingularityWorkshop.Hermit/actions/runs/45554562638",
+  "triggering_commit": "5c3b8dbf5287ae1a752859ab21f19dae82e54e77"
 }
