@@ -32,10 +32,7 @@ export function createSpeechSynthesisAdapter({ synthesis, createUtterance } = {}
   let active = null;
 
   function cancel() {
-    if (!active) {
-      if (supported) synthesis.cancel();
-      return false;
-    }
+    if (!active) return false;
     const current = active;
     active = null;
     current.cleanup();
@@ -180,9 +177,11 @@ export function createSpeechRecognitionAdapter({ recognitionFactory } = {}) {
       recognition.onresult = event => {
         let finalTranscript = "";
         let interimTranscript = "";
+        let combinedTranscript = "";
         for (let index = 0; index < (event.results?.length ?? 0); index += 1) {
           const result = event.results[index];
           const transcript = result?.[0]?.transcript ?? "";
+          combinedTranscript += transcript;
           if (result?.isFinal) finalTranscript += transcript;
           else interimTranscript += transcript;
         }
@@ -191,7 +190,7 @@ export function createSpeechRecognitionAdapter({ recognitionFactory } = {}) {
           options.onInterim?.({
             finalTranscript: latestTranscript,
             interimTranscript: interimTranscript.trim(),
-            transcript: (finalTranscript + " " + interimTranscript).trim()
+            transcript: combinedTranscript.trim()
           });
         } catch { /* observers cannot break recognition */ }
       };
