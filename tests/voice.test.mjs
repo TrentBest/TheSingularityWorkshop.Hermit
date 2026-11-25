@@ -107,7 +107,7 @@ test("voice intent grammar suggests inspection and requires host approval for mo
     { id: "glass", name: "Glass vessel" },
     { id: "compass", name: "Brass compass" }
   ];
-  const inspect = resolvePlaygroundVoiceIntent("Inspect the glass vessel!", objects);
+  const inspect = resolvePlaygroundVoiceIntent("Inspect   the   glass vessel!", objects);
   assert.equal(inspect.status, "ready");
   assert.equal(inspect.capabilityId, "inspect-object");
   assert.equal(inspect.objectId, "glass");
