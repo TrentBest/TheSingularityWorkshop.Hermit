@@ -1,5 +1,6 @@
 import { CapabilityRegistry, HermitRuntime } from "./hermit-runtime.js";
 import { createWorldStateSnapshot } from "./world-state.js";
+import { PLAYGROUND_CAPABILITY_CATALOG } from "./playground-capabilities.js";
 
 const DEFAULT_OBJECTS = [
   { id: "compass", name: "Brass compass", description: "A navigation instrument with a hinged lid and a freely moving needle.", location: "workshop" },
@@ -92,6 +93,7 @@ export function createHermitPlayground({ objects = DEFAULT_OBJECTS, policy } = {
 
   return Object.freeze({
     capabilities: () => registry.list(),
+    capabilityCatalog: () => PLAYGROUND_CAPABILITY_CATALOG,
     snapshot: observe,
     inspect: objectId => run({
       objectId, capabilityId: "inspect-object", arguments: { objectId }
