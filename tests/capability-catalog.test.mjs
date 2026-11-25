@@ -43,6 +43,7 @@ test("catalog validates and freezes declarative capability descriptions", () => 
   const result = validateCapabilityCatalog(catalog());
   assert.equal(Object.isFrozen(result), true);
   assert.equal(Object.isFrozen(result.capabilities[0].inputSchema.properties.objectId), true);
+  assert.equal(Object.isFrozen(result.capabilities[0].examples), true);
   assert.equal(result.capabilities[0].approvalRequired, false);
 });
 
@@ -108,6 +109,10 @@ test("catalog rejects invalid shell, risk, approval and oversized examples", () 
   const noApproval = catalog();
   noApproval.capabilities[0].approvalRequired = "yes";
   assert.throws(() => validateCapabilityCatalog(noApproval), /approvalRequired must be boolean/);
+  const unsafeDisclosure = catalog();
+  unsafeDisclosure.capabilities[0].risk = "external";
+  unsafeDisclosure.capabilities[0].approvalRequired = false;
+  assert.throws(() => validateCapabilityCatalog(unsafeDisclosure), /must declare approvalRequired=true/);
   const tooMany = catalog();
   tooMany.capabilities[0].examples = Array(9).fill("Do the thing");
   assert.throws(() => validateCapabilityCatalog(tooMany), /at most 8/);
