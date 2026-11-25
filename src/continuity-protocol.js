@@ -155,6 +155,18 @@ export function validateStateRecord(input, expectedOwnerId) {
   });
 }
 
+/** Validates an event-append result without trusting adapter object properties. */
+export function validateEventAppendResult(input, expectedOwnerId) {
+  input = boundedRecord(input, "Event append result");
+  if (typeof expectedOwnerId !== "string" || input.ownerId !== expectedOwnerId) {
+    fail("OWNER_MISMATCH", "Event result owner does not match the authenticated account.");
+  }
+  if (typeof input.appended !== "boolean") {
+    fail("INVALID_PAYLOAD", "Event append result must include a boolean appended value.");
+  }
+  return Object.freeze({ ownerId: expectedOwnerId, appended: input.appended });
+}
+
 /** Validates a server change page before a client applies it and advances its cursor. */
 export function validateChangePage(input, expectedOwnerId) {
   input = boundedRecord(input, "Change page");
