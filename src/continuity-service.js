@@ -121,7 +121,6 @@ export function createContinuityService({ authenticate, authorizeDevice, store }
         principal.ownerId, request.baseRevision, request.values
       );
       if (result === false) serviceFail("STALE_REVISION", "Shared state changed; reload and reconcile before retrying.");
-      assertOwnerRecord(result, principal.ownerId, "State write adapter");
       const safeResult = validateStateRecord(result, principal.ownerId);
       if (safeResult.revision !== request.baseRevision + 1) {
         serviceFail("INVALID_STORE_RESPONSE", "State write adapter returned an invalid revision.");
@@ -157,14 +156,11 @@ export function createContinuityService({ authenticate, authorizeDevice, store }
         eventType: request.eventType,
         payload: request.payload
       });
-      if (!result || result.ownerId !== principal.ownerId ||
-          typeof result.appended !== "boolean") {
-        serviceFail("INVALID_STORE_RESPONSE", "Event adapter returned an invalid owner-scoped result.");
-      }
+      const safeResult = validateEventAppendResult(result, principal.ownerId);
       return Object.freeze({
         ownerId: principal.ownerId,
         eventId: request.eventId,
-        appended: result.appended
+        appended: safeResult.appended
       });
     } catch (error) {
       if (error instanceof ContinuityServiceError) throw error;
