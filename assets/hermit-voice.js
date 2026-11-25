@@ -42,6 +42,7 @@ function chooseObject(objectId) {
 }
 
 async function submitIntent(value) {
+  if (window.hermitWorldReady) await window.hermitWorldReady;
   const objects = window.hermitWorldSnapshot?.objects ?? [];
   let intent;
   try {
