@@ -53,7 +53,7 @@ This roadmap distinguishes the domain vision from current executable evidence.
 ## SURPS companion and diegetic experience
 - [x] Specify the Hermit × SURPS ownership boundary, companion roles, diegetic GUI direction, rig-neutral embodiment, Mini/Titan manifestations and retrieval-first Oracle strategy ([SURPS integration contract](SURPS_INTEGRATION.md)).
 - [ ] Map the actual SURPS source types, versions and authoritative operations to a narrow Hermit host adapter.
-- [ ] Add a read-only SURPS session/character/party observation contract with immutable snapshot tests.
+- [x] Add a provider-neutral, read-only SURPS session/participant/knowledge observation contract with immutable snapshot and host-adapter tests ([contract](SURPS_OBSERVATION.md)); canonical SURPS type mapping remains open.
 - [ ] Demonstrate Hermit controlling one companion action in a solo session, with SURPS adjudication and host verification.
 - [ ] Add role-scoped NPC portrayal and a bounded GM facilitation loop.
 - [ ] Build a living SURPS character sheet using GUI semantic state and Renderer/Visualize presentation.
