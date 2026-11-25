@@ -1,5 +1,7 @@
 # Hermit Pages experience
 
+**Site:** [https://trentbest.github.io/TheSingularityWorkshop.Hermit/](https://trentbest.github.io/TheSingularityWorkshop.Hermit/)
+
 The public Pages site is an executable learning surface for Hermit's boundaries, not a mock chat window.
 
 ## Entry experience
