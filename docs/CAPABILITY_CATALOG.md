@@ -41,7 +41,7 @@ The schema is intentionally a small supported subset, not a general JSON Schema 
 
 `available` means the shell advertises the capability, not that the current user or task is authorized to invoke it. The host must independently authenticate the principal, resolve current context, enforce grants and policy, obtain approval when required, validate action arguments, execute through a trusted adapter, and verify the resulting environment state. A catalog's `approvalRequired` and `risk` fields are useful disclosure metadata, not a substitute for host policy. Never execute a handler or trust a permission from catalog data.
 
-The catalog module is currently a tested provider-neutral contract. It is not yet wired to a production shell registry or live Hermit planner. The Pages voice demo still uses its two explicit fixture interactions. Next integration work should inject a host-owned catalog into the shell, render the resulting capability descriptions through GUI, and route selected IDs through the existing policy/approval/execution boundary.
+The catalog module is a tested provider-neutral contract and is now wired to the Pages browser playground through its host-owned fixture catalog in `src/playground-capabilities.js`. Voice discovery reads that shell-provided catalog rather than maintaining a second hard-coded capability list. This is not yet a production shell registry or live Hermit planner integration. Next work should provide equivalent host-owned catalogs to AnyApp and VR shells, render the resulting capability descriptions through GUI, and route selected IDs through the existing policy/approval/execution boundary.
 
 ## Tests
 
