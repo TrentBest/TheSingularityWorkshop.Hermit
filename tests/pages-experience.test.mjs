@@ -7,6 +7,8 @@ const playground = await readFile(new URL("../assets/hermit-playground.js", impo
 const voice = await readFile(new URL("../assets/hermit-voice.js", import.meta.url), "utf8");
 const playgroundCore = await readFile(new URL("../src/hermit-playground.js", import.meta.url), "utf8");
 const catalog = await readFile(new URL("../src/playground-capabilities.js", import.meta.url), "utf8");
+const party = await readFile(new URL("../assets/hermit-party.js", import.meta.url), "utf8");
+const surpsObservation = await readFile(new URL("../src/surps-observation.js", import.meta.url), "utf8");
 
 test("Pages experience introduces Hermit before the learning modules", () => {
   const moniker = page.indexOf("TheSingularityWorkshop.Visualize/development/docs/assets/moniker.svg");
@@ -76,4 +78,16 @@ test("the browser shell supplies its own validated capability catalog to voice d
   assert.match(catalog, /id: "move-object"/);
   assert.match(playground, /window\.hermitCapabilityCatalog = playground\.capabilityCatalog\(\)/);
   assert.match(voice, /window\.hermitCapabilityCatalog/);
+});
+
+test("Hermit presents a diegetic party scene using versioned, participant-scoped context", () => {
+  assert.match(page, /id="party-presence"/);
+  assert.match(page, /id="party-roster"/);
+  assert.match(page, /id="hermit-party-response"/);
+  assert.match(page, /<script type="module" src="\.\/assets\/hermit-party\.js"><\/script>/);
+  assert.match(party, /createSurpsObservationAdapter/);
+  assert.match(party, /createParticipantRoleContext/);
+  assert.match(party, /surps\.microbundle\.core\.spying/);
+  assert.match(surpsObservation, /session revision moved backwards/);
+  assert.match(surpsObservation, /participant's authorized portrayal context/);
 });
