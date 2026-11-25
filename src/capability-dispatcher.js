@@ -74,7 +74,7 @@ export function createCapabilityDispatcher({
   const trustedHandlers = snapshotHandlers(handlers);
 
   return Object.freeze({
-    async invoke(capabilityId, input = {}, context = undefined) {
+    async invoke(capabilityId, input = {}) {
       const capability = validatedCatalog.capabilities.find(item => item.shell === shell && item.id === capabilityId);
       if (!capability) return Object.freeze({ status: "unsupported", capabilityId });
 
@@ -90,7 +90,7 @@ export function createCapabilityDispatcher({
         return Object.freeze({ status: "unavailable", capabilityId, reason: "host-handler-missing" });
       }
 
-      const request = Object.freeze({ capability, input: validatedInput, context });
+      const request = Object.freeze({ capability, input: validatedInput });
       let decision;
       try {
         decision = policyDecision(await authorize(request));
@@ -112,7 +112,6 @@ export function createCapabilityDispatcher({
           approved = (await requestApproval(Object.freeze({
             capability,
             input: validatedInput,
-            context,
             policy: decision
           }))) === true;
         } catch {
@@ -125,7 +124,6 @@ export function createCapabilityDispatcher({
         const result = await handler(Object.freeze({
           capability,
           input: validatedInput,
-          context,
           policy: decision,
           approvalGranted: approvalRequired
         }));
