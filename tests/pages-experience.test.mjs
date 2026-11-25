@@ -11,6 +11,7 @@ const party = await readFile(new URL("../assets/hermit-party.js", import.meta.ur
 const surpsObservation = await readFile(new URL("../src/surps-observation.js", import.meta.url), "utf8");
 const surpsRoleContext = await readFile(new URL("../src/surps-role-context.js", import.meta.url), "utf8");
 const roleProfiles = JSON.parse(await readFile(new URL("../assets/embassy-reception-role-profiles.json", import.meta.url), "utf8"));
+const sessionFixture = JSON.parse(await readFile(new URL("../assets/embassy-reception-session.fixture.json", import.meta.url), "utf8"));
 
 test("Pages experience introduces Hermit before the learning modules", () => {
   const moniker = page.indexOf("TheSingularityWorkshop.Visualize/development/docs/assets/moniker.svg");
