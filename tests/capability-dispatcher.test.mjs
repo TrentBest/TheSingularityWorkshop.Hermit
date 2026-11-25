@@ -260,3 +260,19 @@ test("non-JSON, accessor, cyclic and oversized handler results fail closed", asy
     });
   }
 });
+
+
+test("handler result snapshots accept arrays with double-digit indexes", async () => {
+  const items = Array.from({ length: 24 }, (_, index) => ({ index }));
+  const dispatcher = createCapabilityDispatcher({
+    catalog: catalog(),
+    shell: "browser",
+    handlers: { "scene.inspect": async () => ({ items }) },
+    authorize: async () => ({ allowed: true })
+  });
+  const result = await dispatcher.invoke("scene.inspect", { objectId: "vessel-1" });
+  assert.equal(result.status, "completed");
+  assert.equal(result.result.items.length, 24);
+  assert.deepEqual(result.result.items[10], { index: 10 });
+  assert.equal(Object.isFrozen(result.result.items[23]), true);
+});
