@@ -10,10 +10,11 @@ The Pages shell now demonstrates:
 - Optional streaming speech recognition when the browser exposes `SpeechRecognition` or `webkitSpeechRecognition`.
 - Interim and final transcript handling, explicit stop/cancel, and clear unsupported/permission/no-speech outcomes.
 - A typed request fallback so the interaction remains usable without microphone recognition.
-- A small deterministic fixture grammar: inspect an object, or request moving an object to the workbench.
+- A small deterministic fixture grammar: inspect an object, request moving an object to the workbench, or ask “What can you do?” / “How can I?” for capability discovery.
+- A capability explanation that describes read-only inspection versus approval-gated movement, and gives example phrases without invoking either action.
 - Automatic invocation only for the fixture's read-only inspection action. A world-changing move is surfaced as an approval request and still requires the host's explicit approval control.
 
-The demo grammar is intentionally narrow. It does not pretend to understand arbitrary natural-language questions or invoke a live language model.
+The demo grammar is intentionally narrow. It does not pretend to understand arbitrary natural-language questions or invoke a live language model. Capability discovery is a deterministic description of the two registered playground interactions, not a claim that Hermit has access to capabilities outside this fixture.
 
 ## Architecture
 
