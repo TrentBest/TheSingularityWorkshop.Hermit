@@ -4,6 +4,7 @@ import { readFile } from "node:fs/promises";
 
 const page = await readFile(new URL("../index.html", import.meta.url), "utf8");
 const playground = await readFile(new URL("../assets/hermit-playground.js", import.meta.url), "utf8");
+const voice = await readFile(new URL("../assets/hermit-voice.js", import.meta.url), "utf8");
 
 test("Pages experience introduces Hermit before the learning modules", () => {
   const moniker = page.indexOf("TheSingularityWorkshop.Visualize/development/docs/assets/moniker.svg");
@@ -25,6 +26,10 @@ test("Hermit playground is wired to the deterministic runtime module", () => {
   assert.match(playground, /createHermitPlayground/);
   assert.match(playground, /approvalGranted/);
   assert.match(playground, /step-verified/);
+  assert.match(voice, /createSpeechSynthesisAdapter/);
+  assert.match(voice, /createSpeechRecognitionAdapter/);
+  assert.match(voice, /window\.webkitSpeechRecognition/);
+  assert.match(voice, /approval-required/);
 });
 
 test("the architecture map explains intent, trust, environment, and current integration limits", () => {
