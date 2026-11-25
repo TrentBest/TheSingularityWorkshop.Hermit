@@ -89,6 +89,19 @@
     .section-nav a{font-size:.92rem;font-weight:650}
     @media(max-width:760px){.scene-layout{grid-template-columns:1fr}}
 
+
+    .party-stage{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,.8fr);gap:1rem;align-items:stretch}
+    .party-roster{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.7rem}
+    .party-member{display:flex;flex-direction:column;align-items:flex-start;gap:.25rem;min-height:112px;text-align:left;background:#203541}
+    .party-member[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+    .party-member small{color:var(--muted);font-weight:400}
+    .hermit-presence{display:flex;align-items:center;gap:1rem;padding:1rem;border:1px solid #47766f;border-radius:14px;background:linear-gradient(145deg,#1b3038,#14232d)}
+    .hermit-shell{display:grid;place-items:center;flex:0 0 64px;height:64px;border-radius:50%;background:#304b59;border:1px solid var(--accent);font-size:2rem;animation:hermit-drift 3.8s ease-in-out infinite}
+    @keyframes hermit-drift{50%{transform:translateY(-4px) rotate(3deg)}}
+    .party-response{min-height:5rem;padding:1rem;border-left:3px solid var(--accent);background:#0d1921;color:var(--ink);border-radius:0 10px 10px 0}
+    .party-meta{font-size:.85rem;color:var(--muted)}
+    @media(max-width:760px){.party-stage{grid-template-columns:1fr}}
+
     @media (prefers-reduced-motion: reduce) { *,*::before,*::after { scroll-behavior:auto !important; animation:none !important; transition:none !important; } }
   </style>
 </head>
@@ -166,6 +179,32 @@
     <p id="voice-interim" role="status" aria-live="polite">Voice transcript will appear here.</p>
     <p id="voice-status" class="scene-status" role="status" aria-live="polite">Preparing voice adapters…</p>
     <p><strong>Safety:</strong> inspection is read-only. Moving an object only prepares the request; you must still approve the world-changing action in the host interface. This page uses a small deterministic command grammar, not a live language model.</p>
+  </section>
+
+
+  <section id="party-presence" class="panel" aria-labelledby="party-presence-title">
+    <div class="eyebrow">SURPS session fixture · Companion awareness</div>
+    <h2 id="party-presence-title">Let Hermit get to know the party</h2>
+    <p>This is the first role-scoped companion slice. The host supplies a versioned session observation; Hermit can inspect each participant's own knowledge without blending it with another character's private facts.</p>
+    <div class="party-stage">
+      <div>
+        <div id="party-roster" class="party-roster" aria-label="Session participants">
+          <button class="party-member" type="button" data-party-member="player" aria-pressed="true"><strong>Mara</strong><small>Player character · Reception</small></button>
+          <button class="party-member" type="button" data-party-member="companion" aria-pressed="false"><strong>Ivo</strong><small>Companion · Kitchen entrance</small></button>
+          <button class="party-member" type="button" data-party-member="courier" aria-pressed="false"><strong>Courier</strong><small>NPC · West gallery</small></button>
+        </div>
+        <div class="buttons"><button id="party-ask" type="button">Ask Hermit what they know</button></div>
+      </div>
+      <aside>
+        <div class="hermit-presence">
+          <div class="hermit-shell" aria-hidden="true">🐚</div>
+          <div><strong>Hermit</strong><div class="party-meta">Your companion · Listening to the scene</div></div>
+        </div>
+        <p id="hermit-party-response" class="party-response" role="status" aria-live="polite">I’m here. Choose someone in the scene and I’ll tell you what their current observation allows me to know.</p>
+        <p id="hermit-party-provenance" class="party-meta">Selected content: CORE Spying · 0.1.0 playtest · Session revision 12</p>
+      </aside>
+    </div>
+    <p><strong>Honest boundary:</strong> this uses a synthetic host fixture and deterministic text, not a live campaign, SURPS adjudicator, or LLM. NPC knowledge is isolated by the same tested observation contract used by the example walkthrough.</p>
   </section>
 
   <section id="domain-map" class="panel" aria-labelledby="domain-map-title">
@@ -277,6 +316,7 @@
 </main>
 <script type="module" src="./assets/hermit-playground.js"></script>
 <script type="module" src="./assets/hermit-voice.js"></script>
+<script type="module" src="./assets/hermit-party.js"></script>
 <script type="module" src="./assets/neural-network-demo.js"></script>
 </body>
 </html>
