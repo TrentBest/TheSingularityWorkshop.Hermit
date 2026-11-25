@@ -157,3 +157,21 @@ export function createSurpsObservationAdapter({ readSession } = {}) {
     }
   });
 }
+
+/**
+ * Returns only one participant's authorized portrayal context. This does not
+ * merge other participants' knowledge or promote dialogue into world facts.
+ */
+export function createParticipantRoleContext(observation, participantId) {
+  const snapshot = validateSurpsObservation(observation);
+  boundedString(participantId, MAX_ID_LENGTH, "participantId");
+  const participant = snapshot.participants.find(item => item.id === participantId);
+  if (!participant) fail("participant identity is not present in this observation.");
+  return freezeDeep({
+    schemaVersion: 1,
+    provider: snapshot.provider,
+    sessionId: snapshot.sessionId,
+    observedRevision: snapshot.revision,
+    participant: structuredClone(participant)
+  });
+}
