@@ -50,6 +50,18 @@ This roadmap distinguishes the domain vision from current executable evidence.
 - [ ] Build a repeatable speech evaluation corpus for Workshop vocabulary, noisy environments, accents, interruptions, latency and offline behavior.
 - [ ] Add natural-language "how can I?" capability discovery and GUI composition through the live Hermit planner/model boundary.
 
+## SURPS companion and diegetic experience
+- [x] Specify the Hermit × SURPS ownership boundary, companion roles, diegetic GUI direction, rig-neutral embodiment, Mini/Titan manifestations and retrieval-first Oracle strategy ([SURPS integration contract](SURPS_INTEGRATION.md)).
+- [ ] Map the actual SURPS source types, versions and authoritative operations to a narrow Hermit host adapter.
+- [ ] Add a read-only SURPS session/character/party observation contract with immutable snapshot tests.
+- [ ] Demonstrate Hermit controlling one companion action in a solo session, with SURPS adjudication and host verification.
+- [ ] Add role-scoped NPC portrayal and a bounded GM facilitation loop.
+- [ ] Build a living SURPS character sheet using GUI semantic state and Renderer/Visualize presentation.
+- [ ] Build a rig-neutral pose-capture and Gesture timeline authoring surface.
+- [ ] Demonstrate a safe, interruptible non-humanoid idle behavior after the required rig and Physics adapters exist.
+- [ ] Tie Mini/Titan construction manifestations to idempotent microbundle task events and measured representation budgets.
+- [ ] Evaluate an Oracle retrieval prototype against held-out Workshop API/contract questions; preserve provenance and explicit uncertainty.
+
 ## Embodiment and interaction
 - [ ] Define articulated body, joint, reach, grip, force, balance and locomotion contracts.
 - [ ] Integrate Gestures and Physics through narrow adapters.
