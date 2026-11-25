@@ -20,7 +20,7 @@ function fixture() {
       const current = states.get(ownerId) ?? 0;
       if (revision !== current) return false;
       states.set(ownerId, current + 1);
-      return { ownerId, revision: current + 1 };
+      return { ownerId, revision: current + 1, values };
     },
     async appendEvent(ownerId, event) {
       calls.push(["appendEvent", ownerId, event.eventId]);
