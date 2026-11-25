@@ -116,6 +116,7 @@ Requires Node.js 22 or later; the runtime has no third-party package dependencie
 npm test
 node examples/deterministic-inspection.mjs
 node examples/two-shell-continuity.mjs
+node examples/surps-observation.mjs
 ```
 
 The runtime proof is a small JavaScript implementation in `src/hermit-runtime.js`. The Pages playground composes it through `src/hermit-playground.js` and a browser adapter in `assets/hermit-playground.js`. It demonstrates a deterministic planner, explicit capability registry, structured argument validation, host-supplied policy, approval gating, bounded execution, cancellation/timeout propagation, bounded JSON output and an execution trace.
