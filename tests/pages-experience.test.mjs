@@ -48,3 +48,12 @@ test("the Pages scene exposes keyboard-operable object selection and host approv
   assert.match(page, /id="approval-granted"/);
   assert.match(page, /id="activity-trace"/);
 });
+
+test("Pages exposes speech output, optional recognition, and a typed intent fallback", () => {
+  assert.match(page, /id="voice-interface"/);
+  assert.match(page, /id="voice-speak"/);
+  assert.match(page, /id="voice-listen"/);
+  assert.match(page, /id="voice-request"/);
+  assert.match(page, /<script type="module" src="\.\/assets\/hermit-voice\.js"><\/script>/);
+  assert.match(playground, /approvalGranted/);
+});
