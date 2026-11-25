@@ -16,19 +16,20 @@ const sample = (revision = 4) => ({
   activeCharacterId: "player",
   participants: [
     { id: "player", name: "Player", role: "player-character", condition: "Ready", location: "Gate",
-      knownFacts: [{ id: "rumor-1", text: "A bell rang beneath the hill.", source: "scene-observation-12" }] },
+      knownFacts: [{ id: "rumor-1", state: "Observed", text: "A bell rang beneath the hill.", source: "scene-observation-12" }] },
     { id: "companion", name: "Companion", role: "companion", condition: "Uninjured", location: "Gate", knownFacts: [] },
     { id: "guard", name: "Gate Guard", role: "npc", condition: "Alert", location: "Gate",
-      knownFacts: [{ id: "guard-knowledge", text: "The gate closes at dusk.", source: "guard-briefing" }] }
+      knownFacts: [{ id: "guard-knowledge", state: "Reported", text: "The gate closes at dusk.", source: "guard-briefing" }] }
   ]
 });
 
-test("creates detached immutable observations with explicit provider and schema versions", () => {
+test("creates detached immutable observations with selected MicroBundle and schema versions", () => {
   const input = sample();
   const snapshot = createSurpsObservation(input);
   input.participants[0].knownFacts[0].text = "tampered";
   assert.equal(snapshot.schemaVersion, SURPS_OBSERVATION_SCHEMA_VERSION);
   assert.equal(snapshot.source.id, "surps.microbundle.core.spying");
+  assert.equal(snapshot.participants[0].knownFacts[0].state, "Observed");
   assert.equal(snapshot.participants[0].knownFacts[0].text, "A bell rang beneath the hill.");
   assert.ok(Object.isFrozen(snapshot));
   assert.ok(Object.isFrozen(snapshot.participants[0].knownFacts[0]));
@@ -66,6 +67,9 @@ test("rejects duplicate or unbounded knowledge and missing participant data", ()
   input.participants[0].knownFacts.push({ ...input.participants[0].knownFacts[0] });
   assert.throws(() => createSurpsObservation(input), /duplicate knowledge/);
   assert.throws(() => createSurpsObservation({ ...sample(), participants: [] }), /between 1 and/);
+  const invalidState = sample();
+  invalidState.participants[0].knownFacts[0].state = "certainly-true";
+  assert.throws(() => createSurpsObservation(invalidState), /information\/evidence state/);
 });
 
 test("host adapter returns only validated read snapshots and rejects session substitution or rollback", async () => {
