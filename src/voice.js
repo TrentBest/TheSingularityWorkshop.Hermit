@@ -214,13 +214,49 @@ export function createSpeechRecognitionAdapter({ recognitionFactory } = {}) {
   return Object.freeze({ supported, listen, cancel });
 }
 
+/** Describes the fixture's discoverable actions without exposing host authority. */
+export function describePlaygroundCapabilities(objects = []) {
+  const availableObjects = Array.isArray(objects) ? objects.filter(item =>
+    item && typeof item.id === "string" && typeof item.name === "string") : [];
+  return Object.freeze([
+    Object.freeze({
+      id: "inspect-object",
+      title: "Inspect an object",
+      description: "Ask Hermit to examine an object and report its observed location and description. This is read-only.",
+      example: "Inspect the glass vessel",
+      available: availableObjects.length > 0,
+      approvalRequired: false
+    }),
+    Object.freeze({
+      id: "move-object",
+      title: "Move an object to the workbench",
+      description: "Ask Hermit to propose moving an object. The host still requires your explicit approval before the world changes.",
+      example: "Move the brass compass to the workbench",
+      available: availableObjects.length > 0,
+      approvalRequired: true
+    })
+  ]);
+}
+
+function isDiscoveryRequest(text) {
+  return /^(?:help|what can you do|what can i do|how can i|how do i use (?:you|hermit|this workshop)|show (?:me )?(?:your )?(?:capabilities|help)|list (?:your )?(?:capabilities|actions))$/.test(text);
+}
+
 /** Small deterministic grammar for the Pages fixture; it never grants authority or executes a mutation. */
 export function resolvePlaygroundVoiceIntent(value, objects = []) {
   const text = validateText(value, "Voice request")
     .toLocaleLowerCase("en-US")
     .replace(/[.,!?;:]/g, " ")
-    .replace(/\s+/g, " ")
+    .replace(/\\s+/g, " ")
     .trim();
+  if (isDiscoveryRequest(text)) {
+    const capabilities = describePlaygroundCapabilities(objects);
+    return {
+      status: "discovery",
+      capabilities,
+      message: capabilities.map(item => item.title + ": " + item.description + " Try: " + item.example + ".").join(" ")
+    };
+  }
   const move = text.match(/^move (?:the )?(.+?) to (?:the )?workbench$/);
   const inspect = text.match(/^(?:inspect|examine|look at) (?:the )?(.+)$/);
   const match = move ?? inspect;
