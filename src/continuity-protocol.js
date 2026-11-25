@@ -89,7 +89,7 @@ function principalOwner(principal) {
 }
 
 function validateBase(input, principal) {
-  assertPlainRecord(input, "Request");
+  input = boundedRecord(input, "Request");
   if (input.schemaVersion !== SCHEMA_VERSION) {
     fail("UNSUPPORTED_SCHEMA", `Only continuity schema version ${SCHEMA_VERSION} is supported.`);
   }
@@ -141,7 +141,7 @@ export function validateEventAppend(input, principal) {
 
 /** Validates a server change page before a client applies it and advances its cursor. */
 export function validateChangePage(input, expectedOwnerId) {
-  assertPlainRecord(input, "Change page");
+  input = boundedRecord(input, "Change page");
   if (input.schemaVersion !== SCHEMA_VERSION) {
     fail("UNSUPPORTED_SCHEMA", `Only continuity schema version ${SCHEMA_VERSION} is supported.`);
   }
