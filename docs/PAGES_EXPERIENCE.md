@@ -14,6 +14,8 @@ The page also includes a three-lane architecture map: intent/planning, capabilit
 |---|---|
 | `index.html` | Semantic page structure, accessible controls, environment zones, status, and trace |
 | `assets/hermit-playground.js` | Browser interaction, drag/drop selection, rendering, and event presentation |
+| `assets/hermit-voice.js` | Browser voice controls, feature detection, transcript display, typed fallback, and intent routing |
+| `src/voice.js` | Host-neutral speech adapters, cancellation/error contracts, and fixture intent grammar |
 | `src/hermit-playground.js` | Fixture world, capability registration, host policy, and post-action verification |
 | `src/world-state.js` | Immutable, versioned environment snapshot contract |
 | `src/hermit-runtime.js` | Bounded execution, argument validation, cancellation, approval gate, and auditable trace |
@@ -33,6 +35,12 @@ The browser adapter imports the same runtime module exercised by Node tests. The
 - Inspect the trace of observation, proposal, policy, execution, and verification events.
 
 Dragging only selects an object. It never changes world state. The move capability is the only path that updates the fixture object's location.
+
+## Voice interaction
+
+The page includes a voice panel with speech synthesis, optional speech recognition, and a typed request fallback. Speech synthesis uses the browser's installed voices. Recognition is feature-detected through `SpeechRecognition` / `webkitSpeechRecognition`; it is not available in every browser. The panel reports unsupported recognition instead of pretending the microphone worked.
+
+The fixture grammar understands a small set of requests such as `inspect the glass vessel` and `move the glass vessel to the workbench`. A read-only inspection may run through the existing runtime. A move only selects the object and asks for approval; the existing host approval checkbox and runtime policy remain mandatory. See [Voice Interaction](VOICE_INTERACTION.md) for provider contracts and the plan for a higher-quality host-local recognizer.
 
 ## Safety and truthfulness boundary
 
