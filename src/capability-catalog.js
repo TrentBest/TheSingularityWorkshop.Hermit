@@ -16,10 +16,26 @@ function ownDataObject(value, label) {
       (Object.getPrototypeOf(value) !== Object.prototype && Object.getPrototypeOf(value) !== null)) {
     fail(label + " must be a plain object.");
   }
+  if (Object.getOwnPropertySymbols(value).length) fail(label + " must not contain symbol keys.");
   for (const [key, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(value))) {
     if (key === "__proto__" || key === "prototype" || key === "constructor") fail(label + " contains a forbidden key.");
     if (!("value" in descriptor)) fail(label + " must not contain accessors.");
   }
+  return value;
+}
+
+function safeArray(value, label, maximum) {
+  if (!Array.isArray(value) || Object.getPrototypeOf(value) !== Array.prototype || value.length > maximum) {
+    fail(label + " must be a standard array of at most " + maximum + " entries.");
+  }
+  const descriptors = Object.getOwnPropertyDescriptors(value);
+  for (const key of Reflect.ownKeys(descriptors)) {
+    if (key === "length") continue;
+    if (typeof key !== "string" || !/^(0|[1-9][0-9]*)$/.test(key) || Number(key) >= value.length || !("value" in descriptors[key])) {
+      fail(label + " must not contain accessors, sparse slots, symbols, or extra properties.");
+    }
+  }
+  for (let i = 0; i < value.length; i += 1) if (!Object.hasOwn(value, i)) fail(label + " must not be sparse.");
   return value;
 }
 
@@ -56,11 +72,16 @@ function validateInputSchema(schema) {
     }
     if (definition.description !== undefined) text(definition.description, "property description");
     if (definition.enum !== undefined) {
-      if (!Array.isArray(definition.enum) || definition.enum.length < 1 || definition.enum.length > 32 ||
-          definition.enum.some(item => !["string", "number", "boolean"].includes(typeof item))) fail("property enum must contain 1–32 scalar values.");
+      safeArray(definition.enum, "property enum", 32);
+      if (definition.enum.length < 1 || definition.enum.some(item =>
+          !["string", "boolean"].includes(typeof item) && !(typeof item === "number" && Number.isFinite(item)))) {
+        fail("property enum must contain 1–32 finite scalar values.");
+      }
+      if (new Set(definition.enum).size !== definition.enum.length) fail("property enum values must be unique.");
     }
   }
   const required = schema.required ?? [];
+  if (required !== undefined) safeArray(required, "inputSchema.required", names.length);
   if (!Array.isArray(required) || required.length > names.length ||
       required.some(name => typeof name !== "string" || !names.includes(name)) ||
       new Set(required).size !== required.length) fail("required must contain unique declared property names.");
@@ -82,6 +103,7 @@ function validateInputSchema(schema) {
 export function validateCapabilityCatalog(value) {
   ownDataObject(value, "catalog");
   if (value.version !== CATALOG_VERSION) fail("unsupported catalog version.");
+  safeArray(value.capabilities, "capabilities", MAX_CAPABILITIES);
   if (!Array.isArray(value.capabilities) || value.capabilities.length > MAX_CAPABILITIES) {
     fail("capabilities must be an array of at most " + MAX_CAPABILITIES + " entries.");
   }
@@ -96,6 +118,7 @@ export function validateCapabilityCatalog(value) {
     const description = text(entry.description, "capability description");
     if (!RISK_LEVELS.has(entry.risk)) fail("capability risk must be read-only, reversible, consequential, or external.");
     if (typeof entry.approvalRequired !== "boolean") fail("approvalRequired must be boolean.");
+    safeArray(entry.examples, "examples", MAX_EXAMPLES);
     if (!Array.isArray(entry.examples) || entry.examples.length > MAX_EXAMPLES) fail("examples must be an array of at most " + MAX_EXAMPLES + " phrases.");
     const examples = entry.examples.map((example, i) => text(example, "example " + i, 160));
     const inputSchema = validateInputSchema(entry.inputSchema);
