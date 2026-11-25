@@ -75,3 +75,48 @@ test("shared records reject non-JSON and oversized payloads", async () => {
   await assert.rejects(shell.compareAndSwapState(0, { value: "x".repeat(65_537) }), TypeError);
   assert.equal((await shell.readState()).revision, 0);
 });
+
+test("executeLoop hands a verified task from phone shell to desktop shell", async () => {
+  const { HermitRuntime, CapabilityRegistry } = await import("../src/hermit-runtime.js");
+  const store = createInMemoryContinuityStore({ ownerId: "owner-1", hermitId: "hermit-1" });
+  const phone = store.createShell({ deviceId: "phone-1", hostType: "web", capabilities: ["inspect-item"] });
+  const desktop = store.createShell({ deviceId: "desktop-1", hostType: "anyapp", capabilities: ["inspect-item", "filesystem"] });
+  const phoneRepository = createCheckpointRepository(phone.checkpointAdapter);
+  const desktopRepository = createCheckpointRepository(desktop.checkpointAdapter);
+  const registry = new CapabilityRegistry();
+  registry.register({
+    id: "inspect-item", version: "1.0.0",
+    inputSchema: { type: "object", properties: { name: { type: "string", maxLength: 80 } }, required: ["name"] },
+    invoke: async ({ name }) => ({ inspected: true, name })
+  });
+  const makeRuntime = shell => new HermitRuntime({
+    registry,
+    policy: ({ capability }) => shell.hasCapability(capability.id) ? "allow" : "deny"
+  });
+  const task = "Inspect the compass.";
+  const first = await makeRuntime(phone).executeLoop({
+    taskId: "cross-shell-task", task, checkpointRepository: phoneRepository, maxSteps: 1,
+    observe: async () => ({ inspected: false }),
+    planner: async () => ({ capabilityId: "inspect-item", arguments: { name: "compass" } }),
+    verify: async ({ result }) => ({ verified: true, observation: { inspected: result.inspected } })
+  });
+  assert.equal(first.status, "failed");
+  assert.equal(first.error.code, "STEP_LIMIT_REACHED");
+  assert.equal((await phoneRepository.load("cross-shell-task")).checkpoint.phase, "ready");
+
+  let desktopObserved = false;
+  const second = await makeRuntime(desktop).executeLoop({
+    taskId: "cross-shell-task", task, checkpointRepository: desktopRepository, resume: true,
+    observe: async () => { desktopObserved = true; return {}; },
+    planner: async ({ observation }) => observation.inspected
+      ? { done: true, result: { continued: true } }
+      : { capabilityId: "inspect-item", arguments: { name: "compass" } },
+    verify: async ({ result }) => ({ verified: true, observation: { inspected: result.inspected } })
+  });
+  assert.equal(second.status, "completed");
+  assert.equal(desktopObserved, false);
+  assert.equal((await desktopRepository.load("cross-shell-task")).checkpoint.phase, "completed");
+  assert.deepEqual(phone.identity(), desktop.identity());
+  assert.equal(phone.hasCapability("filesystem"), false);
+  assert.equal(desktop.hasCapability("filesystem"), true);
+});
