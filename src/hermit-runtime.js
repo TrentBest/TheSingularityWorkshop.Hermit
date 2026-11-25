@@ -379,7 +379,7 @@ export class HermitRuntime {
         executionSignal.aborted && executionSignal.reason instanceof HermitError
           ? executionSignal.reason
           : new HermitError("ADAPTER_FAILED", "Observation, planning or verification failed.");
-      if (checkpointRepository && checkpointPhase === "ready") {
+      if (checkpointRepository && checkpointPhase === "ready" && normalized.code !== "STEP_LIMIT_REACHED") {
         try {
           checkpointRevision += 1;
           const phase = normalized.code === "CANCELLED" ? "cancelled" : "failed";
@@ -478,7 +478,7 @@ export class HermitRuntime {
       if (firstStep > maxSteps)
         throw new HermitError("STEP_LIMIT_REACHED", "Checkpoint cursor exceeds the configured total action-count limit.");
 
-      for (let step = firstStep; step < maxSteps; step += 1) {
+      for (let step = firstStep; step <= maxSteps; step += 1) {
         if (executionSignal.aborted) throw executionSignal.reason;
         const proposal = await raceWithSignal(
           () => planner({
@@ -504,6 +504,9 @@ export class HermitRuntime {
             trace: Object.freeze(trace)
           });
         }
+
+        if (step >= maxSteps)
+          throw new HermitError("STEP_LIMIT_REACHED", "Task did not complete within its bounded action count.");
 
         const safeProposal = snapshotProposal(safeDecision);
         const remaining = timeoutMs - (Date.now() - startedAt);
