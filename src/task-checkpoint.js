@@ -50,13 +50,13 @@ function snapshotJson(value, path = "$", ancestors = new WeakSet(), budget = { n
   if (keys.some(key => typeof key !== "string")) {
     throw new TaskCheckpointError("INVALID_CHECKPOINT", "Checkpoint objects cannot contain symbol keys.");
   }
-  const result = Object.create(null);
+  const result = {};
   for (const key of keys) {
     const descriptor = descriptors[key];
     if (!descriptor.enumerable || !Object.hasOwn(descriptor, "value")) {
       throw new TaskCheckpointError("INVALID_CHECKPOINT", "Checkpoint objects must contain enumerable data properties only.");
     }
-    result[key] = snapshotJson(descriptor.value, `${path}.${key}`, ancestors, budget);
+    Object.defineProperty(result, key, { value: snapshotJson(descriptor.value, `${path}.${key}`, ancestors, budget), enumerable: true, writable: true, configurable: true });
   }
   ancestors.delete(value);
   return result;
