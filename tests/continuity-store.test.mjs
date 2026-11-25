@@ -89,6 +89,13 @@ test("executeLoop hands a verified task from phone shell to desktop shell", asyn
     inputSchema: { type: "object", properties: { name: { type: "string", maxLength: 80 } }, required: ["name"] },
     invoke: async ({ name }) => ({ inspected: true, name })
   });
+  let desktopWrites = 0;
+  registry.register({
+    id: "save-note", version: "1.0.0",
+    inputSchema: { type: "object", properties: { note: { type: "string", maxLength: 120 } }, required: ["note"] },
+    risk: "write",
+    invoke: async ({ note }) => { desktopWrites += 1; return { saved: true, note }; }
+  });
   const makeRuntime = shell => new HermitRuntime({
     registry,
     policy: ({ capability }) => shell.hasCapability(capability.id) ? "allow" : "deny"
@@ -108,10 +115,17 @@ test("executeLoop hands a verified task from phone shell to desktop shell", asyn
   const second = await makeRuntime(desktop).executeLoop({
     taskId: "cross-shell-task", task, checkpointRepository: desktopRepository, resume: true,
     observe: async () => { desktopObserved = true; return {}; },
-    planner: async ({ observation }) => observation.inspected
-      ? { done: true, result: { continued: true } }
-      : { capabilityId: "inspect-item", arguments: { name: "compass" } },
-    verify: async ({ result }) => ({ verified: true, observation: { inspected: result.inspected } })
+    maxSteps: 3,
+    planner: async ({ step, observation }) => step === 1
+      ? { capabilityId: "save-note", arguments: { note: "continued on desktop" } }
+      : observation.saved ? { done: true, result: { continued: true } }
+        : { capabilityId: "inspect-item", arguments: { name: "compass" } },
+    verify: async ({ proposal, result, observation }) => ({
+      verified: result.saved === true || result.inspected === true,
+      observation: proposal.capabilityId === "save-note"
+        ? { ...observation, saved: result.saved }
+        : { ...observation, inspected: result.inspected }
+    })
   });
   assert.equal(second.status, "completed");
   assert.equal(desktopObserved, false);
@@ -119,4 +133,30 @@ test("executeLoop hands a verified task from phone shell to desktop shell", asyn
   assert.deepEqual(phone.identity(), desktop.identity());
   assert.equal(phone.hasCapability("filesystem"), false);
   assert.equal(desktop.hasCapability("filesystem"), true);
+  assert.equal(desktopWrites, 1, "desktop-only action should execute exactly once after handoff");
+  assert.equal((await desktopRepository.load("cross-shell-task")).checkpoint.outcomes.length, 2);
+});
+
+test("a shell cannot invoke a capability granted only to another shell", async () => {
+  const { HermitRuntime, CapabilityRegistry } = await import("../src/hermit-runtime.js");
+  const store = createInMemoryContinuityStore({ ownerId: "owner-1", hermitId: "hermit-1" });
+  const phone = store.createShell({ deviceId: "phone-1", hostType: "web", capabilities: ["camera"] });
+  const desktop = store.createShell({ deviceId: "desktop-1", hostType: "anyapp", capabilities: ["filesystem"] });
+  let invoked = false;
+  const registry = new CapabilityRegistry();
+  registry.register({
+    id: "filesystem-read", version: "1.0.0", inputSchema: { type: "object", properties: {} },
+    invoke: async () => { invoked = true; return { ok: true }; }
+  });
+  const phoneRuntime = new HermitRuntime({
+    registry, policy: ({ capability }) => phone.hasCapability(capability.id) ? "allow" : "deny"
+  });
+  const result = await phoneRuntime.execute({
+    task: "Read a desktop file.",
+    planner: async () => ({ capabilityId: "filesystem-read", arguments: {} })
+  });
+  assert.equal(result.status, "failed");
+  assert.equal(result.error.code, "POLICY_DENIED");
+  assert.equal(invoked, false);
+  assert.equal(desktop.hasCapability("filesystem-read"), false, "unregistered local labels do not grant authority");
 });
