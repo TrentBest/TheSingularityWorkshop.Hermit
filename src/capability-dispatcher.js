@@ -51,7 +51,7 @@ function policyDecision(value) {
 
 function snapshotHandlerResult(value, path = "$", ancestors = new WeakSet(), budget = { nodes: 0 }) {
   budget.nodes += 1;
-  if (budget.nodes > 4096 || path.split(/[.[]/).length > 32) {
+  if (budget.nodes > 4096 || path.split(/[.\\[\\]]/).length > 32) {
     throw new TypeError("Host handler result exceeds structural limits.");
   }
   if (value === null || typeof value === "string" || typeof value === "boolean") return value;
