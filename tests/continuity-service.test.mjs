@@ -144,3 +144,34 @@ test("host authorization failures are distinguished from storage failures", asyn
     context, body: { ...body, baseRevision: 0, values: {} }
   }));
 });
+
+test("sync rejects accessor-backed state returned by an untrusted storage adapter", async () => {
+  const { service, store } = fixture();
+  let getterCalls = 0;
+  store.readState = async () => ({
+    ownerId: "owner-1",
+    revision: 0,
+    get values() { getterCalls += 1; return {}; }
+  });
+  await code("INVALID_PAYLOAD", () =>
+    service.handleSync({ context, body: { ...body, cursor: null, limit: 10 } }));
+  assert.equal(getterCalls, 0);
+});
+
+test("authentication adapter failures are normalized consistently for every operation", async () => {
+  const store = fixture().store;
+  const service = createContinuityService({
+    authenticate: async () => { throw new Error("identity provider internals"); },
+    authorizeDevice: async () => true,
+    store
+  });
+  await code("UNAUTHENTICATED", () => service.handleSync({
+    context, body: { ...body, cursor: null }
+  }));
+  await code("UNAUTHENTICATED", () => service.handleStateWrite({
+    context, body: { ...body, baseRevision: 0, values: {} }
+  }));
+  await code("UNAUTHENTICATED", () => service.handleEventAppend({
+    context, body: { ...body, eventId: "evt-auth", eventType: "note" }
+  }));
+});
