@@ -84,7 +84,7 @@ Hermit's local behavior uses GOAP wherever known facts and affordances are suffi
 
 The public learning experience and the assistant-runtime proof are parallel tracks:
 
-- **Public learning track:** the [Hermit Pages experience](https://github.com/TrentBest/TheSingularityWorkshop.Hermit/tree/development) opens with a deterministic Workshop playground backed by Hermit's capability registry and bounded execution loop. It now includes speech output, optional browser recognition, a typed request fallback, and a small voice-intent demonstration that preserves host approval. A separate 2-input / 2-output inference lesson remains available below it.
+- **Public learning track:** the [Hermit Pages experience](https://trentbest.github.io/TheSingularityWorkshop.Hermit/) is the public entry point for a deterministic Workshop playground backed by Hermit's capability registry and bounded execution loop. Its artifact build passes; deployment is currently blocked before the deploy job's first step, as recorded in [Pages deployment diagnostics](docs/PAGES_DEPLOYMENT_DIAGNOSTICS.md). It now includes speech output, optional browser recognition, a typed request fallback, and a small voice-intent demonstration that preserves host approval. A separate 2-input / 2-output inference lesson remains available below it.
 - **Runtime track:** [Build the first deterministic Hermit assistant vertical slice](https://github.com/TrentBest/TheSingularityWorkshop.Hermit/issues/1), using fake inference and a fake environment.
 
 The broader runtime progression is:
