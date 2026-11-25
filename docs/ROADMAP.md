@@ -32,6 +32,14 @@ This roadmap distinguishes the domain vision from current executable evidence.
 - [ ] Connect the web shell and AnyApp desktop shell to one Hermit identity.
 - [ ] Verify offline and conflict recovery.
 
+## Voice interaction
+- [x] Define host-neutral speech synthesis and streaming recognition adapter contracts with explicit cancellation and error outcomes.
+- [x] Add browser speech output and optional recognition to the Pages shell, with a typed fallback.
+- [x] Route a narrow fixture voice grammar through existing capabilities; keep world-changing actions behind host approval.
+- [ ] Integrate a high-accuracy host-local recognizer (evaluate Whisper-class transcription) for AnyApp and other shells.
+- [ ] Build a repeatable speech evaluation corpus for Workshop vocabulary, noisy environments, accents, interruptions, latency and offline behavior.
+- [ ] Add natural-language "how can I?" capability discovery and GUI composition through the live Hermit planner/model boundary.
+
 ## Embodiment and interaction
 - [ ] Define articulated body, joint, reach, grip, force, balance and locomotion contracts.
 - [ ] Integrate Gestures and Physics through narrow adapters.
@@ -67,6 +75,7 @@ This roadmap distinguishes the domain vision from current executable evidence.
 - [x] Add a living page-level architecture map for Hermit intent, trust, environment and evidence boundaries.
 - [ ] Extend the map with Mini crews, Titan portal and microbundle wrappers when their task/event contracts are implemented.
 - [x] Add a deterministic Pages playground backed by Hermit's registered inspect/move capabilities, host policy, explicit approval, and post-action verification.
+- [x] Add a voice interface with speech output, optional recognition, typed fallback, and approval-preserving fixture intent routing.
 - [ ] Add volcano construction choreography timeline tied to a fixture task graph.
 - [x] Keep the neural-network lesson separate; do not imply it controls Hermit's body.
 - [x] Assemble Pages as a validated static artifact with documentation and deploy only from development pushes or manual runs.
