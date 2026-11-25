@@ -84,15 +84,24 @@ export function createContinuityService({ authenticate, authorizeDevice, store }
         serviceFail("UNAUTHENTICATED", "A trusted authenticated owner principal is required.");
       }
       request = validateSyncRequest(body, principal);
-      const allowed = await authorizeDevice({
-        principal, deviceId: request.deviceId, hostType: request.hostType, operation: "sync"
-      });
+      let allowed;
+      try {
+        allowed = await authorizeDevice({
+          principal, deviceId: request.deviceId, hostType: request.hostType, operation: "sync"
+        });
+      } catch {
+        serviceFail("DEVICE_UNAUTHORIZED", "The host could not authorize this device for sync.");
+      }
       if (allowed !== true) serviceFail("DEVICE_UNAUTHORIZED", "The device is not enrolled, active, or authorized for sync.");
       const [state, rawPage] = await Promise.all([
         store.readState(principal.ownerId),
         store.readChanges(principal.ownerId, request.cursor, request.limit)
       ]);
       assertOwnerRecord(state, principal.ownerId, "State adapter");
+      if (!Number.isSafeInteger(state.revision) || state.revision < 0 ||
+          !state.values || typeof state.values !== "object" || Array.isArray(state.values)) {
+        serviceFail("INVALID_STORE_RESPONSE", "State adapter returned an invalid shared-state record.");
+      }
       const page = validateChangePage(rawPage, principal.ownerId);
       if (page.changes.length > request.limit) {
         serviceFail("INVALID_STORE_RESPONSE", "Change adapter returned more entries than requested.");
@@ -100,7 +109,10 @@ export function createContinuityService({ authenticate, authorizeDevice, store }
       return Object.freeze({
         schemaVersion: 1,
         ownerId: principal.ownerId,
-        state,
+        state: Object.freeze({
+          revision: state.revision,
+          values: state.values
+        }),
         changes: page.changes,
         nextCursor: page.nextCursor
       });
@@ -120,9 +132,14 @@ export function createContinuityService({ authenticate, authorizeDevice, store }
         serviceFail("UNAUTHENTICATED", "A trusted authenticated owner principal is required.");
       }
       const request = validateStateWrite(body, principal);
-      const allowed = await authorizeDevice({
-        principal, deviceId: request.deviceId, hostType: request.hostType, operation: "state-write"
-      });
+      let allowed;
+      try {
+        allowed = await authorizeDevice({
+          principal, deviceId: request.deviceId, hostType: request.hostType, operation: "state-write"
+        });
+      } catch {
+        serviceFail("DEVICE_UNAUTHORIZED", "The host could not authorize this device to write shared state.");
+      }
       if (allowed !== true) serviceFail("DEVICE_UNAUTHORIZED", "The device is not authorized to write shared state.");
       const result = await store.compareAndSwapState(
         principal.ownerId, request.baseRevision, request.values
@@ -149,9 +166,14 @@ export function createContinuityService({ authenticate, authorizeDevice, store }
         serviceFail("UNAUTHENTICATED", "A trusted authenticated owner principal is required.");
       }
       const request = validateEventAppend(body, principal);
-      const allowed = await authorizeDevice({
-        principal, deviceId: request.deviceId, hostType: request.hostType, operation: "event-append"
-      });
+      let allowed;
+      try {
+        allowed = await authorizeDevice({
+          principal, deviceId: request.deviceId, hostType: request.hostType, operation: "event-append"
+        });
+      } catch {
+        serviceFail("DEVICE_UNAUTHORIZED", "The host could not authorize this device to append events.");
+      }
       if (allowed !== true) serviceFail("DEVICE_UNAUTHORIZED", "The device is not authorized to append events.");
       const result = await store.appendEvent(principal.ownerId, {
         eventId: request.eventId,
