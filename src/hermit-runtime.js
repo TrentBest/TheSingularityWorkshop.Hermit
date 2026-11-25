@@ -68,14 +68,14 @@ function snapshotArguments(value, schema, path = "$", ancestors = new WeakSet())
     }
     const properties = schema.properties ?? {};
     const allowed = new Set(Object.keys(properties));
-    const snapshot = Object.create(null);
+    const snapshot = {};
     for (const key of keys) {
       const descriptor = descriptors[key];
       if (!descriptor.enumerable || !Object.hasOwn(descriptor, "value")) {
         throw new HermitError("INVALID_ARGUMENTS", "Capability arguments must contain enumerable data properties only.");
       }
       if (!allowed.has(key)) throw new HermitError("INVALID_ARGUMENTS", `Unexpected argument: ${path}.${key}`);
-      snapshot[key] = snapshotArguments(descriptor.value, properties[key], `${path}.${key}`, ancestors);
+      Object.defineProperty(snapshot, key, { value: snapshotArguments(descriptor.value, properties[key], `${path}.${key}`, ancestors), enumerable: true, writable: true, configurable: true });
     }
     for (const key of schema.required ?? []) {
       if (!Object.hasOwn(snapshot, key)) throw new HermitError("INVALID_ARGUMENTS", `Missing required argument: ${path}.${key}`);
@@ -163,13 +163,13 @@ function snapshotProposal(value) {
   if (keys.some(key => typeof key !== "string" || !["capabilityId", "arguments"].includes(key))) {
     throw new HermitError("INVALID_PROPOSAL", "Planner proposal contains unsupported properties.");
   }
-  const snapshot = Object.create(null);
+  const snapshot = {};
   for (const key of ["capabilityId", "arguments"]) {
     const descriptor = descriptors[key];
     if (!descriptor || !descriptor.enumerable || !Object.hasOwn(descriptor, "value")) {
       throw new HermitError("INVALID_PROPOSAL", "Planner proposal must contain enumerable data properties only.");
     }
-    snapshot[key] = descriptor.value;
+    Object.defineProperty(snapshot, key, { value: descriptor.value, enumerable: true, writable: true, configurable: true });
   }
   return snapshot;
 }
@@ -218,13 +218,13 @@ function snapshotJsonOutput(value, path = "$", ancestors = new WeakSet(), budget
   if (keys.some(key => typeof key !== "string")) {
     throw new HermitError("INVALID_TOOL_OUTPUT", "Capability output must not contain symbol properties.");
   }
-  const result = Object.create(null);
+  const result = {};
   for (const key of keys) {
     const descriptor = descriptors[key];
     if (!descriptor.enumerable || !Object.hasOwn(descriptor, "value")) {
       throw new HermitError("INVALID_TOOL_OUTPUT", "Capability output must contain enumerable data properties only.");
     }
-    result[key] = snapshotJsonOutput(descriptor.value, `${path}.${key}`, ancestors, budget);
+    Object.defineProperty(result, key, { value: snapshotJsonOutput(descriptor.value, `${path}.${key}`, ancestors, budget), enumerable: true, writable: true, configurable: true });
   }
   ancestors.delete(value);
   return result;
@@ -318,20 +318,6 @@ export class HermitRuntime {
         : executionSignal.aborted && executionSignal.reason instanceof HermitError
           ? executionSignal.reason
           : new HermitError("ADAPTER_FAILED", "Capability or planner execution failed.");
-      if (checkpointRepository && checkpointPhase === "ready") {
-        try {
-          checkpointRevision += 1;
-          const phase = normalized.code === "CANCELLED" ? "cancelled" : "failed";
-          await checkpointRepository.save({
-            taskId: checkpointTaskId, task, revision: checkpointRevision, phase,
-            nextStep: outcomes.length, observation: checkpointObservation, outcomes, pendingAction: null
-          }, { expectedRevision: checkpointRevision - 1 });
-          checkpointPhase = phase;
-          record("checkpoint-saved", { revision: checkpointRevision, phase });
-        } catch (checkpointError) {
-          record("checkpoint-save-failed", { code: checkpointError.code ?? "CHECKPOINT_FAILED" });
-        }
-      }
       record("task-failed", { code: normalized.code });
       return Object.freeze({
         status: normalized.code === "CANCELLED" ? "cancelled" : "failed",
