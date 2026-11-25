@@ -23,6 +23,17 @@ registry.register({
   },
   invoke: async ({ name }) => ({ inspected: true, name })
 });
+registry.register({
+  id: "save-note",
+  version: "1.0.0",
+  inputSchema: {
+    type: "object",
+    properties: { note: { type: "string", maxLength: 120 } },
+    required: ["note"]
+  },
+  risk: "write",
+  invoke: async ({ note }) => ({ saved: true, note })
+});
 
 function runtimeFor(shell) {
   return new HermitRuntime({
@@ -58,12 +69,17 @@ if (interrupted.error?.code !== "STEP_LIMIT_REACHED") {
 const resumed = await runtimeFor(desktop).executeLoop({
   taskId, task, checkpointRepository: desktopRepository, resume: true,
   observe: async () => { throw new Error("A resumed task must restore its checkpoint."); },
-  planner: async ({ observation }) => observation.inspected
-    ? { done: true, result: { message: "Hermit continued on desktop." } }
-    : { capabilityId: "inspect-item", arguments: { name: "compass" } },
-  verify: async ({ result, observation }) => ({
-    verified: result.inspected === true,
-    observation: { ...observation, inspected: result.inspected }
+  maxSteps: 3,
+  planner: async ({ step, observation }) => step === 1
+    ? { capabilityId: "save-note", arguments: { note: "Compass inspected on phone; continued on desktop." } }
+    : observation.saved
+      ? { done: true, result: { message: "Hermit continued on desktop and saved its note." } }
+      : { capabilityId: "inspect-item", arguments: { name: "compass" } },
+  verify: async ({ proposal, result, observation }) => ({
+    verified: result.saved === true || result.inspected === true,
+    observation: proposal.capabilityId === "save-note"
+      ? { ...observation, saved: result.saved, note: result.note }
+      : { ...observation, inspected: result.inspected }
   })
 });
 
@@ -78,5 +94,6 @@ console.log(JSON.stringify({
   desktopStatus: resumed.status,
   finalRevision: (await desktopRepository.load(taskId)).checkpoint.revision,
   phoneCapabilities: phone.listLocalCapabilities(),
-  desktopCapabilities: desktop.listLocalCapabilities()
+  desktopCapabilities: desktop.listLocalCapabilities(),
+  verifiedOutcomes: (await desktopRepository.load(taskId)).checkpoint.outcomes
 }, null, 2));
