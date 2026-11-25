@@ -9,8 +9,8 @@ import {
 } from "../src/surps-observation.js";
 
 const sample = (revision = 4) => ({
-  providerId: "surps.core",
-  providerVersion: "0.1.0",
+  sourceId: "surps.microbundle.core.spying",
+  sourceVersion: "0.1.0",
   sessionId: "campaign-one",
   revision,
   activeCharacterId: "player",
@@ -28,7 +28,7 @@ test("creates detached immutable observations with explicit provider and schema 
   const snapshot = createSurpsObservation(input);
   input.participants[0].knownFacts[0].text = "tampered";
   assert.equal(snapshot.schemaVersion, SURPS_OBSERVATION_SCHEMA_VERSION);
-  assert.equal(snapshot.provider.id, "surps.core");
+  assert.equal(snapshot.source.id, "surps.microbundle.core.spying");
   assert.equal(snapshot.participants[0].knownFacts[0].text, "A bell rang beneath the hill.");
   assert.ok(Object.isFrozen(snapshot));
   assert.ok(Object.isFrozen(snapshot.participants[0].knownFacts[0]));
