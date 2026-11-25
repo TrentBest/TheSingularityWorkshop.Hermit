@@ -14,7 +14,7 @@ This is an architecture contract plus a deliberately limited in-memory reference
 - one shared checkpoint adapter that can be wrapped by the existing checkpoint repository;
 - separate shell instances with private capability sets.
 
-The tests create a phone-like web shell and a desktop-like AnyApp shell. They prove that both see the same identity, shared state and task checkpoint, while their capability sets remain distinct. Stale shared-state writes fail rather than overwriting newer revisions.
+The tests create a phone-like web shell and a desktop-like AnyApp shell. They prove that both see the same identity, shared state and task checkpoint, while their capability sets remain distinct. An end-to-end task begins with a verified phone action, resumes on desktop, performs a desktop-only write exactly once, and completes. A separate policy test proves a shell cannot invoke a capability it has not been granted. Stale shared-state writes fail rather than overwriting newer revisions.
 
 **Important limits:** this adapter is volatile process memory. It is not durable, authenticated, encrypted, owner-isolated across tenants, multi-process safe, a browser storage implementation, or a production security boundary. Device enrollment in this fixture is descriptive only. The shell capability set is a testable local boundary, not a substitute for real host policy, approval, secret management or OS permissions.
 
@@ -140,7 +140,7 @@ The names above are design vocabulary, not all implemented exported APIs. The lo
 ## Verification gates
 
 - Two distinct shells resolve to the same owner and Hermit identity without sharing device credentials.
-- A task started on one shell appears on another with verified outcomes and a correct next-step cursor.
+- A task started on one shell appears on another with verified outcomes and a correct next-step cursor; the receiving shell can perform its own separately authorized action.
 - A task interrupted during an action requires authoritative reconciliation before either shell can continue.
 - Simultaneous stale writes cannot silently overwrite a newer revision.
 - Duplicate change-feed delivery is idempotent; cursor advancement cannot skip unapplied changes.
