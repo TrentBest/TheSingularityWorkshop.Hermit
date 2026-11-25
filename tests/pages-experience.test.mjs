@@ -5,6 +5,8 @@ import { readFile } from "node:fs/promises";
 const page = await readFile(new URL("../index.html", import.meta.url), "utf8");
 const playground = await readFile(new URL("../assets/hermit-playground.js", import.meta.url), "utf8");
 const voice = await readFile(new URL("../assets/hermit-voice.js", import.meta.url), "utf8");
+const playgroundCore = await readFile(new URL("../src/hermit-playground.js", import.meta.url), "utf8");
+const catalog = await readFile(new URL("../src/playground-capabilities.js", import.meta.url), "utf8");
 
 test("Pages experience introduces Hermit before the learning modules", () => {
   const moniker = page.indexOf("TheSingularityWorkshop.Visualize/development/docs/assets/moniker.svg");
@@ -64,4 +66,14 @@ test("Pages exposes speech output, optional recognition, and a typed intent fall
   assert.match(voice, /status === "discovery"/);
   assert.match(page, /<script type="module" src="\.\/assets\/hermit-voice\.js"><\/script>/);
   assert.match(playground, /approvalGranted/);
+});
+
+
+test("the browser shell supplies its own validated capability catalog to voice discovery", () => {
+  assert.match(playgroundCore, /PLAYGROUND_CAPABILITY_CATALOG/);
+  assert.match(playgroundCore, /capabilityCatalog: \(\) => PLAYGROUND_CAPABILITY_CATALOG/);
+  assert.match(catalog, /id: "inspect-object"/);
+  assert.match(catalog, /id: "move-object"/);
+  assert.match(playground, /window\.hermitCapabilityCatalog = playground\.capabilityCatalog\(\)/);
+  assert.match(voice, /window\.hermitCapabilityCatalog/);
 });
