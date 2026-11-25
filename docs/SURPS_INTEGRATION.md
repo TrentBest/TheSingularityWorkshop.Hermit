@@ -189,3 +189,12 @@ This proves the central relationship: Hermit is a companion and facilitator; SUR
 8. Mini/Titan spectacle never changes semantic outcomes.
 9. Oracle answers carry provenance and uncertainty; tests remain the final technical check.
 10. Implemented, tested, specified and planned features are always labeled honestly.
+
+
+## Cross-repository coordination
+
+Hermit's consumer questions and owner-repository responses are tracked in [Hermit issue #7](https://github.com/TrentBest/TheSingularityWorkshop.Hermit/issues/7). The issue links directly to the open SURPS, SingularityCity, Gestures, Physics, FSM_COS, GUI, Renderer, Visualize, Gauntlet, and Agents.LLM work items. Implementation should consume the owning repository's confirmed contracts rather than duplicate them.
+
+GitHub coordination convention:
+- **Issue:** ask a question, record a requirement, propose work, or coordinate across repositories.
+- **Pull request:** propose a concrete code/documentation change for review, usually against that repository's development branch.
