@@ -18,6 +18,14 @@ The tests create phone-like web and desktop-like AnyApp shells. They prove that 
 
 **Important limits:** this adapter is volatile process memory. It is not durable, authenticated, encrypted, owner-isolated across tenants, multi-process safe, a browser storage implementation, or a production security boundary. Device enrollment in this fixture is descriptive only; creating a new shell with a new device ID models reinstallation but does not authenticate or revoke a real device. The shell capability set is a testable local boundary, not a substitute for real host policy, approval, secret management or OS permissions.
 
+## Provider-neutral protocol validation (implemented contracts)
+
+`src/continuity-protocol.js` defines schema-version-1 validation helpers for sync requests, conditional state writes, append-event envelopes and server change pages. Owner scope comes from a trusted principal supplied by the host authentication layer; an optional request-body owner claim is checked for mismatch but never establishes identity. Device ID and host type are validated as request metadata, not proof of enrollment or authorization.
+
+The validators bound record size and page size, reject accessors/cycles/sparse arrays/non-plain objects/dangerous property names, require non-negative safe-integer revisions, and require strictly increasing change sequences. Sync cursors are treated as opaque bounded strings. A state-write validator returns the caller's base revision; the eventual storage adapter must enforce compare-and-swap atomically. Event IDs provide the stable identity needed for idempotent append semantics; the validator itself does not persist or deduplicate events.
+
+Automated tests cover trusted-principal scoping, owner mismatch, unsupported schema versions, invalid cursors/page limits, bounded state payloads, event identifiers, unsafe object structures and change-feed ordering. This module does not authenticate users, authorize/enroll/revoke devices, issue cursors, implement a network API, enforce storage transactions or provide durable persistence. Those responsibilities remain with a future host/service adapter.
+
 ## Experience goal
 
 A user can begin a conversation or task with Hermit in a phone browser, close that browser, open AnyApp on a desktop, and continue with the same companion and its verified progress. A later device-specific AnyApp is another shell, not another independently initialized Hermit.
