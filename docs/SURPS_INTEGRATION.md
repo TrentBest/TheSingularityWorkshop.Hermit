@@ -14,7 +14,7 @@ SURPS is a third rail for the Workshop's digital content: it adds a reusable rol
 
 | Domain | Owns | Does not own |
 |---|---|---|
-| SURPS | Character/game concepts, rules, skill checks, party and NPC state, encounter semantics, authoritative game outcomes, adventure/session data | Embodiment, rendering, general-purpose assistant orchestration |
+| SURPS | Rulebook identity and composition, ontology/LOD/compatibility/selection, character options, traits, abilities and disabilities, capabilities/training, rules procedures, and definitions for NPCs, creatures, items, locations, factions and hazards | Embodiment, rendering, general-purpose assistant orchestration, or domain-specific physical execution |
 | Hermit | Companion identity and behavior, goal selection, party/NPC role orchestration, GM facilitation, dialogue routing, bounded autonomy, capability invocation, interruption and evidence | Rules adjudication, physical truth, model authority, rendering engine |
 | Gestures | Reusable physical procedures, keyframes, named local transforms, deterministic evaluation and playback | Rig discovery, physical success, collision, balance, rendering |
 | Physics | Reachability, contact, constraints, collision and achieved physical state | Narrative intent, character rules, presentation |
@@ -23,7 +23,7 @@ SURPS is a third rail for the Workshop's digital content: it adds a reusable rol
 | Visualize | Scene/frame manifestation, SVG evidence and GPU-facing presentation | Game rules or assistant authority |
 | Host / FSM_COS / Foundry | Composition, identity, persistence, resource budgets, trusted capabilities, authorization and execution lifecycle | Creative intent or model-generated permission |
 
-The exact SURPS type names, package references and serialization contracts must be mapped from the SURPS implementation before a concrete adapter is added. Do not invent parallel character-sheet, skill, or encounter schemas in Hermit.
+The current ecosystem direction is that SURPS is the authority/tooling provider: satellite repositories consume shared tooling and book-defined character content rather than duplicating schemas. SURPS owns rulebook registration, selection and composition, while FSM_COS owns MicroBundle runtime composition. The `SurpsRulebookDungeonsAndUnderground` sourcebook wraps `FSM_Dungeon` through the stable provider identity `fsm-dungeon.underground-environment`; the Dungeon domain is not reimplemented inside SURPS. The current book catalogue also includes the CORE Spying v0.1.0 LOD 0 fixture and a pinned Gauntlet profile with campaign scope and source-commit provenance. That is validated reference-fixture evidence, not yet a complete digital play runtime. The resolver and dynamic editor remain unfinished. Exact C# type names, package references and serialized contracts still need to be read from the canonical SURPS development branch before a concrete Hermit adapter is written. Do not invent parallel character-sheet, skill, or encounter schemas in Hermit.
 
 ## Hermit's SURPS roles
 
@@ -44,6 +44,8 @@ NPCs should not all sound or behave like the same assistant prompt. Role context
 ### Game master
 
 Hermit can facilitate or run an adventure: generate an opening situation, portray the world and its inhabitants, present meaningful choices, track unresolved threads, and ask SURPS to resolve rule-governed actions. A GM plan is a proposal and narrative structure, not a license to rewrite character or world state.
+
+The Gauntlet belongs beside this loop as campaign/probe/invariant evaluation and deterministic reporting; it should not be collapsed into Hermit's narrative planner. Domain repositories own their rule/capability/evidence, SURPS composes the selected rulebooks and profiles, and FSM_COS assembles the runtime MicroBundles.
 
 The GM loop should separate:
 1. **Situation** — current authoritative session/world snapshot.
@@ -133,7 +135,7 @@ Hermit should not send every thought or movement to an LLM. Keep the existing ar
 - LLMs are used for natural-language understanding, creative generation, unfamiliar semantic interpretation, NPC portrayal, and higher-level GM reasoning.
 - The host validates all proposed actions and owns permission, execution and persistence.
 
-An Agents.LLM / Oracle project is a promising Workshop knowledge service if its repository and current implementation are confirmed. The Oracle should retrieve versioned, provenance-bearing knowledge about Workshop concepts, APIs, contracts, examples and known limitations. It should return evidence and candidate structures to a consuming model; it should not be treated as infallible, as a permission service, or as a replacement for compiler/tests.
+An Agents.LLM / Oracle experiment is a promising Workshop knowledge service. The Oracle should retrieve versioned, provenance-bearing knowledge about Workshop concepts, APIs, contracts, examples and known limitations. It should return evidence and candidate structures to a consuming model; it should not be treated as infallible, as a permission service, or as a replacement for compiler/tests.
 
 A practical Oracle retrieval result should include:
 - canonical concept/package identity and version;
