@@ -9,7 +9,7 @@ const phone = continuity.createShell({
   deviceId: "phone", hostType: "web", capabilities: ["inspect-item"]
 });
 const desktop = continuity.createShell({
-  deviceId: "desktop", hostType: "anyapp", capabilities: ["inspect-item", "filesystem"]
+  deviceId: "desktop", hostType: "anyapp", capabilities: ["inspect-item", "filesystem", "save-note"]
 });
 
 const registry = new CapabilityRegistry();
