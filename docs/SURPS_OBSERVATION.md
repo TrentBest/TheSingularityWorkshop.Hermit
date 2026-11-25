@@ -12,9 +12,9 @@ The host supplies one trusted `readSession(sessionId, { signal })` function. It 
 - session identity and monotonic session revision;
 - the active player-character identity;
 - participant identity, display name, role, condition summary and location;
-- explicitly scoped knowledge entries, each with an identity and source reference.
+- explicitly scoped knowledge entries, each with an identity, source reference, and SURPS evidence state: Observed, Inferred, Claimed, Verified, or Reported.
 
-The projection intentionally excludes characteristics, skills, derived values, rule procedures, inventory mutation, action resolution and arbitrary extension bags. Those remain in canonical SURPS and owner-domain records. This contract is a host projection that combines the selected MicroBundle's identity/version with participant and knowledge records supplied by their owning domains; it is context for planning and portrayal, not a substitute rules model.
+The projection preserves the CORE Spying distinction between world truth and participant knowledge, including the five information states. It intentionally excludes characteristics, skills, derived values, rule procedures, inventory mutation, action resolution and arbitrary extension bags. Those remain in canonical SURPS and owner-domain records. This contract is a host projection that combines the selected MicroBundle's identity/version with participant and knowledge records supplied by their owning domains; it is context for planning and portrayal, not a substitute rules model.
 
 ## Safety properties
 
