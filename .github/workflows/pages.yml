@@ -51,10 +51,16 @@ jobs:
           test -s _site/src/voice.js
           test -s _site/src/capability-catalog.js
           test -s _site/src/playground-capabilities.js
+          test -s _site/src/surps-observation.js
+          test -s _site/src/surps-role-context.js
+          test -s _site/assets/embassy-reception-session.fixture.json
+          test -s _site/assets/embassy-reception-role-profiles.json
+          test -s _site/assets/hermit-party.js
           test -s _site/docs/VOICE_INTERACTION.md
           test -s _site/docs/CAPABILITY_CATALOG.md
           test -s _site/docs/ROADMAP.md
           test -s _site/docs/PAGES_EXPERIENCE.md
+          test -s _site/docs/SURPS_ROLE_CONTEXT.md
           grep -F '<script type="module" src="./assets/hermit-playground.js"></script>' _site/index.html
           grep -F '<script type="module" src="./assets/neural-network-demo.js"></script>' _site/index.html
           grep -F '<script type="module" src="./assets/hermit-voice.js"></script>' _site/index.html
