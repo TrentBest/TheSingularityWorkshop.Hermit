@@ -139,6 +139,22 @@ export function validateEventAppend(input, principal) {
   return Object.freeze({ ...base, eventId, eventType, payload });
 }
 
+/** Validates and defensively clones an owner-scoped state record returned by storage. */
+export function validateStateRecord(input, expectedOwnerId) {
+  input = boundedRecord(input, "State record");
+  if (typeof expectedOwnerId !== "string" || expectedOwnerId.length === 0 ||
+      input.ownerId !== expectedOwnerId) {
+    fail("OWNER_MISMATCH", "State record owner does not match the authenticated account.");
+  }
+  revision(input.revision, "state.revision");
+  assertPlainRecord(input.values, "state.values");
+  return Object.freeze({
+    ownerId: expectedOwnerId,
+    revision: input.revision,
+    values: Object.freeze(boundedRecord(input.values, "state.values"))
+  });
+}
+
 /** Validates a server change page before a client applies it and advances its cursor. */
 export function validateChangePage(input, expectedOwnerId) {
   input = boundedRecord(input, "Change page");
