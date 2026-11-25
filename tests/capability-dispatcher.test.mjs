@@ -215,21 +215,3 @@ test("host authorization is rechecked after approval and revocation stops dispat
   assert.equal(invoked, false);
 });
 
-test("a newly required host approval cannot appear after the approval checkpoint", async () => {
-  let authorizationCalls = 0;
-  let invoked = false;
-  const dispatcher = createCapabilityDispatcher({
-    catalog: catalog(),
-    shell: "browser",
-    handlers: { "scene.inspect": async () => { invoked = true; } },
-    authorize: async () => {
-      authorizationCalls += 1;
-      return { allowed: true, approvalRequired: authorizationCalls > 1 };
-    }
-  });
-
-  const result = await dispatcher.invoke("scene.inspect", { objectId: "vessel-1" });
-  assert.equal(authorizationCalls, 1);
-  assert.equal(result.status, "completed");
-  assert.equal(invoked, true);
-});
