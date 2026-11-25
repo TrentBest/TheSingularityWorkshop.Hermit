@@ -49,6 +49,63 @@ function policyDecision(value) {
   });
 }
 
+function snapshotHandlerResult(value, path = "$", ancestors = new WeakSet(), budget = { nodes: 0 }) {
+  budget.nodes += 1;
+  if (budget.nodes > 4096 || path.split(/[.[]/).length > 32) {
+    throw new TypeError("Host handler result exceeds structural limits.");
+  }
+  if (value === null || typeof value === "string" || typeof value === "boolean") return value;
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value !== "object" || ancestors.has(value)) {
+    throw new TypeError("Host handler result must contain acyclic JSON data.");
+  }
+  ancestors.add(value);
+  if (Array.isArray(value)) {
+    if (Object.getPrototypeOf(value) !== Array.prototype || value.length > 4096) {
+      throw new TypeError("Host handler result contains an unsupported array.");
+    }
+    const descriptors = Object.getOwnPropertyDescriptors(value);
+    const keys = Reflect.ownKeys(descriptors);
+    if (keys.some(key => key !== "length" &&
+        (typeof key !== "string" || !/^(0|[1-9]\\d*)$/.test(key) || Number(key) >= value.length))) {
+      throw new TypeError("Host handler result arrays must not contain extra properties.");
+    }
+    const result = [];
+    for (let index = 0; index < value.length; index += 1) {
+      const descriptor = descriptors[String(index)];
+      if (!descriptor || !descriptor.enumerable || !Object.hasOwn(descriptor, "value")) {
+        throw new TypeError("Host handler result arrays must be dense data arrays.");
+      }
+      result.push(snapshotHandlerResult(descriptor.value, `${path}[${index}]`, ancestors, budget));
+    }
+    ancestors.delete(value);
+    return Object.freeze(result);
+  }
+  if (Object.getPrototypeOf(value) !== Object.prototype && Object.getPrototypeOf(value) !== null) {
+    throw new TypeError("Host handler result objects must be plain data objects.");
+  }
+  const descriptors = Object.getOwnPropertyDescriptors(value);
+  const keys = Reflect.ownKeys(descriptors);
+  if (keys.some(key => typeof key !== "string")) {
+    throw new TypeError("Host handler result must not contain symbol properties.");
+  }
+  const result = {};
+  for (const key of keys) {
+    const descriptor = descriptors[key];
+    if (!descriptor.enumerable || !Object.hasOwn(descriptor, "value")) {
+      throw new TypeError("Host handler result must contain enumerable data properties only.");
+    }
+    Object.defineProperty(result, key, {
+      value: snapshotHandlerResult(descriptor.value, `${path}.${key}`, ancestors, budget),
+      enumerable: true,
+      writable: false,
+      configurable: false
+    });
+  }
+  ancestors.delete(value);
+  return Object.freeze(result);
+}
+
 /**
  * Creates a host-owned capability dispatcher.
  *
@@ -137,12 +194,16 @@ export function createCapabilityDispatcher({
       }
 
       try {
-        const result = await handler(Object.freeze({
+        const handlerResult = await handler(Object.freeze({
           capability,
           input: validatedInput,
           policy: decision,
           approvalGranted
         }));
+        const result = snapshotHandlerResult(handlerResult);
+        if (new TextEncoder().encode(JSON.stringify(result)).length > 16_384) {
+          throw new TypeError("Host handler result exceeds the serialized size limit.");
+        }
         return Object.freeze({ status: "completed", capabilityId, result });
       } catch {
         return Object.freeze({ status: "failed", capabilityId, reason: "host-handler-failed" });
