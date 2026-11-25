@@ -90,7 +90,11 @@ function validateInputSchema(schema) {
   }
   return Object.freeze({
     type: "object",
-    properties: Object.freeze(Object.fromEntries(names.map(name => [name, Object.freeze({ ...properties[name] })]))),
+    properties: Object.freeze(Object.fromEntries(names.map(name => {
+      const definition = { ...properties[name] };
+      if (definition.enum !== undefined) definition.enum = Object.freeze([...definition.enum]);
+      return [name, Object.freeze(definition)];
+    }))),
     required: Object.freeze([...required]),
     additionalProperties: false
   });
@@ -118,6 +122,9 @@ export function validateCapabilityCatalog(value) {
     const description = text(entry.description, "capability description");
     if (!RISK_LEVELS.has(entry.risk)) fail("capability risk must be read-only, reversible, consequential, or external.");
     if (typeof entry.approvalRequired !== "boolean") fail("approvalRequired must be boolean.");
+    if (["consequential", "external"].includes(entry.risk) && !entry.approvalRequired) {
+      fail("consequential and external capabilities must declare approvalRequired=true.");
+    }
     safeArray(entry.examples, "examples", MAX_EXAMPLES);
     if (!Array.isArray(entry.examples) || entry.examples.length > MAX_EXAMPLES) fail("examples must be an array of at most " + MAX_EXAMPLES + " phrases.");
     const examples = entry.examples.map((example, i) => text(example, "example " + i, 160));
@@ -156,7 +163,7 @@ export function findCapability(catalog, shell, capabilityId) {
 }
 
 export function describeCapabilities(catalog, shell) {
-  return discoverCapabilities(catalog, shell).map(item => Object.freeze({
+  return Object.freeze(discoverCapabilities(catalog, shell).map(item => Object.freeze({
     id: item.id,
     title: item.title,
     description: item.description,
@@ -164,7 +171,7 @@ export function describeCapabilities(catalog, shell) {
     risk: item.risk,
     approvalRequired: item.approvalRequired,
     presentation: item.presentation
-  }));
+  })));
 }
 
 export const CAPABILITY_CATALOG_VERSION = CATALOG_VERSION;
