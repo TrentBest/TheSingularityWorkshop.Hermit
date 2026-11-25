@@ -108,3 +108,10 @@ This roadmap distinguishes the domain vision from current executable evidence.
 ## Definition of done for an embodied vertical slice
 
 A user places a glass container on a counter. Hermit notices it, approaches within safe range, inspects it, proposes a harmless interaction, receives host policy approval where required, performs it through physics-aware adapters, verifies the actual result, and yields immediately when interrupted. Tests cover success, denial, unreachable object, physics rejection, interruption and recovery.
+
+
+## Hermit cross-repository coordination register
+
+- [x] Open owner-repository contract questions and track responses in [Hermit issue #7](https://github.com/TrentBest/TheSingularityWorkshop.Hermit/issues/7).
+- [ ] Replace provisional host projections with canonical owner-domain contracts as those repositories answer.
+- [ ] Prove one end-to-end, host-authorized action and verify its authoritative result.
