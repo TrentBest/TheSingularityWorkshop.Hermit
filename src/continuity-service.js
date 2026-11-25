@@ -2,6 +2,8 @@ import {
   ContinuityProtocolError,
   validateChangePage,
   validateEventAppend,
+  validateEventAppendResult,
+  validateStateRecord,
   validateStateWrite,
   validateSyncRequest
 } from "./continuity-protocol.js";
