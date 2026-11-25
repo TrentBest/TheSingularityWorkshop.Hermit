@@ -17,9 +17,13 @@ function ownDataObject(value, label) {
     fail(label + " must be a plain object.");
   }
   if (Object.getOwnPropertySymbols(value).length) fail(label + " must not contain symbol keys.");
-  for (const [key, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(value))) {
+  const descriptors = Object.getOwnPropertyDescriptors(value);
+  for (const key of Reflect.ownKeys(descriptors)) {
+    if (typeof key !== "string") fail(label + " must not contain symbol keys.");
+    const descriptor = descriptors[key];
     if (key === "__proto__" || key === "prototype" || key === "constructor") fail(label + " contains a forbidden key.");
     if (!("value" in descriptor)) fail(label + " must not contain accessors.");
+    if (!descriptor.enumerable) fail(label + " must not contain hidden properties.");
   }
   return value;
 }
