@@ -2,13 +2,13 @@
 
 ## Status
 
-Implemented as a provider-neutral, read-only host adapter contract in `src/surps-observation.js`. The fixture tests use synthetic data. This is **not** a live SURPS package integration and does not claim the canonical SURPS repository's concrete types have been mapped.
+Implemented as a selected content-neutral, read-only host adapter contract in `src/surps-observation.js`. The fixture tests use synthetic data. This is **not** a live SURPS package integration and does not claim the canonical SURPS repository's concrete types have been mapped.
 
 ## Contract
 
 The host supplies one trusted `readSession(sessionId, { signal })` function. Hermit wraps its result in a bounded immutable observation containing:
 
-- provider identity and provider version;
+- selected MicroBundle identity and version;
 - session identity and monotonic session revision;
 - the active player-character identity;
 - participant identity, display name, role, condition summary and location;
