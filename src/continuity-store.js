@@ -1,7 +1,18 @@
+const MAX_SHARED_RECORD_BYTES = 65_536;
 const DEFAULT_STATE = Object.freeze({ schemaVersion: 1, revision: 0, values: {} });
 
-function clone(value) {
-  return structuredClone(value);
+function cloneJson(value, label) {
+  let serialized;
+  try {
+    serialized = JSON.stringify(value);
+  } catch {
+    throw new TypeError(`${label} must contain JSON-compatible data only.`);
+  }
+  if (typeof serialized !== "string" ||
+      new TextEncoder().encode(serialized).length > MAX_SHARED_RECORD_BYTES) {
+    throw new TypeError(`${label} must be JSON-compatible and at most 65536 bytes.`);
+  }
+  return JSON.parse(serialized);
 }
 
 function freeze(value) {
@@ -27,7 +38,7 @@ export function createInMemoryContinuityStore({ ownerId, hermitId }) {
   assertIdentifier(ownerId, "ownerId");
   assertIdentifier(hermitId, "hermitId");
 
-  let state = clone(DEFAULT_STATE);
+  let state = cloneJson(DEFAULT_STATE, "Initial state");
   const events = new Map();
   const checkpoints = new Map();
   const enrolledDevices = new Map();
@@ -69,7 +80,7 @@ export function createInMemoryContinuityStore({ ownerId, hermitId }) {
         return Object.freeze({ ownerId, hermitId });
       },
       async readState() {
-        return freeze(clone(state));
+        return freeze(cloneJson(state, "Shared state"));
       },
       async compareAndSwapState(expectedRevision, values) {
         if (!Number.isSafeInteger(expectedRevision) || expectedRevision < 0) {
@@ -80,7 +91,7 @@ export function createInMemoryContinuityStore({ ownerId, hermitId }) {
           throw new TypeError("Shared state values must be a plain object.");
         }
         if (state.revision !== expectedRevision) return false;
-        state = { schemaVersion: 1, revision: expectedRevision + 1, values: clone(values) };
+        state = { schemaVersion: 1, revision: expectedRevision + 1, values: cloneJson(values, "Shared state values") };
         return true;
       },
       async appendEvent(event) {
@@ -89,11 +100,11 @@ export function createInMemoryContinuityStore({ ownerId, hermitId }) {
         }
         assertIdentifier(event.eventId, "event.eventId");
         if (events.has(event.eventId)) return false;
-        events.set(event.eventId, freeze(clone(event)));
+        events.set(event.eventId, freeze(cloneJson(event, "Event")));
         return true;
       },
       async readEvents() {
-        return [...events.values()].map(event => clone(event));
+        return [...events.values()].map(event => cloneJson(event, "Event"));
       },
       hasCapability(capabilityId) {
         return localCapabilities.has(capabilityId);
