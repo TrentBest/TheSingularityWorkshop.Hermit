@@ -1,8 +1,22 @@
 # Cross-device Hermit continuity
 
-> One companion, many shells. Hermit's identity and durable progress follow the user; authority and device presence remain local to each host.
+> One companion, many shells. Hermit's identity and shared progress follow the owner; authority and device presence remain local to each host.
 
-This document specifies the next portability boundary. It is an architecture contract, not a claim that remote synchronization, account authentication, browser persistence, or AnyApp integration already exists.
+This is an architecture contract plus a deliberately limited in-memory reference proof. It is not a claim that remote synchronization, account authentication, browser persistence, or AnyApp integration exists.
+
+## Local two-shell proof (implemented reference)
+
+`src/continuity-store.js` provides a process-local shared authority for tests and demonstrations:
+
+- stable owner and Hermit identifiers returned to each shell;
+- versioned shared companion state with compare-and-swap revisions;
+- append-only event identity with duplicate-delivery suppression;
+- one shared checkpoint adapter that can be wrapped by the existing checkpoint repository;
+- separate shell instances with private capability sets.
+
+The tests create a phone-like web shell and a desktop-like AnyApp shell. They prove that both see the same identity, shared state and task checkpoint, while their capability sets remain distinct. Stale shared-state writes fail rather than overwriting newer revisions.
+
+**Important limits:** this adapter is volatile process memory. It is not durable, authenticated, encrypted, owner-isolated across tenants, multi-process safe, a browser storage implementation, or a production security boundary. Device enrollment in this fixture is descriptive only. The shell capability set is a testable local boundary, not a substitute for real host policy, approval, secret management or OS permissions.
 
 ## Experience goal
 
@@ -11,8 +25,6 @@ A user can begin a conversation or task with Hermit in a phone browser, close th
 The user should not need to export a transcript, manually copy task state, or explain the same project context again merely because the active device changed.
 
 ## Separate identity, state, presence, and authority
-
-These concerns must not be collapsed into one device profile:
 
 | Concern | Scope | Owner |
 |---|---|---|
@@ -85,8 +97,6 @@ Every synchronized record needs an owner, record ID, schema version, revision, u
 
 ## Offline behavior
 
-Offline support is useful, but it must be honest about authority.
-
 - Read-only cached history and profile data may remain available subject to local protection and retention rules.
 - Draft messages and explicitly offline-safe work may queue locally with stable IDs.
 - A local Hermit may plan against a clearly labeled snapshot, but may not claim that remote state is current.
@@ -96,15 +106,13 @@ Offline support is useful, but it must be honest about authority.
 
 ## Privacy, retention and deletion
 
-Cross-device continuity increases the impact of account compromise and accidental retention. Define data classes before selecting storage:
-
-- encrypt transport and durable storage;
-- isolate owners and authorize every record access server-side;
-- minimize what each device caches and protect local caches with platform facilities;
-- define export, retention, deletion and account-recovery behavior;
-- propagate deletion/tombstone events to enrolled devices and expire stale offline copies within a documented bound;
-- preserve provenance and audit for consequential actions without retaining unnecessary sensitive content;
-- make shared versus device-local storage visible to the user.
+- Encrypt transport and durable storage.
+- Isolate owners and authorize every record access server-side.
+- Minimize device caches and protect them with platform facilities.
+- Define export, retention, deletion and account-recovery behavior.
+- Propagate deletion/tombstone events to enrolled devices and expire stale offline copies within a documented bound.
+- Preserve provenance and audit for consequential actions without retaining unnecessary sensitive content.
+- Make shared versus device-local storage visible to the user.
 
 ## Suggested contract boundaries
 
@@ -117,17 +125,17 @@ Keep these as separate adapters/contracts rather than coupling the runtime to a 
 - HostGrant: short-lived, narrowly scoped authority local to one host/device/session.
 - CheckpointRepository: existing task persistence and compare-and-swap boundary.
 
-These names are design vocabulary, not implemented exported APIs. Do not add a provider-specific dependency to Hermit's deterministic core.
+The names above are design vocabulary, not all implemented exported APIs. The local reference adapter is intentionally smaller and provider-neutral.
 
-## Implementation sequence
+## Remaining implementation sequence
 
-1. **Contract and threat model:** define identity ownership, data classes, record schemas, conflict semantics, device revocation and host-grant boundaries.
-2. **Local continuity adapter:** prove stable Hermit identity and versioned state can be loaded across two local shells without a network service.
-3. **Server authority:** add authenticated owner-scoped storage, conditional writes, append-only events and a paged change feed. Select infrastructure only after the contract and workload are tested.
-4. **Web shell:** make the phone-sized browser experience a real authenticated shell with safe session resume and explicit local/offline status.
-5. **AnyApp desktop shell:** enroll the desktop, sync the same companion/task state, and independently register desktop capabilities.
-6. **Offline and conflict tests:** simulate duplicate delivery, stale revisions, reconnect, revoked devices, partial sync, process termination and uncertain actions.
-7. **Device-specific apps:** add platform shells only after the web and desktop contracts prove portable.
+1. Define authenticated owner identity, data classes, device revocation and host-grant boundaries.
+2. Replace the volatile reference store with owner-scoped durable storage and process-safe atomic conditional writes.
+3. Add append-only conversation events and a paged change feed with durable sync cursors.
+4. Integrate a real authenticated phone-sized web shell with explicit online/offline status.
+5. Integrate AnyApp desktop as another shell with independent capability registration.
+6. Test offline queues, duplicate delivery, stale revisions, reconnect, revocation, partial sync, process termination and uncertain actions.
+7. Add device-specific apps after web and desktop contracts prove portable.
 
 ## Verification gates
 
@@ -143,4 +151,4 @@ These names are design vocabulary, not implemented exported APIs. Do not add a p
 
 ## Explicitly not implemented yet
 
-The current repository has versioned task checkpoints and a host-supplied atomic compare-and-swap repository contract, plus explicit host-mediated reconciliation. It does not yet provide account identity, device enrollment, a network continuity API, shared memory/conversation storage, sync cursors, offline queues, production encryption, device revocation, a web sign-in flow, or AnyApp integration. The existing in-memory checkpoint adapter is a test fixture, not durable multi-device storage.
+There is now a process-local two-shell reference adapter and automated tests for shared identity/state/events/checkpoints plus capability isolation and stale-write rejection. The repository still does not provide account identity, device enrollment or revocation, a network continuity API, durable shared memory/conversation storage, sync cursors, offline queues, production encryption, a web sign-in flow, or AnyApp integration. The in-memory adapter is a deterministic test/demo fixture, not durable multi-device storage.
