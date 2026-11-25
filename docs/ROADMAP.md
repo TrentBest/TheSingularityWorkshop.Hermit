@@ -35,9 +35,11 @@ This roadmap distinguishes the domain vision from current executable evidence.
 ## Capability discovery
 - [x] Define and test a provider-neutral, versioned host capability catalog with shell-scoped discovery, bounded declarative input schemas, risk metadata and explicit approval metadata.
 - [x] Validate untrusted capability arguments against the selected shell's declared schema and return a detached immutable snapshot before host handoff.
+- [x] Add a provider-neutral host dispatcher that requires host authorization on every invocation, enforces approval if either host policy or catalog metadata requires it, and invokes only trusted host-injected handlers.
 - [x] Wire the browser playground's host-owned fixture catalog into voice capability discovery.
 - [ ] Supply equivalent host-owned catalogs to AnyApp, server and VR shells.
-- [ ] Inject host-owned capability catalogs into browser, AnyApp and VR shells; keep authorization and execution in each host's policy boundary.
+- [ ] Integrate the tested dispatcher with the browser playground's real host policy and post-action verification.
+- [ ] Inject host-owned capability catalogs into AnyApp, server and VR shells; keep authorization and execution in each host's policy boundary.
 - [ ] Render live capability discovery through GUI and route selected capability IDs through Hermit's validated planner and execution loop.
 
 ## Voice interaction
