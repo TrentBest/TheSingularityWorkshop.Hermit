@@ -104,13 +104,13 @@ export function createCapabilityDispatcher({
       }
 
       const approvalRequired = capability.approvalRequired || decision.approvalRequired;
+      let approvalGranted = false;
       if (approvalRequired) {
         if (typeof requestApproval !== "function") {
           return Object.freeze({ status: "approval-required", capabilityId, reason: "approval-provider-missing" });
         }
-        let approved = false;
         try {
-          approved = (await requestApproval(Object.freeze({
+          approvalGranted = (await requestApproval(Object.freeze({
             capability,
             input: validatedInput,
             policy: decision
@@ -118,7 +118,22 @@ export function createCapabilityDispatcher({
         } catch {
           return Object.freeze({ status: "approval-denied", capabilityId, reason: "approval-provider-error" });
         }
-        if (!approved) return Object.freeze({ status: "approval-denied", capabilityId });
+        if (!approvalGranted) return Object.freeze({ status: "approval-denied", capabilityId });
+
+        // Human approval may take time. Recheck host authority immediately
+        // before dispatch so revocation or changed policy cannot be bypassed.
+        try {
+          decision = policyDecision(await authorize(request));
+        } catch {
+          return Object.freeze({ status: "denied", capabilityId, reason: "host-policy-error" });
+        }
+        if (!decision) return Object.freeze({ status: "denied", capabilityId, reason: "invalid-host-policy-decision" });
+        if (!decision.allowed) {
+          return Object.freeze({ status: "denied", capabilityId, reason: decision.reason ?? "host-policy-denied" });
+        }
+        if (!capability.approvalRequired && decision.approvalRequired && !approvalGranted) {
+          return Object.freeze({ status: "approval-required", capabilityId, reason: "host-policy-changed" });
+        }
       }
 
       try {
@@ -126,7 +141,7 @@ export function createCapabilityDispatcher({
           capability,
           input: validatedInput,
           policy: decision,
-          approvalGranted: approvalRequired
+          approvalGranted
         }));
         return Object.freeze({ status: "completed", capabilityId, result });
       } catch {
