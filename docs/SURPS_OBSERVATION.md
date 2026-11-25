@@ -22,7 +22,7 @@ The projection intentionally excludes characteristics, skills, derived values, r
 - Stable participant and knowledge identities must be unique within a snapshot.
 - The active identity must refer to a player-character.
 - Participant and knowledge counts and text fields are bounded.
-- The adapter is read-only and binds each request to the requested session identity.
+- The adapter is read-only and binds each request to the requested session identity. A role-context projection exposes only the selected participant's own scoped knowledge; it does not leak another participant's facts into NPC portrayal.
 - A single adapter instance rejects revision rollback for a session.
 - Every result is revalidated and copied into a deeply frozen snapshot.
 - No observation value grants a capability or authorizes an action.
