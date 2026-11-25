@@ -48,7 +48,7 @@ export function createContinuityService({ authenticate, authorizeDevice, store }
     requireFunction(store[method], `store.${method}`);
   }
 
-  async function authorize(context, request, operation) {
+  async function authenticatedPrincipal(context) {
     let principal;
     try {
       principal = await authenticate(context);
@@ -58,20 +58,6 @@ export function createContinuityService({ authenticate, authorizeDevice, store }
     if (!principal || typeof principal.ownerId !== "string" || principal.ownerId.length === 0) {
       serviceFail("UNAUTHENTICATED", "A trusted authenticated owner principal is required.");
     }
-    let allowed;
-    try {
-      allowed = await authorizeDevice({
-        principal,
-        deviceId: request.deviceId,
-        hostType: request.hostType,
-        operation
-      });
-    } catch {
-      serviceFail("DEVICE_UNAUTHORIZED", "The host could not authorize this device.");
-    }
-    if (allowed !== true) {
-      serviceFail("DEVICE_UNAUTHORIZED", "The device is not enrolled, active, or authorized for this operation.");
-    }
     return principal;
   }
 
@@ -79,10 +65,7 @@ export function createContinuityService({ authenticate, authorizeDevice, store }
     let request;
     try {
       // Owner validation happens after authentication, so the body cannot select identity.
-      const principal = await authenticate(context);
-      if (!principal || typeof principal.ownerId !== "string" || principal.ownerId.length === 0) {
-        serviceFail("UNAUTHENTICATED", "A trusted authenticated owner principal is required.");
-      }
+      const principal = await authenticatedPrincipal(context);
       request = validateSyncRequest(body, principal);
       let allowed;
       try {
