@@ -1,4 +1,4 @@
-import { describeCapabilities } from "./capability-catalog.js";
+import { describeCapabilities, findCapability } from "./capability-catalog.js";
 import { PLAYGROUND_CAPABILITY_CATALOG } from "./playground-capabilities.js";
 
 export class VoiceAdapterError extends Error {
@@ -255,23 +255,28 @@ export function resolvePlaygroundVoiceIntent(value, objects = [], catalog = PLAY
   }
 
   const requested = match[1].trim();
+  const capabilityId = move ? "move-object" : "inspect-object";
+  const capability = findCapability(catalog, shell, capabilityId);
+  if (!capability) {
+    return { status: "unsupported", message: "This shell does not advertise that interaction." };
+  }
   const object = objects.find(item =>
     item.id.toLocaleLowerCase("en-US") === requested ||
     item.name.toLocaleLowerCase("en-US") === requested);
   if (!object) {
     return { status: "not-found", message: "I could not find “" + requested + "” in this Workshop scene." };
   }
-  if (move) {
+  if (move || capability.approvalRequired || capability.risk !== "read-only") {
     return {
       status: "approval-required",
-      capabilityId: "move-object",
+      capabilityId,
       objectId: object.id,
       message: "I can move " + object.name + " to the workbench. Please approve that change in the host interface."
     };
   }
   return {
     status: "ready",
-    capabilityId: "inspect-object",
+    capabilityId,
     objectId: object.id,
     message: "I can inspect " + object.name + " now."
   };
