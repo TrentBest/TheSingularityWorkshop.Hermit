@@ -9,6 +9,8 @@ const playgroundCore = await readFile(new URL("../src/hermit-playground.js", imp
 const catalog = await readFile(new URL("../src/playground-capabilities.js", import.meta.url), "utf8");
 const party = await readFile(new URL("../assets/hermit-party.js", import.meta.url), "utf8");
 const surpsObservation = await readFile(new URL("../src/surps-observation.js", import.meta.url), "utf8");
+const surpsRoleContext = await readFile(new URL("../src/surps-role-context.js", import.meta.url), "utf8");
+const roleProfiles = JSON.parse(await readFile(new URL("../assets/embassy-reception-role-profiles.json", import.meta.url), "utf8"));
 
 test("Pages experience introduces Hermit before the learning modules", () => {
   const moniker = page.indexOf("TheSingularityWorkshop.Visualize/development/docs/assets/moniker.svg");
@@ -86,7 +88,11 @@ test("Hermit presents a diegetic party scene using versioned, participant-scoped
   assert.match(page, /id="hermit-party-response"/);
   assert.match(page, /<script type="module" src="\.\/assets\/hermit-party\.js"><\/script>/);
   assert.match(party, /createSurpsObservationAdapter/);
-  assert.match(party, /createParticipantRoleContext/);
+  assert.match(party, /createSurpsRoleContext/);
+  assert.match(surpsRoleContext, /permittedKnowledgeIds/);
+  assert.match(page, /data-party-member="kitchen-contact"/);
+  assert.equal(roleProfiles.profiles.filter(profile => profile.mode === "npc-portrayal").length, 2);
+  assert.equal(new Set(roleProfiles.profiles.map(profile => profile.agentId)).size, 1);
   assert.match(party, /surps\.microbundle\.core\.spying/);
   assert.match(surpsObservation, /session revision moved backwards/);
   assert.match(surpsObservation, /participant's authorized portrayal context/);
