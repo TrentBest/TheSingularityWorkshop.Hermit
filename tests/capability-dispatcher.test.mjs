@@ -91,7 +91,7 @@ test("consequential capability requires explicit host approval before handler in
   });
 
   const result = await dispatcher.invoke("scene.move", { objectId: "vessel-1", destination: "workbench" });
-  assert.deepEqual(order, ["authorize", "approval", "handler"]);
+  assert.deepEqual(order, ["authorize", "approval", "authorize", "handler"]);
   assert.equal(result.status, "completed");
 });
 
@@ -190,4 +190,46 @@ test("handler failures return a bounded failure status without leaking exception
   });
   const result = await dispatcher.invoke("scene.inspect", { objectId: "vessel-1" });
   assert.deepEqual(result, { status: "failed", capabilityId: "scene.inspect", reason: "host-handler-failed" });
+});
+
+test("host authorization is rechecked after approval and revocation stops dispatch", async () => {
+  let authorizationCalls = 0;
+  let invoked = false;
+  const dispatcher = createCapabilityDispatcher({
+    catalog: catalog(),
+    shell: "browser",
+    handlers: { "scene.move": async () => { invoked = true; } },
+    authorize: async () => {
+      authorizationCalls += 1;
+      return authorizationCalls === 1
+        ? { allowed: true }
+        : { allowed: false, reason: "grant-revoked-during-approval" };
+    },
+    requestApproval: async () => true
+  });
+
+  const result = await dispatcher.invoke("scene.move", { objectId: "vessel-1", destination: "workbench" });
+  assert.equal(authorizationCalls, 2);
+  assert.equal(result.status, "denied");
+  assert.equal(result.reason, "grant-revoked-during-approval");
+  assert.equal(invoked, false);
+});
+
+test("a newly required host approval cannot appear after the approval checkpoint", async () => {
+  let authorizationCalls = 0;
+  let invoked = false;
+  const dispatcher = createCapabilityDispatcher({
+    catalog: catalog(),
+    shell: "browser",
+    handlers: { "scene.inspect": async () => { invoked = true; } },
+    authorize: async () => {
+      authorizationCalls += 1;
+      return { allowed: true, approvalRequired: authorizationCalls > 1 };
+    }
+  });
+
+  const result = await dispatcher.invoke("scene.inspect", { objectId: "vessel-1" });
+  assert.equal(authorizationCalls, 1);
+  assert.equal(result.status, "completed");
+  assert.equal(invoked, true);
 });
