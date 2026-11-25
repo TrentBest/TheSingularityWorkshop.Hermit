@@ -49,7 +49,7 @@ function text(value, label, maximum = MAX_TEXT) {
 }
 
 function validateInputSchema(schema) {
-  if (schema === undefined) return null;
+  if (schema === undefined || schema === null) return null;
   ownDataObject(schema, "inputSchema");
   if (schema.type !== "object" || schema.additionalProperties !== false) {
     fail("inputSchema must be an object schema with additionalProperties=false.");
@@ -148,7 +148,7 @@ export function validateCapabilityCatalog(value) {
       }
     }
     let presentation = null;
-    if (entry.presentation !== undefined) {
+    if (entry.presentation !== undefined && entry.presentation !== null) {
       ownDataObject(entry.presentation, "presentation");
       presentation = Object.freeze({
         surface: text(entry.presentation.surface, "presentation surface", 64),
