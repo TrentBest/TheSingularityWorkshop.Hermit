@@ -161,3 +161,48 @@ test("a shell cannot invoke a capability granted only to another shell", async (
   assert.equal(phone.hasCapability("filesystem"), false);
   assert.equal(desktop.hasCapability("filesystem"), true);
 });
+
+test("a newly created shell restores shared progress without inheriting the prior shell authority", async () => {
+  const store = createInMemoryContinuityStore({ ownerId: "owner-1", hermitId: "hermit-1" });
+  const originalPhone = store.createShell({
+    deviceId: "phone-install-1", hostType: "web", capabilities: ["camera", "location"]
+  });
+  const repository = createCheckpointRepository(originalPhone.checkpointAdapter);
+
+  assert.equal(await originalPhone.compareAndSwapState(0, {
+    companionStatus: "working", currentTaskId: "task-reinstall"
+  }), true);
+  await originalPhone.appendEvent({
+    eventId: "evt-reinstall-1", type: "task-progress", taskId: "task-reinstall"
+  });
+  await repository.save({
+    taskId: "task-reinstall", task: "Continue the Workshop setup.", revision: 1,
+    phase: "ready", nextStep: 2, observation: { inspected: true, prepared: true },
+    outcomes: [{ step: 1, verified: true }, { step: 2, verified: true }],
+    pendingAction: null
+  });
+
+  // Model a fresh app/browser installation: same owner and companion authority,
+  // but a new device identity and a newly supplied local capability set.
+  const reinstalledPhone = store.createShell({
+    deviceId: "phone-install-2", hostType: "web", capabilities: ["camera"]
+  });
+  const restoredRepository = createCheckpointRepository(reinstalledPhone.checkpointAdapter);
+  const restored = await restoredRepository.load("task-reinstall");
+
+  assert.deepEqual(reinstalledPhone.identity(), originalPhone.identity());
+  assert.deepEqual((await reinstalledPhone.readState()).values, {
+    companionStatus: "working", currentTaskId: "task-reinstall"
+  });
+  assert.deepEqual(await reinstalledPhone.readEvents(), [{
+    eventId: "evt-reinstall-1", type: "task-progress", taskId: "task-reinstall"
+  }]);
+  assert.equal(restored.checkpoint.nextStep, 2);
+  assert.deepEqual(restored.checkpoint.outcomes, [
+    { step: 1, verified: true }, { step: 2, verified: true }
+  ]);
+  assert.equal(reinstalledPhone.hasCapability("camera"), true);
+  assert.equal(reinstalledPhone.hasCapability("location"), false);
+  assert.equal(originalPhone.hasCapability("location"), true);
+  assert.deepEqual(store.enrolledDeviceIds.sort(), ["phone-install-1", "phone-install-2"]);
+});
