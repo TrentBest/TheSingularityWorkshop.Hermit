@@ -4,7 +4,8 @@ import {
   SURPS_OBSERVATION_SCHEMA_VERSION,
   createSurpsObservation,
   validateSurpsObservation,
-  createSurpsObservationAdapter
+  createSurpsObservationAdapter,
+  createParticipantRoleContext
 } from "../src/surps-observation.js";
 
 const sample = (revision = 4) => ({
@@ -84,3 +85,14 @@ test("requires a trusted host read function and validates requested session iden
   const adapter = createSurpsObservationAdapter({ readSession: async () => sample() });
   await assert.rejects(adapter.observe("../outside"), /sessionId/);
 });
+
+test("participant role context contains only that participant's knowledge", () => {
+  const snapshot = createSurpsObservation(sample());
+  const guardContext = createParticipantRoleContext(snapshot, "guard");
+  assert.equal(guardContext.participant.role, "npc");
+  assert.deepEqual(guardContext.participant.knownFacts.map(fact => fact.id), ["guard-knowledge"]);
+  assert.equal(JSON.stringify(guardContext).includes("rumor-1"), false);
+  assert.ok(Object.isFrozen(guardContext));
+  assert.throws(() => createParticipantRoleContext(snapshot, "missing"), /not present/);
+});
+
