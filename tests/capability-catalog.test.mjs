@@ -89,6 +89,18 @@ test("input schemas are deliberately bounded and reject unsupported schema featu
   assert.throws(() => validateCapabilityCatalog(reversed), /bounds are reversed/);
 });
 
+test("catalog rejects unsafe arrays and invalid enum values", () => {
+  const accessorArray = catalog();
+  Object.defineProperty(accessorArray.capabilities[0].examples, "0", { get() { throw new Error("must not execute"); } });
+  assert.throws(() => validateCapabilityCatalog(accessorArray), /accessors/);
+  const sparse = catalog();
+  sparse.capabilities[0].examples = Array(1);
+  assert.throws(() => validateCapabilityCatalog(sparse), /sparse/);
+  const invalidEnum = catalog();
+  invalidEnum.capabilities[0].inputSchema.properties.objectId.enum = ["a", "a"];
+  assert.throws(() => validateCapabilityCatalog(invalidEnum), /must be unique/);
+});
+
 test("catalog rejects invalid shell, risk, approval and oversized examples", () => {
   const invalid = catalog();
   invalid.capabilities[0].risk = "trusted";
