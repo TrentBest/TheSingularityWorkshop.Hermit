@@ -247,7 +247,7 @@ export function resolvePlaygroundVoiceIntent(value, objects = []) {
   const text = validateText(value, "Voice request")
     .toLocaleLowerCase("en-US")
     .replace(/[.,!?;:]/g, " ")
-    .replace(/\\s+/g, " ")
+    .replace(/\s+/g, " ")
     .trim();
   if (isDiscoveryRequest(text)) {
     const capabilities = describePlaygroundCapabilities(objects);
