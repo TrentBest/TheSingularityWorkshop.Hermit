@@ -119,7 +119,7 @@ test("state and event adapters cannot return another owner's records", async () 
   await code("OWNER_MISMATCH", () =>
     service.handleSync({ context, body: { ...body, cursor: null } }));
   store.appendEvent = async () => ({ ownerId: "owner-2", appended: true });
-  await code("INVALID_STORE_RESPONSE", () => service.handleEventAppend({
+  await code("OWNER_MISMATCH", () => service.handleEventAppend({
     context, body: { ...body, eventId: "evt-2", eventType: "note" }
   }));
 });
