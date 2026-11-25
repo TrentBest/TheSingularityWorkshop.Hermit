@@ -51,7 +51,7 @@ function policyDecision(value) {
 
 function snapshotHandlerResult(value, path = "$", ancestors = new WeakSet(), budget = { nodes: 0 }) {
   budget.nodes += 1;
-  if (budget.nodes > 4096 || path.split(/[.\\[\\]]/).length > 32) {
+  if (budget.nodes > 4096 || path.split(/[.\[\]]/).length > 32) {
     throw new TypeError("Host handler result exceeds structural limits.");
   }
   if (value === null || typeof value === "string" || typeof value === "boolean") return value;
@@ -67,7 +67,7 @@ function snapshotHandlerResult(value, path = "$", ancestors = new WeakSet(), bud
     const descriptors = Object.getOwnPropertyDescriptors(value);
     const keys = Reflect.ownKeys(descriptors);
     if (keys.some(key => key !== "length" &&
-        (typeof key !== "string" || !/^(0|[1-9]\\d*)$/.test(key) || Number(key) >= value.length))) {
+        (typeof key !== "string" || !/^(0|[1-9]\d*)$/.test(key) || Number(key) >= value.length))) {
       throw new TypeError("Host handler result arrays must not contain extra properties.");
     }
     const result = [];
