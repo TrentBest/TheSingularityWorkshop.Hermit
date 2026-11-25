@@ -159,3 +159,9 @@ test("capability arguments reject accessors and symbols without invoking them", 
   const symbolic = { objectId: "vessel-1", [Symbol("hidden")]: true };
   assert.throws(() => validateCapabilityInput(value, "browser", "scene.inspect", symbolic), /symbol keys/);
 });
+
+test("capability inputs reject hidden non-enumerable properties", () => {
+  const hidden = { objectId: "vessel-1" };
+  Object.defineProperty(hidden, "covert", { value: true, enumerable: false });
+  assert.throws(() => validateCapabilityInput(catalog(), "browser", "scene.inspect", hidden), /hidden properties/);
+});
