@@ -57,7 +57,7 @@ The workflow follows the GUI showcase's artifact pattern:
 5. Upload `_site` as a GitHub Pages artifact.
 6. Deploy only for pushes to `development` or manual workflow dispatch. Pull requests build and validate without deploying.
 
-The deployment job uses the `github-pages` environment with only `pages: write` and `id-token: write` permissions. The site remains a static browser experience; no server-side assistant process is hosted by Pages.
+The deployment job uses the `github-pages` environment with only `pages: write` and `id-token: write` permissions. The site remains a static browser experience; no server-side assistant process is hosted by Pages. Hermit's artifact build and upload currently pass, but its deployment job fails before reporting any steps; see [Pages deployment diagnostics](PAGES_DEPLOYMENT_DIAGNOSTICS.md) for the cross-repository comparison and remaining environment checks.
 
 ## Next embodiment work
 
