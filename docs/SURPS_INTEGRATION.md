@@ -14,7 +14,8 @@ SURPS is a third rail for the Workshop's digital content: it adds a reusable rol
 
 | Domain | Owns | Does not own |
 |---|---|---|
-| SURPS | Rulebook identity and composition, shared ontology/LOD/compatibility/selection, MicroBundle and audience-view contracts, and roleplaying interpretation of selected domain content | Embodiment, rendering, general-purpose assistant orchestration, or domain-specific physical execution |\n| Character/NPC domain owners (currently SingularityCity for general residents/NPCs) | Canonical identity, capabilities, relationships, knowledge and behavior records for their domain | Rule adjudication, companion orchestration, or host authorization |
+| SURPS | Rulebook identity and composition, shared ontology/LOD/compatibility/selection, MicroBundle and audience-view contracts, and roleplaying interpretation of selected domain content | Embodiment, rendering, general-purpose assistant orchestration, or domain-specific physical execution |
+| Character/NPC domain owners (currently SingularityCity for general residents/NPCs) | Canonical identity, capabilities, relationships, knowledge and behavior records for their domain | Rule adjudication, companion orchestration, or host authorization |
 | Hermit | Companion identity and behavior, goal selection, party/NPC role orchestration, GM facilitation, dialogue routing, bounded autonomy, capability invocation, interruption and evidence | Rules adjudication, physical truth, model authority, rendering engine |
 | Gestures | Reusable physical procedures, keyframes, named local transforms, deterministic evaluation and playback | Rig discovery, physical success, collision, balance, rendering |
 | Physics | Reachability, contact, constraints, collision and achieved physical state | Narrative intent, character rules, presentation |
@@ -31,7 +32,7 @@ Hermit is one persistent companion identity with context-dependent roles. These 
 
 ### Solo-player companion
 
-When the player is alone, Hermit can operate the rest of the party. It should understand each assigned character's goals, knowledge, current condition, relationships and tactical position from SURPS-provided state. It can propose and execute character actions through registered game capabilities, but SURPS remains the authority for rule checks and outcomes.
+When the player is alone, Hermit can operate the rest of the party. It should understand each assigned character's goals, knowledge, current condition, relationships and tactical position from a host-assembled observation of the canonical character/world domains and the selected SURPS content. It can propose a bounded action through registered host capabilities; an action is only rules-adjudicated when the selected SURPS rule and its owning evaluator actually exist. Hermit must not pretend a tabletop procedure is already a digital evaluator.
 
 The player remains the principal decision-maker for their own character. Hermit should preserve meaningful choices, explain party suggestions when useful, and avoid turning companion support into hidden player-character control.
 
@@ -39,19 +40,19 @@ The player remains the principal decision-maker for their own character. Hermit 
 
 Hermit can portray NPCs through a role-specific context: identity, current knowledge, motives, relationships, voice/personality guidance, and the facts the NPC is allowed to know. NPC dialogue is not a source of authoritative world facts. The host supplies observations and the rules system resolves consequential actions.
 
-NPCs should not all sound or behave like the same assistant prompt. Role context, bounded memory, goals, and SURPS character data should shape each portrayal.
+NPCs should not all sound or behave like the same assistant prompt. Role context, bounded memory, goals, and canonical data from the NPC's owning domain should shape each portrayal; SURPS supplies the selected roleplaying view and procedures.
 
 ### Game master
 
-Hermit can facilitate or run an adventure: generate an opening situation, portray the world and its inhabitants, present meaningful choices, track unresolved threads, and ask SURPS to resolve rule-governed actions. A GM plan is a proposal and narrative structure, not a license to rewrite character or world state.
+Hermit can facilitate or run an adventure: generate an opening situation, portray the world and its inhabitants, present meaningful choices, track unresolved threads, and request rule resolution from a registered SURPS/domain evaluator when one exists. A GM plan is a proposal and narrative structure, not a license to rewrite character or world state. Where only a tabletop procedure exists, the human GM remains the adjudicator.
 
 The Gauntlet belongs beside this loop as campaign/probe/invariant evaluation and deterministic reporting; it should not be collapsed into Hermit's narrative planner. Domain repositories own their rule/capability/evidence, SURPS composes the selected rulebooks and profiles, and FSM_COS assembles the runtime MicroBundles.
 
 The GM loop should separate:
 1. **Situation** — current authoritative session/world snapshot.
 2. **Intent** — what a player or NPC is trying to accomplish.
-3. **Rule request** — the exact SURPS operation needed.
-4. **Adjudication** — authoritative SURPS result.
+3. **Rule request** — the exact registered SURPS/domain operation, if an executable evaluator exists; otherwise a human-GM decision request.
+4. **Adjudication** — an authoritative provider result, or an explicitly recorded human-GM decision; never an LLM-invented verdict.
 5. **Consequence** — proposed world/session update, committed by the host.
 6. **Presentation** — dialogue, diegetic controls, and embodied response.
 
