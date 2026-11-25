@@ -24,3 +24,5 @@ jobs:
         run: npm test
       - name: Run deterministic inspection example
         run: node examples/deterministic-inspection.mjs
+      - name: Run SURPS companion-context example
+        run: node examples/surps-observation.mjs
