@@ -34,3 +34,6 @@ This is a tested data/recovery contract with optional `executeLoop` persistence 
 ## Verification
 
 Run `npm test`. The checkpoint tests cover round-trip validation, immutability, interrupted-action reconciliation, terminal phases, invalid versions, hostile object properties, cycles and size limits.
+
+
+The action budget limits invocations, not the final completion check: at the cursor equal to `maxSteps`, the planner gets one final opportunity to report `done`. If it proposes another action, the loop returns `STEP_LIMIT_REACHED` without invoking it. A budget that is too small to reach a restored cursor also returns `STEP_LIMIT_REACHED` without changing or terminalizing the saved ready checkpoint; callers can resume later with a sufficient budget.
