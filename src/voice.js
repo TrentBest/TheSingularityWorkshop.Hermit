@@ -1,3 +1,6 @@
+import { describeCapabilities } from "./capability-catalog.js";
+import { PLAYGROUND_CAPABILITY_CATALOG } from "./playground-capabilities.js";
+
 export class VoiceAdapterError extends Error {
   constructor(code, message, cause) {
     super(message);
@@ -214,28 +217,15 @@ export function createSpeechRecognitionAdapter({ recognitionFactory } = {}) {
   return Object.freeze({ supported, listen, cancel });
 }
 
-/** Describes the fixture's discoverable actions without exposing host authority. */
-export function describePlaygroundCapabilities(objects = []) {
+/** Builds discovery text from the active host's declarative catalog. */
+export function describePlaygroundCapabilities(objects = [], catalog = PLAYGROUND_CAPABILITY_CATALOG, shell = "browser") {
   const availableObjects = Array.isArray(objects) ? objects.filter(item =>
     item && typeof item.id === "string" && typeof item.name === "string") : [];
-  return Object.freeze([
-    Object.freeze({
-      id: "inspect-object",
-      title: "Inspect an object",
-      description: "Ask Hermit to examine an object and report its observed location and description. This is read-only.",
-      example: "Inspect the glass vessel",
-      available: availableObjects.length > 0,
-      approvalRequired: false
-    }),
-    Object.freeze({
-      id: "move-object",
-      title: "Move an object to the workbench",
-      description: "Ask Hermit to propose moving an object. The host still requires your explicit approval before the world changes.",
-      example: "Move the brass compass to the workbench",
-      available: availableObjects.length > 0,
-      approvalRequired: true
-    })
-  ]);
+  return Object.freeze(describeCapabilities(catalog, shell).map(item => Object.freeze({
+    ...item,
+    example: item.examples[0] ?? "",
+    available: availableObjects.length > 0
+  })));
 }
 
 function isDiscoveryRequest(text) {
@@ -243,14 +233,14 @@ function isDiscoveryRequest(text) {
 }
 
 /** Small deterministic grammar for the Pages fixture; it never grants authority or executes a mutation. */
-export function resolvePlaygroundVoiceIntent(value, objects = []) {
+export function resolvePlaygroundVoiceIntent(value, objects = [], catalog = PLAYGROUND_CAPABILITY_CATALOG, shell = "browser") {
   const text = validateText(value, "Voice request")
     .toLocaleLowerCase("en-US")
     .replace(/[.,!?;:]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
   if (isDiscoveryRequest(text)) {
-    const capabilities = describePlaygroundCapabilities(objects);
+    const capabilities = describePlaygroundCapabilities(objects, catalog, shell);
     return {
       status: "discovery",
       capabilities,
