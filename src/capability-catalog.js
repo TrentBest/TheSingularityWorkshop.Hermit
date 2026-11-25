@@ -159,6 +159,51 @@ export function validateCapabilityCatalog(value) {
   return Object.freeze({ version: CATALOG_VERSION, capabilities: Object.freeze(capabilities) });
 }
 
+/**
+ * Validates untrusted arguments against one advertised capability's bounded
+ * scalar schema. Returns a detached, frozen data snapshot; never invokes code.
+ */
+export function validateCapabilityInput(catalog, shell, capabilityId, input = {}) {
+  const capability = findCapability(catalog, shell, capabilityId);
+  if (!capability) fail("capability is not advertised by the active shell.");
+  ownDataObject(input, "capability input");
+  const schema = capability.inputSchema;
+  const keys = Object.keys(input);
+  if (!schema && keys.length) fail("capability does not accept input properties.");
+  if (schema) {
+    for (const key of keys) {
+      if (!Object.hasOwn(schema.properties, key)) fail("input contains an undeclared property: " + key);
+    }
+    for (const key of schema.required) {
+      if (!Object.hasOwn(input, key)) fail("input is missing required property: " + key);
+    }
+  }
+  const result = {};
+  for (const key of keys) {
+    const value = input[key];
+    const definition = schema?.properties[key];
+    if (!definition) fail("capability does not accept input properties.");
+    const validType = definition.type === "string" ? typeof value === "string" :
+      definition.type === "boolean" ? typeof value === "boolean" :
+      definition.type === "integer" ? Number.isSafeInteger(value) :
+      definition.type === "number" ? typeof value === "number" && Number.isFinite(value) : false;
+    if (!validType) fail("input property has the wrong type: " + key);
+    if (definition.type === "string" && definition.maxLength !== undefined && value.length > definition.maxLength) {
+      fail("input property exceeds its maximum length: " + key);
+    }
+    if (typeof value === "number" &&
+        ((definition.minimum !== undefined && value < definition.minimum) ||
+         (definition.maximum !== undefined && value > definition.maximum))) {
+      fail("input property is outside its numeric bounds: " + key);
+    }
+    if (definition.enum && !definition.enum.some(item => item === value)) {
+      fail("input property is not an allowed enum value: " + key);
+    }
+    result[key] = value;
+  }
+  return Object.freeze(result);
+}
+
 /** Returns only entries declared for the active shell; availability is not permission. */
 export function discoverCapabilities(catalog, shell) {
   const validated = validateCapabilityCatalog(catalog);
