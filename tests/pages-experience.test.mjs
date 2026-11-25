@@ -94,7 +94,7 @@ test("Hermit presents a diegetic party scene using versioned, participant-scoped
   assert.match(page, /data-party-member="kitchen-contact"/);
   assert.equal(roleProfiles.profiles.filter(profile => profile.mode === "npc-portrayal").length, 2);
   assert.equal(new Set(roleProfiles.profiles.map(profile => profile.agentId)).size, 1);
-  assert.match(party, /surps\.microbundle\.core\.spying/);
+  assert.equal(sessionFixture.sourceId, "surps.microbundle.core.spying");
   assert.match(surpsObservation, /session revision moved backwards/);
   assert.match(surpsObservation, /participant's authorized portrayal context/);
 });
