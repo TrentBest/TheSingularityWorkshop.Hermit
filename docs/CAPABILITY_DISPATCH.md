@@ -16,6 +16,7 @@ The capability catalog describes what a shell can present. The dispatcher is the
 - After a human approval wait, host authorization is checked again immediately before handler dispatch. A revoked grant or changed policy therefore stops the action.
 - Only after authorization and any required approval does the dispatcher invoke the host-owned handler.
 - Inputs are detached, frozen snapshots. Caller-supplied context and permission objects are not accepted as authority inputs.
+- Handler results are detached, recursively frozen JSON-data snapshots with structural and 16 KiB serialized-size limits; accessors, symbols, cycles, non-finite numbers, unsupported objects, and oversized results fail closed.
 
 The invocation result uses bounded statuses: `unsupported`, `invalid-input`, `unavailable`, `denied`, `approval-required`, `approval-denied`, `completed`, or `failed`. Host policy and handler exceptions are not copied into user-facing error messages.
 
