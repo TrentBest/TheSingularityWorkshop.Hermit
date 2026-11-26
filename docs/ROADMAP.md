@@ -100,7 +100,7 @@ This roadmap distinguishes the domain vision from current executable evidence.
 - [ ] Extend the map with Mini crews, Titan portal and microbundle wrappers when their task/event contracts are implemented.
 - [x] Add a deterministic Pages playground backed by Hermit's registered inspect/move capabilities, host policy, explicit approval, and post-action verification.
 - [x] Allow players to add described objects to the scene and let Hermit inspect those objects through the existing read-only capability.
-- [x] Let players author box, sphere, and cylinder props with bounded dimensions, XYZ transform, material, and affordance metadata; render shape previews and expose structured observations to Hermit.
+- [x] Let players author box, sphere, and cylinder props with bounded dimensions, XYZ transform, material, and affordance metadata; render a keyboard-selectable top-down SVG scene preview and expose structured observations to Hermit.
 - [x] Add a voice interface with speech output, optional recognition, typed fallback, and approval-preserving fixture intent routing.
 - [x] Add a diegetic party-awareness scene using versioned participant context, isolated knowledge, and CORE Spying evidence-state labels.
 - [ ] Add volcano construction choreography timeline tied to a fixture task graph.
