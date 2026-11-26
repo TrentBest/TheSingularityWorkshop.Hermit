@@ -51,6 +51,7 @@ function selectObject(objectId) {
   });
   $("approval-granted").checked = false;
   setStatus(`${item.name} selected. Choose an action for Hermit.`);
+  renderScene(snapshot);
 }
 
 function renderObjects(snapshot) {
@@ -90,9 +91,39 @@ function renderObjects(snapshot) {
     $("selected-object-description").textContent = `${selected.description} Shape: ${selected.shape}; material: ${selected.material}; dimensions ${selected.dimensions.x} × ${selected.dimensions.y} × ${selected.dimensions.z}; position ${selected.position.x}, ${selected.position.y}, ${selected.position.z}. Affordances: ${selected.affordances.join(", ")}.`;
   }
   document.querySelectorAll(".object-card").forEach(card => { card.classList.toggle("selected", card.dataset.objectId === selectedObjectId); card.setAttribute("aria-pressed", String(card.dataset.objectId === selectedObjectId)); });
+  renderScene(snapshot);
   setBusy(busy);
 }
 
+function renderScene(snapshot) {
+  const svg = $("scene-map");
+  if (!svg) return;
+  const ns = "http://www.w3.org/2000/svg";
+  const make = (tag, attrs = {}) => { const node = document.createElementNS(ns, tag); for (const [key, value] of Object.entries(attrs)) node.setAttribute(key, String(value)); return node; };
+  const width = 640, height = 280, pad = 40;
+  const bounds = snapshot.objects.reduce((b, item) => ({ minX: Math.min(b.minX, item.position.x - item.dimensions.x / 2), maxX: Math.max(b.maxX, item.position.x + item.dimensions.x / 2), minZ: Math.min(b.minZ, item.position.z - item.dimensions.z / 2), maxZ: Math.max(b.maxZ, item.position.z + item.dimensions.z / 2) }), { minX: -2, maxX: 2, minZ: -2, maxZ: 2 });
+  const spanX = Math.max(1, bounds.maxX - bounds.minX), spanZ = Math.max(1, bounds.maxZ - bounds.minZ);
+  const scale = Math.min((width - pad * 2) / spanX, (height - pad * 2) / spanZ);
+  const centerX = (bounds.minX + bounds.maxX) / 2, centerZ = (bounds.minZ + bounds.maxZ) / 2;
+  const point = item => ({ x: width / 2 + (item.position.x - centerX) * scale, y: height / 2 - (item.position.z - centerZ) * scale });
+  const colors = { wood: "#b98752", metal: "#9fb5c2", glass: "#75cbd0", stone: "#9b9aa8", fabric: "#b68cc9" };
+  const children = [make("rect", { x: 1, y: 1, width: 638, height: 278, rx: 12, fill: "#0b151c", stroke: "#405766" })];
+  for (let x = 80; x < width; x += 80) children.push(make("line", { x1: x, y1: 12, x2: x, y2: 268, stroke: "#263b49", "stroke-dasharray": "3 6" }));
+  for (let y = 40; y < height; y += 40) children.push(make("line", { x1: 12, y1: y, x2: 628, y2: y, stroke: "#263b49", "stroke-dasharray": "3 6" }));
+  for (const item of snapshot.objects) {
+    const p = point(item), w = Math.max(10, Math.min(180, item.dimensions.x * scale)), h = Math.max(10, Math.min(180, item.dimensions.z * scale));
+    const group = make("g", { class: "scene-object" + (item.id === selectedObjectId ? " selected" : ""), tabindex: 0, role: "button", "aria-label": `${item.name}, ${item.shape}, ${item.material}, at X ${item.position.x}, Z ${item.position.z}` });
+    const shape = item.shape === "sphere" ? make("circle", { cx: p.x, cy: p.y, r: Math.max(6, Math.min(90, Math.max(w, h) / 2)) }) : make("rect", { x: p.x - w / 2, y: p.y - h / 2, width: w, height: h, rx: item.shape === "cylinder" ? Math.min(w, h) / 2 : 3 });
+    shape.setAttribute("class", "scene-shape"); shape.setAttribute("fill", colors[item.material]); shape.setAttribute("stroke", item.id === selectedObjectId ? "#ffffff" : "#edf3f7"); shape.setAttribute("stroke-width", item.id === selectedObjectId ? "3" : "1.5");
+    group.append(shape);
+    const label = make("text", { x: p.x, y: p.y + h / 2 + 15, class: "scene-object-label" }); label.textContent = item.name; group.append(label);
+    const activate = () => selectObject(item.id); group.addEventListener("click", activate);
+    group.addEventListener("keydown", event => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); activate(); } });
+    children.push(group);
+  }
+  svg.replaceChildren(...children);
+  $("scene-map-description").textContent = `${snapshot.objects.length} objects shown in a top-down X/Z preview. Select a prop to inspect it. This view is schematic and does not simulate collisions or physics.`;
+}
 function renderTrace(trace) {
   const list = $("activity-trace");
   list.replaceChildren();
