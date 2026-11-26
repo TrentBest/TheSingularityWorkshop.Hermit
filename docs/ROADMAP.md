@@ -90,7 +90,7 @@ This roadmap distinguishes the domain vision from current executable evidence.
 
 ## Assistant development workflows
 - [x] Preserve HeadlessAi as inference transport, not authority.
-- [x] Preserve FSM_Foundry as durable ADP control plane.
+- [x] Preserve FSM_Execution as durable ADP control plane.
 - [ ] Align exact task/evidence/approval adapters with upstream contracts.
 - [ ] Add repository tool capability contracts and adversarial tests.
 - [ ] Demonstrate human-approved edit, CiAi verification and human review.
