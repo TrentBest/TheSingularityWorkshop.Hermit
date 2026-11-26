@@ -25,3 +25,23 @@ export function evaluateMusicObservation(value, { threshold = 0.72 } = {}) {
     utterance: dance ? "DANCE PARTY!!!!!!!" : null
   });
 }
+
+/**
+ * Stateful stream guard for host observations. Revisions advance only when a
+ * valid observation is accepted, so malformed events cannot consume a revision.
+ */
+export function createMusicResponsePolicy(options) {
+  let latestRevision = 0;
+  return Object.freeze({
+    evaluate(value) {
+      if (!value || !Number.isSafeInteger(value.revision) || value.revision <= latestRevision) return null;
+      const response = evaluateMusicObservation(value, options);
+      if (!response) return null;
+      latestRevision = value.revision;
+      return response;
+    },
+    get latestRevision() {
+      return latestRevision;
+    }
+  });
+}
