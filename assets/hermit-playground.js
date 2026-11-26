@@ -24,6 +24,7 @@ function setStatus(message, kind = "normal") {
   const status = $("scene-status");
   status.textContent = message;
   status.dataset.kind = kind;
+  window.setHermitPresence?.(kind === "warning" ? "concerned" : "working", message);
 }
 
 function setBusy(value) {
@@ -161,9 +162,11 @@ async function perform(action) {
       if (action === "inspect") {
         const item = response.outcomes[0].result;
         setStatus(`Inspection verified: ${item.name} is at the ${item.location}. ${item.description}`, "success");
+        window.setHermitPresence?.("speaking", `I had a look. ${item.name}: ${item.description}`);
       } else {
         const item = response.outcomes[0].result;
         setStatus(`Move verified: ${item.name} is now on the workbench.`, "success");
+        window.setHermitPresence?.("speaking", `The host verified it: ${item.name} is now on the workbench.`);
       }
       await refresh();
     } else {
@@ -172,6 +175,7 @@ async function perform(action) {
     }
   } catch (error) {
     setStatus(`Playground error: ${error.message}`, "warning");
+    window.setHermitPresence?.("concerned", `I stopped because something went wrong: ${error.message}`);
   } finally {
     setBusy(false);
   }
