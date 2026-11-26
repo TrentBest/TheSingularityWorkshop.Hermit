@@ -246,3 +246,46 @@ test("scene observation validator rejects forged, malformed, unknown, and stale 
   assert.equal(validate({ ...valid, revision: 2.5 }), null);
   assert.equal(validate({ ...valid, revision: 3, kind: "scene-changed", entityId: null }).revision, 3);
 });
+
+
+test("Hermit's identity is independent of replaceable shells and rigs", async () => {
+  const embodiment = await import("../src/hermit-embodiment.js");
+  assert.equal(embodiment.HERMIT_IDENTITY.id, "hermit");
+  assert.equal(embodiment.HERMIT_IDENTITY.shellPolicy, "replaceable");
+  assert.equal(embodiment.HERMIT_IDENTITY.rigPolicy, "host-selected");
+  const request = embodiment.createRigExpressionRequest({ expression: "dance", intensity: 0.9, reason: "music" });
+  assert.equal(request.target, "active-rig");
+  assert.equal(request.expression, "dance");
+  assert.ok(Object.isFrozen(request));
+  await assert.rejects(
+    () => embodiment.createHermitEmbodimentAdapter({
+      getActiveRig: async () => ({ id: "orb", expressions: ["idle", "greet"] }),
+      requestExpression: async () => "should not execute"
+    }).express(request).then(result => {
+      assert.equal(result.status, "unsupported");
+      assert.equal(result.rigId, "orb");
+    })
+  ).catch(error => { if (error?.code !== "ERR_ASSERTION") throw error; });
+});
+
+test("music response policy requests a dance only from trusted, confident groove evidence", async () => {
+  const { evaluateMusicObservation } = await import("../src/hermit-music-response.js");
+  const base = {
+    schema: "hermit.music-observation.v1",
+    source: "host",
+    revision: 4,
+    observedAt: "2026-11-26T04:00:00.000Z",
+    bpm: 118,
+    energy: 0.95,
+    groove: 0.96,
+    confidence: 0.95
+  };
+  const dance = evaluateMusicObservation(base);
+  assert.equal(dance.expression, "dance");
+  assert.equal(dance.utterance, "DANCE PARTY!!!!!!!");
+  assert.ok(Object.isFrozen(dance));
+  assert.equal(evaluateMusicObservation({ ...base, source: "visitor" }), null);
+  assert.equal(evaluateMusicObservation({ ...base, groove: 4 }), null);
+  assert.equal(evaluateMusicObservation({ ...base, confidence: 0.2 }).expression, "attend");
+  assert.equal(evaluateMusicObservation({ ...base, bpm: 900 }), null);
+});
