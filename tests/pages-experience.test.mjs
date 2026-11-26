@@ -292,3 +292,41 @@ test("music response policy requests a dance only from trusted, confident groove
   assert.equal(policy.evaluate({ ...base, revision: 5 }), null);
   assert.equal(policy.latestRevision, 5);
 });
+
+
+test("embodiment adapter submits only validated requests and distinguishes host failures from movement", async () => {
+  const { createRigExpressionRequest, createHermitEmbodimentAdapter } = await import("../src/hermit-embodiment.js");
+  const request = createRigExpressionRequest({ expression: "greet" });
+  let submitted = 0;
+  const adapter = createHermitEmbodimentAdapter({
+    getActiveRig: async () => ({ id: "avatar-rig", expressions: ["idle", "greet"] }),
+    requestExpression: async ({ rigId, request: received }) => {
+      submitted++;
+      assert.equal(rigId, "avatar-rig");
+      assert.equal(received, request);
+      return { accepted: true };
+    }
+  });
+  const result = await adapter.express(request);
+  assert.equal(result.status, "submitted");
+  assert.equal(result.result.accepted, true);
+  assert.equal(submitted, 1);
+
+  const forged = await adapter.express({ ...request, intensity: 4 });
+  assert.equal(forged.status, "rejected");
+  assert.equal(submitted, 1);
+
+  const lookupFailure = createHermitEmbodimentAdapter({
+    getActiveRig: async () => { throw new Error("private host detail"); },
+    requestExpression: async () => { throw new Error("must not run"); }
+  });
+  assert.deepEqual(await lookupFailure.express(request), { status: "failed", stage: "resolve-rig" });
+
+  const submitFailure = createHermitEmbodimentAdapter({
+    getActiveRig: async () => ({ id: "avatar-rig", expressions: ["greet"] }),
+    requestExpression: async () => { throw new Error("private host detail"); }
+  });
+  assert.deepEqual(await submitFailure.express(request), {
+    status: "failed", stage: "submit-expression", rigId: "avatar-rig"
+  });
+});
