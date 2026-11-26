@@ -15,6 +15,15 @@ Hermit owns intent, planning, and the interpretation of observations. The enviro
 
 The host must authorize the proposal before calling perform(), preferably through the existing host-owned capability dispatcher. The adapter itself is not an authorization service. Approval, cancellation, lifecycle interruption, and trusted handler registration remain host responsibilities.
 
+The intended composition is:
+
+1. Advertise a consequential capability with `approvalRequired: true` and a bounded scalar input schema.
+2. Register a trusted host handler for that capability; the handler constructs the versioned physical proposal and calls `adapter.perform()`.
+3. Let the dispatcher authorize, obtain explicit approval, and recheck host policy before invoking that handler.
+4. Treat the adapter's verified observation as environment evidence, not as a permission grant.
+
+A dispatcher-composition test exercises this ordering and proves that denial or missing approval prevents the environment callback from running. The test uses a deterministic fixture; it is not a Physics implementation.
+
 ## Deliberate non-goals
 
 This contract does not implement a physics engine, simulate a fixture outcome, infer affordances, or grant Hermit a capability. A test fixture can exercise the protocol, but only an owner-supplied Physics implementation can provide physical evidence. Gestures remains the owner of posture, pose, motion procedures, and motion evaluation; this contract does not replace that domain.
