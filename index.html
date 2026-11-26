@@ -66,9 +66,9 @@
     .scene-zone{min-height:190px;padding:1rem;border:1px dashed #587181;border-radius:13px;background:#0e1a22}
     .scene-zone h3{margin:.1rem 0 .3rem}
     .scene-zone.drop-ready{border-color:var(--accent);background:#17312f}
-    .object-creator{display:grid;grid-template-columns:1fr 1fr auto;gap:.65rem;align-items:end;margin:1rem 0;padding:1rem;border:1px solid #405766;border-radius:12px;background:#13232c}
+    .object-creator{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.65rem;align-items:end;margin:1rem 0;padding:1rem;border:1px solid #405766;border-radius:12px;background:#13232c}
     .object-creator label{font-size:.9rem}
-    .object-creator input{min-width:0}
+    .object-creator input,.object-creator select{min-width:0;width:100%;accent-color:var(--accent);background:#0d151c;border:1px solid var(--line);border-radius:8px;color:var(--ink);padding:.65rem;font:inherit}
     .object-creator button{white-space:nowrap}
     .object-creator-help{grid-column:1/-1;margin:0;font-size:.88rem}
     @media(max-width:760px){.object-creator{grid-template-columns:1fr}}
@@ -77,7 +77,7 @@
     .object-card.selected{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
     .object-card strong,.object-card small{display:block}
     .object-card small{color:var(--muted);font-weight:400}
-    .object-glyph{display:grid;place-items:center;flex:0 0 42px;height:42px;border-radius:12px;background:#304b59;color:var(--warm);font-size:1.5rem}
+    .object-glyph{display:grid;place-items:center;flex:0 0 42px;height:42px;border-radius:12px;background:#304b59;color:var(--warm);font-size:1.5rem}.shape-preview{display:block;width:25px;height:25px;background:var(--warm);border:2px solid #fff4d8;box-shadow:inset -5px -5px 0 #9c7040}.shape-sphere{border-radius:50%;box-shadow:inset -6px -4px 0 #9c7040}.shape-cylinder{border-radius:50% / 18%;box-shadow:inset -5px 0 0 #9c7040}
     .object-detail{margin-top:1rem;padding:1rem;border-radius:12px;background:#0d1921;border:1px solid #304453}
     .object-detail h3{margin:.1rem 0 .25rem}
     .approval{display:flex;align-items:flex-start;gap:.7rem;margin-top:1rem;padding:1rem;border:1px solid #6b5938;border-radius:12px;background:#2a251b}
@@ -167,6 +167,14 @@
           <form id="object-creator" class="object-creator">
             <div><label for="new-object-name">Object name</label><input id="new-object-name" name="name" maxlength="120" required placeholder="A tiny brass key"></div>
             <div><label for="new-object-description">Describe it</label><input id="new-object-description" name="description" maxlength="1024" required placeholder="A key with a moon-shaped bow"></div>
+            <div><label for="new-object-shape">Primitive shape</label><select id="new-object-shape"><option value="box">Box</option><option value="sphere">Sphere</option><option value="cylinder">Cylinder</option></select></div>
+            <div><label for="new-object-material">Material</label><select id="new-object-material"><option value="wood">Wood</option><option value="metal">Metal</option><option value="glass">Glass</option><option value="stone">Stone</option><option value="fabric">Fabric</option></select></div>
+            <div><label for="new-object-width">Width (X)</label><input id="new-object-width" type="number" min="0.05" max="10000" step="0.05" value="1" required></div>
+            <div><label for="new-object-height">Height (Y)</label><input id="new-object-height" type="number" min="0.05" max="10000" step="0.05" value="1" required></div>
+            <div><label for="new-object-depth">Depth (Z)</label><input id="new-object-depth" type="number" min="0.05" max="10000" step="0.05" value="1" required></div>
+            <div><label for="new-object-x">Position X</label><input id="new-object-x" type="number" min="-100000" max="100000" step="0.1" value="0" required></div>
+            <div><label for="new-object-y">Position Y</label><input id="new-object-y" type="number" min="-100000" max="100000" step="0.1" value="0" required></div>
+            <div><label for="new-object-z">Position Z</label><input id="new-object-z" type="number" min="-100000" max="100000" step="0.1" value="0" required></div>
             <button type="submit">Add to scene</button>
             <p class="object-creator-help">You are authoring the scene. Hermit can inspect the new object once it appears; any later world-changing action still follows host approval.</p>
           </form>
