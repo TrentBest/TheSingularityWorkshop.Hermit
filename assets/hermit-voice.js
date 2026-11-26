@@ -69,6 +69,12 @@ async function submitIntent(value) {
     setPresence("concerned", "Tell me a little about what you want to do.");
     return;
   }
+  if (window.hermitTaskActive) {
+    const message = "I hear you. The current action is already with the host, and I can't safely interrupt it here. I'll report its verified outcome first. Please repeat your next request afterward.";
+    setVoiceStatus(message);
+    setPresence("working", message);
+    return;
+  }
 
   setPresence("thinking", "Let me understand what you are asking.");
   try {
