@@ -44,6 +44,12 @@ Player-authored insertion is a direct creator action, validated against the vers
 
 Dragging only selects an object. It never changes world state. The move capability is the only path that updates the fixture object's location.
 
+## Live task presence
+
+The playground streams runtime lifecycle events to Hermit's presentation as they occur: task creation, fresh observation, proposal, host-policy decision, execution start and completion, environment verification, and terminal completion or failure. The activity trace updates during execution rather than appearing only after the operation returns. Presentation observers are isolated: an exception in a visual or speech observer cannot change the runtime's authority decision or execution result.
+
+If a visitor speaks or types while a host action is already underway, Hermit acknowledges the interruption but does not pretend that the in-flight action was cancelled. The current fixture has no safe user-facing cancellation control for an already-dispatched host operation. Hermit waits for the operation's verified outcome before accepting another playground request. This preserves the distinction between interrupting conversation and cancelling a physical or host-side action; a future physical adapter must define and verify its own cancellation and reconciliation contract.
+
 ## Voice interaction
 
 The page includes a voice panel with speech synthesis, optional speech recognition, and a typed request fallback. Speech synthesis uses the browser's installed voices. Recognition is feature-detected through `SpeechRecognition` / `webkitSpeechRecognition`; it is not available in every browser. The panel reports unsupported recognition instead of pretending the microphone worked.
