@@ -148,3 +148,15 @@ test("Hermit's gaze responds gently to pointer and keyboard focus", () => {
   assert.match(page, /class="hermit-pupils"/);
   assert.match(page, /prefers-reduced-motion: reduce/);
 });
+
+
+test("conversation turns can interrupt stale speech and recover from host failures", () => {
+  assert.match(voice, /let activeTurn = 0/);
+  assert.match(voice, /const turn = \+\+activeTurn/);
+  assert.match(voice, /speechOutput\.cancel\(\)/);
+  assert.match(voice, /if \(turn !== activeTurn\) return/);
+  assert.match(voice, /setPresence\("concerned"/);
+  assert.match(voice, /setListeningControls\(\)/);
+  assert.match(voice, /Speech output is not available in this browser/);
+  assert.match(voice, /You can still talk to me by typing/);
+});
