@@ -2,7 +2,7 @@
 
 **Site:** [https://trentbest.github.io/TheSingularityWorkshop.Hermit/](https://trentbest.github.io/TheSingularityWorkshop.Hermit/)
 
-The public Pages site is an executable learning surface for Hermit's boundaries, not a mock chat window.
+The public Pages site is an executable learning surface for Hermit's boundaries, not a mock chat window. The entry experience introduces a front-facing, expressive Hermit character with a direct typed conversation surface before the technical playground.
 
 ## Entry experience
 
@@ -70,3 +70,10 @@ The deployment job delegates to CiAi's pinned reusable `deploy-pages.yml` workfl
 ## Next embodiment work
 
 The next vertical slice should progress from fixture objects toward a versioned world-state/affordance contract and narrow Gestures/Physics adapters. The glass-vessel scenario remains the acceptance target: observe, approach safely, inspect, request an approved interaction, execute through physics-aware adapters, verify, and yield immediately when interrupted.
+
+
+## Face-to-face companion
+
+The first screen gives Hermit a visible character rather than a seashell placeholder: a front-facing hermit crab with a readable face, shell, claws, legs, antennae, breathing/blinking motion, and state-driven expressions. The direct message field uses the same deterministic intent resolver as the voice panel, so this is one interaction path rather than a second assistant implementation.
+
+The companion presentation has explicit idle, listening, thinking, speaking, working, and concerned states. Voice recognition, typed requests, fixture inspection/movement, and participant-scoped role-context previews update that presentation. Animation is presentation only: it never authorizes a capability, changes world state, or substitutes for host/domain verification. A live model, persistent personality/memory service, and physics-driven body are not claimed by this browser fixture.
