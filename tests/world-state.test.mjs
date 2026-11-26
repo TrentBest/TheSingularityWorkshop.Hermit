@@ -94,3 +94,16 @@ test("unsupported shapes, materials, affordances, and non-finite geometry fail c
   invalidAffordance.objects[0].affordances = ["execute-arbitrary-code"];
   assert.throws(() => createWorldStateSnapshot(invalidAffordance), /affordances/);
 });
+
+test("affordance arrays reject sparse, decorated, and accessor-backed entries", () => {
+  const sparse = sample();
+  sparse.objects[0].affordances = new Array(1);
+  assert.throws(() => createWorldStateSnapshot(sparse), /dense/);
+  const accessor = sample();
+  accessor.objects[0].affordances = ["inspect"];
+  Object.defineProperty(accessor.objects[0].affordances, "0", {
+    enumerable: true,
+    get() { throw new Error("affordance getter must not execute"); }
+  });
+  assert.throws(() => createWorldStateSnapshot(accessor), /dense plain array|executable entries/);
+});
