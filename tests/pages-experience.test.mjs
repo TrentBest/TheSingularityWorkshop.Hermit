@@ -257,15 +257,15 @@ test("Hermit's identity is independent of replaceable shells and rigs", async ()
   assert.equal(request.target, "active-rig");
   assert.equal(request.expression, "dance");
   assert.ok(Object.isFrozen(request));
-  await assert.rejects(
-    () => embodiment.createHermitEmbodimentAdapter({
-      getActiveRig: async () => ({ id: "orb", expressions: ["idle", "greet"] }),
-      requestExpression: async () => "should not execute"
-    }).express(request).then(result => {
-      assert.equal(result.status, "unsupported");
-      assert.equal(result.rigId, "orb");
-    })
-  ).catch(error => { if (error?.code !== "ERR_ASSERTION") throw error; });
+  let executed = false;
+  const adapter = embodiment.createHermitEmbodimentAdapter({
+    getActiveRig: async () => ({ id: "orb", expressions: ["idle", "greet"] }),
+    requestExpression: async () => { executed = true; }
+  });
+  const unsupported = await adapter.express(request);
+  assert.equal(unsupported.status, "unsupported");
+  assert.equal(unsupported.rigId, "orb");
+  assert.equal(executed, false);
 });
 
 test("music response policy requests a dance only from trusted, confident groove evidence", async () => {
