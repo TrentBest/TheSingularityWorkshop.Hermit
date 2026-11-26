@@ -43,7 +43,7 @@ test("duplicate object identities are rejected", () => {
 
 test("unknown properties and unsupported schema versions fail closed", () => {
   assert.throws(() => createWorldStateSnapshot({ ...sample(), extra: true }), /unsupported properties/);
-  assert.throws(() => validateWorldStateSnapshot({ ...createWorldStateSnapshot(sample()), schemaVersion: 2 }), /unsupported schemaVersion/);
+  assert.throws(() => validateWorldStateSnapshot({ ...createWorldStateSnapshot(sample()), schemaVersion: 3 }), /unsupported schemaVersion/);
 });
 
 test("invalid revisions, identities, oversized collections, and executable properties are rejected", () => {
