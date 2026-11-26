@@ -269,3 +269,33 @@ The experience should feel like a living ant farm: the user builds and modifies 
 Start with a 2D builder and live simulation preview. Keep the environment model and physics contracts independent of the renderer so a richer 3D or VR manifestation can be added without rewriting Hermit's reasoning and authority boundaries.
 
 The goal is not to fake intelligence with scripted animations. The goal is to give Hermit a small, coherent world in which its decisions have observable consequences.
+
+
+## 15. Hierarchical embodiment and joint control
+
+Hermit's body should be assembled from reusable Workshop contracts rather than becoming a second armature, gesture, neural-runtime, or physics implementation.
+
+The intended control hierarchy is:
+
+- **Hermit** owns goals, intent, task context, coordination requests, learning/evaluation orchestration, and the decision to propose the next action.
+- **Gestures** owns reusable armature/joint topology and the typed observation/action/procedure contracts. Its current teachable-armature issue (#32) is a deliberately small two-link planar reference fixture, not the full target body.
+- **NeuralNetworks** owns numerical inference and learned policy computation. It receives bounded observations and proposes coordinated actuator activations or target trajectories.
+- **Joint supervisors** may use one bounded FSM per supported joint to manage local modes, legal ranges, speed/effort limits, and transitions. These supervisors constrain and interpret proposals; they are not a second neural runtime.
+- **Physics** owns physical state and outcomes: forces, contact, load, collision, motion, and failure.
+- **Renderer / Visualize** presents the actual composition and telemetry; it does not invent state.
+
+### Intended reference rig
+
+The target reference is the Unity Input Sample's fully articulated armature, preserving its available joints down through the fingers and not requiring toe joints. Before adopting it, audit the exact asset/source, license, joint hierarchy, coordinate conventions, bind pose, and stable identity strategy. Do not claim it is imported or supported until a tested adapter exists.
+
+### Local joint control
+
+A joint may expose opposing muscle-like actuator channels on either side of its range of motion. The neural policy can propose bounded activation values; the local supervisor validates them against joint limits and command budgets; the physical model computes the resulting movement. Muscle contraction generates force, tendons transmit it, and ligaments stabilize/constrain the joint. The software model may simplify those mechanics, but must preserve the distinction in its vocabulary.
+
+### First experiment and evidence
+
+Start with a small, resettable reach-and-touch task on a limited subset of the rig. Record intent, coordination target, observations, per-joint FSM state, requested and accepted actuator commands, achieved joint/end-effector state, contact evidence, and task outcome. Compare a deterministic baseline with a learned policy on repeatable and held-out initial conditions.
+
+Do not start with walking or a whole-body neural controller. Add locomotion only after the control loop can demonstrate stable feedback, bounded commands, reproducible resets, and measurable outcomes.
+
+**Status:** target architecture only. The full Unity rig, per-joint FSM implementation, live neural inference, and physical muscle/tendon/ligament model are not yet claimed as implemented.
