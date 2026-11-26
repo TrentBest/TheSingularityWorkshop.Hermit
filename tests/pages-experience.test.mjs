@@ -128,7 +128,7 @@ test("the first encounter presents an expressive Hermit character and direct con
   assert.match(page, /class="hermit-eyes"/);
   assert.match(page, /id="hermit-direct-request"/);
   assert.match(page, /id="hermit-direct-send"/);
-  assert.match(page, /hermit-presence\\.js/);
+  assert.ok(page.includes("hermit-presence.js"));
   assert.match(presence, /listening: "Listening/);
   assert.match(presence, /thinking: "Thinking/);
   assert.match(presence, /speaking: "Speaking/);
