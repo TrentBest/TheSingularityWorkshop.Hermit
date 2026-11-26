@@ -5,6 +5,7 @@ window.hermitCapabilityCatalog = playground.capabilityCatalog();
 const $ = id => document.getElementById(id);
 let selectedObjectId = "compass";
 let busy = false;
+let activeTrace = [];
 
 const labels = {
   "task-created": "Task created",
@@ -144,18 +145,43 @@ async function refresh() {
   renderObjects(await playground.snapshot());
 }
 
+function presentTaskEvent(event) {
+  activeTrace.push(event);
+  renderTrace(activeTrace);
+  const messages = {
+    "task-created": ["working", "I've started the task. I'll keep you informed."],
+    "observation-received": ["thinking", "I'm checking the current state before acting."],
+    "step-proposed": ["thinking", "I've worked out the next step. I'm checking permission."],
+    "policy-evaluated": ["thinking", event.decision === "allow" ? "The host policy permits this step." : "The host policy requires a decision before I can proceed."],
+    "approval-required": ["concerned", "I need your explicit approval before changing the Workshop."],
+    "execution-started": ["working", "The host has authorized the action. I'm carrying it out now."],
+    "execution-completed": ["thinking", "The action returned. I'm checking the environment to verify the result."],
+    "step-verified": ["speaking", "I've verified that step against the environment."],
+    "task-verified-complete": ["speaking", "The task is complete and verified."],
+    "task-failed": ["concerned", event.code === "CANCELLED" ? "The task was cancelled before I could verify completion." : "I couldn't complete that task safely."]
+  };
+  const presentation = messages[event.event];
+  if (presentation) window.setHermitPresence?.(presentation[0], presentation[1]);
+  if (event.event === "execution-started") setStatus("The host-authorized action is executing…");
+  if (event.event === "execution-completed") setStatus("Action returned. Verifying the environment…");
+  if (event.event === "step-verified") setStatus("The environment verified the action.", "success");
+}
+
 async function perform(action) {
   if (busy || !selectedObjectId) return;
   setBusy(true);
+  activeTrace = [];
+  window.hermitTaskActive = true;
   setStatus(action === "inspect"
     ? "Hermit is inspecting the selected object…"
     : "Hermit is requesting a host-authorized move…");
   window.setHermitPresence?.("working", action === "inspect" ? "I am taking a closer look." : "I am preparing the move request for host review.");
   try {
     const response = action === "inspect"
-      ? await playground.inspect(selectedObjectId)
+      ? await playground.inspect(selectedObjectId, { onEvent: presentTaskEvent })
       : await playground.moveToWorkbench(selectedObjectId, {
-          approvalGranted: $("approval-granted").checked
+          approvalGranted: $("approval-granted").checked,
+          onEvent: presentTaskEvent
         });
     renderTrace(response.trace);
     if (response.status === "completed") {
@@ -172,11 +198,15 @@ async function perform(action) {
     } else {
       const message = response.error?.message ?? "The action did not complete.";
       setStatus(`Hermit stopped safely: ${message}`, "warning");
+      window.setHermitPresence?.("concerned", response.status === "cancelled"
+        ? "The task was cancelled. I cannot claim it completed; the environment needs to be checked before retrying."
+        : "I couldn't complete the task: " + message);
     }
   } catch (error) {
     setStatus(`Playground error: ${error.message}`, "warning");
     window.setHermitPresence?.("concerned", `I stopped because something went wrong: ${error.message}`);
   } finally {
+    window.hermitTaskActive = false;
     setBusy(false);
   }
 }
