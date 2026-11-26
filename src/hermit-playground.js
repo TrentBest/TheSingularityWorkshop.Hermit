@@ -112,6 +112,7 @@ export function createHermitPlayground({ objects = DEFAULT_OBJECTS, policy } = {
       world.set(id, { ...nextSnapshot.objects.at(-1) });
       worldRevision = nextSnapshot.revision;
       return nextSnapshot;
+    },
     capabilityCatalog: () => PLAYGROUND_CAPABILITY_CATALOG,
     snapshot: observe,
     inspect: objectId => run({
