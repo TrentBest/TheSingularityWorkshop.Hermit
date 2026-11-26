@@ -25,6 +25,7 @@ function setVoiceStatus(message) {
 function setPresence(state, message) { window.setHermitPresence?.(state, message); }
 
 async function speak(message) {
+  setPresence("speaking", message);
   if (!speechOutput.supported) {
     setVoiceStatus("Speech output is not available in this browser. The text interface remains available.");
     return;
@@ -32,6 +33,7 @@ async function speak(message) {
   try {
     const voice = speechOutput.voices().find(candidate => candidate.lang?.toLowerCase().startsWith("en"));
     await speechOutput.speak(message, { lang: "en-US", voice });
+    setPresence("idle", "I am here. What shall we explore next?");
   } catch (error) {
     if (error.code !== "CANCELLED") setVoiceStatus("Speech output: " + error.message);
   }
@@ -111,6 +113,7 @@ $("voice-stop").addEventListener("click", () => {
 });
 
 $("voice-listen").addEventListener("click", async () => {
+  setPresence("listening", "I am listening. Take your time.");
   $("voice-listen").disabled = true;
   $("voice-stop-listening").disabled = false;
   $("voice-interim").textContent = "Listening…";
@@ -137,6 +140,7 @@ $("voice-listen").addEventListener("click", async () => {
 
 $("voice-stop-listening").addEventListener("click", () => {
   speechInput.cancel();
+  setPresence("idle", "No rush. I am here when you are ready.");
   $("voice-interim").textContent = "Listening stopped.";
   setVoiceStatus("Speech recognition stopped.");
 });
@@ -147,6 +151,15 @@ $("voice-help-example").addEventListener("click", () => {
 });
 $("voice-submit").addEventListener("click", () => {
   void submitIntent($("voice-request").value);
+});
+$("hermit-direct-send").addEventListener("click", () => {
+  const request = $("hermit-direct-request").value.trim();
+  if (!request) { setPresence("concerned", "Tell me a little about what you want to do."); return; }
+  $("voice-request").value = request;
+  void submitIntent(request);
+});
+$("hermit-direct-request").addEventListener("keydown", event => {
+  if (event.key === "Enter") $("hermit-direct-send").click();
 });
 $("voice-request").addEventListener("keydown", event => {
   if (event.key === "Enter") void submitIntent($("voice-request").value);
