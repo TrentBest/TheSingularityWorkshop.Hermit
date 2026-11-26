@@ -676,3 +676,22 @@ test("a smaller resume budget does not terminalize a ready checkpoint", async ()
   assert.equal(stored.checkpoint.phase, "ready");
   assert.equal(stored.checkpoint.revision, 5);
 });
+
+
+test("streams immutable lifecycle events to an observer without letting it alter execution", async () => {
+  const { runtime, planner } = setup();
+  const observed = [];
+  const response = await runtime.execute({
+    task: "Inspect the compass.",
+    planner,
+    onEvent: event => {
+      assert.equal(Object.isFrozen(event), true);
+      observed.push(event.event);
+      throw new Error("presentation observer failure");
+    }
+  });
+  assert.equal(response.status, "completed");
+  assert.deepEqual(observed, response.trace.map(event => event.event));
+  assert.ok(observed.includes("execution-started"));
+  assert.ok(observed.includes("execution-completed"));
+});
