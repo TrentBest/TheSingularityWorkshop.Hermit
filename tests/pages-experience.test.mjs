@@ -12,6 +12,15 @@ const surpsObservation = await readFile(new URL("../src/surps-observation.js", i
 const surpsRoleContext = await readFile(new URL("../src/surps-role-context.js", import.meta.url), "utf8");
 const roleProfiles = JSON.parse(await readFile(new URL("../assets/embassy-reception-role-profiles.json", import.meta.url), "utf8"));
 const sessionFixture = JSON.parse(await readFile(new URL("../assets/embassy-reception-session.fixture.json", import.meta.url), "utf8"));
+const roadmap = await readFile(new URL("../docs/ROADMAP.md", import.meta.url), "utf8");
+const surpsIntegration = await readFile(new URL("../docs/SURPS_INTEGRATION.md", import.meta.url), "utf8");
+
+test("Hermit documentation uses the renamed FSM_Execution domain consistently", () => {
+  assert.doesNotMatch(roadmap, /Foundry/i);
+  assert.doesNotMatch(surpsIntegration, /Foundry/i);
+  assert.match(roadmap, /FSM_Execution/);
+  assert.match(surpsIntegration, /FSM_Execution/);
+});
 
 test("Pages experience introduces Hermit before the learning modules", () => {
   const moniker = page.indexOf("TheSingularityWorkshop.Visualize/development/docs/assets/moniker.svg");
