@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
 const page = await readFile(new URL("../index.html", import.meta.url), "utf8");
+const experience = await readFile(new URL("../experience.html", import.meta.url), "utf8");
+const world = await readFile(new URL("../assets/hermit-world.js", import.meta.url), "utf8");
 const playground = await readFile(new URL("../assets/hermit-playground.js", import.meta.url), "utf8");
 const voice = await readFile(new URL("../assets/hermit-voice.js", import.meta.url), "utf8");
 const playgroundCore = await readFile(new URL("../src/hermit-playground.js", import.meta.url), "utf8");
@@ -177,4 +179,29 @@ test("task lifecycle events drive Hermit's live presence and honest interruption
 test("voice listening controls update from support and active-listening state without recursion", () => {
   assert.match(voice, /function setListeningControls\(\) \{\s*\$\("voice-listen"\)\.disabled = !speechInput\.supported \|\| listening;\s*\$\("voice-stop-listening"\)\.disabled = !speechInput\.supported \|\| !listening;\s*\}/);
   assert.doesNotMatch(voice, /function setListeningControls\(\) \{\s*setListeningControls\(\);/);
+});
+
+
+test("the inhabited Workshop is a viewport-filling primary encounter with Hermit anchored in the room", () => {
+  assert.match(page, /href="\.\/experience\.html">Enter the inhabited Workshop/);
+  assert.match(experience, /id="world"/);
+  assert.match(experience, /height:100dvh/);
+  assert.match(experience, /overflow:hidden/);
+  assert.match(experience, /id="hermit-anchor"/);
+  assert.match(experience, /id="hermit-speech"/);
+  assert.match(experience, /id="composer"/);
+  assert.match(experience, /prefers-reduced-motion:reduce/);
+  assert.match(experience, /href="\.\/index\.html">Open the guide/);
+});
+
+test("Workshop scene focus updates bounded session context and Hermit's response from actual selected entities", () => {
+  assert.match(world, /focusedEntity:null/);
+  assert.match(world, /session\.revision\+\+/);
+  assert.match(world, /function focusEntity\(id\)/);
+  assert.match(world, /button\.addEventListener\("click",\(\)=>focusEntity/);
+  assert.match(world, /session\.lastIntent=message/);
+  assert.match(world, /session\.turns\+\+/);
+  assert.match(experience, /data-prop="workbench"/);
+  assert.match(experience, /data-prop="lamp"/);
+  assert.match(experience, /data-prop="book"/);
 });
