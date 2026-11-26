@@ -29,7 +29,7 @@ export function createHermitPlayground({ objects = DEFAULT_OBJECTS, policy } = {
     invoke: async ({ objectId }) => {
       const item = world.get(objectId);
       if (!item) throw new Error("That object is not present in the environment.");
-      return { objectId, name: item.name, description: item.description, location: item.location };
+      return { objectId, name: item.name, description: item.description, location: item.location, shape: item.shape, dimensions: item.dimensions, position: item.position, rotation: item.rotation, material: item.material, affordances: item.affordances };
     }
   });
 
@@ -94,9 +94,15 @@ export function createHermitPlayground({ objects = DEFAULT_OBJECTS, policy } = {
 
   return Object.freeze({
     capabilities: () => registry.list(),
-    addObject: async ({ name, description }) => {
+    addObject: async ({ name, description, shape = "box", dimensions, position, rotation, material = "wood", affordances = ["inspect", "move"] }) => {
       const id = "player-object-" + nextCustomObject;
-      const candidate = { id, name, description, location: "workshop" };
+      const candidate = {
+        id, name, description, location: "workshop", shape,
+        dimensions: dimensions ?? { x: 1, y: 1, z: 1 },
+        position: position ?? { x: 0, y: 0, z: 0 },
+        rotation: rotation ?? { x: 0, y: 0, z: 0 },
+        material, affordances
+      };
       const nextSnapshot = createWorldStateSnapshot({
         environmentId: "hermit-workshop",
         revision: worldRevision + 1,
@@ -106,7 +112,6 @@ export function createHermitPlayground({ objects = DEFAULT_OBJECTS, policy } = {
       world.set(id, { ...nextSnapshot.objects.at(-1) });
       worldRevision = nextSnapshot.revision;
       return nextSnapshot;
-    },
     capabilityCatalog: () => PLAYGROUND_CAPABILITY_CATALOG,
     snapshot: observe,
     inspect: objectId => run({
