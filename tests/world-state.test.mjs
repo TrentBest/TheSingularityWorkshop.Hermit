@@ -58,3 +58,39 @@ test("invalid revisions, identities, oversized collections, and executable prope
   });
   assert.throws(() => createWorldStateSnapshot(hostile), /data properties only/);
 });
+
+test("structured props validate primitive geometry, transform, material, and affordances", () => {
+  const input = sample();
+  input.objects[0] = {
+    ...input.objects[0],
+    shape: "sphere",
+    dimensions: { x: 2, y: 2, z: 2 },
+    position: { x: 4, y: 1, z: -3 },
+    rotation: { x: 0, y: 45, z: 0 },
+    material: "glass",
+    affordances: ["inspect"]
+  };
+  const snapshot = createWorldStateSnapshot(input);
+  assert.equal(snapshot.schemaVersion, 2);
+  assert.equal(snapshot.objects[0].shape, "sphere");
+  assert.deepEqual(snapshot.objects[0].dimensions, { x: 2, y: 2, z: 2 });
+  assert.deepEqual(snapshot.objects[0].position, { x: 4, y: 1, z: -3 });
+  assert.equal(snapshot.objects[0].material, "glass");
+  assert.deepEqual(snapshot.objects[0].affordances, ["inspect"]);
+  assert.ok(Object.isFrozen(snapshot.objects[0].dimensions));
+});
+
+test("unsupported shapes, materials, affordances, and non-finite geometry fail closed", () => {
+  const invalid = sample();
+  invalid.objects[0].shape = "mesh";
+  assert.throws(() => createWorldStateSnapshot(invalid), /shape/);
+  const invalidMaterial = sample();
+  invalidMaterial.objects[0].material = "plasma";
+  assert.throws(() => createWorldStateSnapshot(invalidMaterial), /material/);
+  const invalidPosition = sample();
+  invalidPosition.objects[0].position = { x: Infinity, y: 0, z: 0 };
+  assert.throws(() => createWorldStateSnapshot(invalidPosition), /finite bounds/);
+  const invalidAffordance = sample();
+  invalidAffordance.objects[0].affordances = ["execute-arbitrary-code"];
+  assert.throws(() => createWorldStateSnapshot(invalidAffordance), /affordances/);
+});
