@@ -14,3 +14,26 @@ else if(session.focusedEntity)response=`You mentioned “${message}” while ${e
 else response="I'm listening. I don't know the whole story yet, but we can work it out together. Is there something in the room you'd like to show me?";
 title.textContent="Conversation";detail.textContent=`Session turn ${session.turns} · ${session.focusedEntity?entities[session.focusedEntity].name:"No object selected"} in focus`;say(response,"Listening · responding");input.value="";});
 document.addEventListener("keydown",event=>{if(event.key==="Escape"){$("visitor-message").blur();}});
+
+session.hostRevision=0;
+window.addEventListener("hermit:host-observation-accepted",event=>{
+  const observation=event.detail;
+  if(!observation||!Number.isSafeInteger(observation.revision)||observation.revision<=session.hostRevision)return;
+  session.hostRevision=observation.revision;
+  if(observation.kind==="entity-focused"){
+    focusEntity(observation.entityId);
+    detail.textContent += ` · Host observation ${observation.revision}`;
+    return;
+  }
+  if(observation.kind==="entity-cleared"){
+    session.focusedEntity=null;
+    for(const button of room.querySelectorAll("[data-prop]"))button.setAttribute("aria-pressed","false");
+    title.textContent="Here together";
+    detail.textContent="The host reports that nothing is currently in focus.";
+    say("All right. We can look around together.","Attending · scene changed");
+    return;
+  }
+  title.textContent=observation.kind==="scene-entered"?"Welcome to the scene":"The Workshop has changed";
+  detail.textContent=`Host-confirmed scene update · revision ${observation.revision}`;
+  say(observation.kind==="scene-entered"?"I see the Workshop has opened around us.":"Something in our surroundings has changed. Let's take a look.","Attending · host update");
+});
