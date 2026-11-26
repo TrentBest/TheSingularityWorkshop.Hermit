@@ -66,6 +66,12 @@
     .scene-zone{min-height:190px;padding:1rem;border:1px dashed #587181;border-radius:13px;background:#0e1a22}
     .scene-zone h3{margin:.1rem 0 .3rem}
     .scene-zone.drop-ready{border-color:var(--accent);background:#17312f}
+    .object-creator{display:grid;grid-template-columns:1fr 1fr auto;gap:.65rem;align-items:end;margin:1rem 0;padding:1rem;border:1px solid #405766;border-radius:12px;background:#13232c}
+    .object-creator label{font-size:.9rem}
+    .object-creator input{min-width:0}
+    .object-creator button{white-space:nowrap}
+    .object-creator-help{grid-column:1/-1;margin:0;font-size:.88rem}
+    @media(max-width:760px){.object-creator{grid-template-columns:1fr}}
     .object-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.7rem;margin-top:1rem}
     .object-card{display:flex;align-items:center;gap:.8rem;width:100%;text-align:left;background:#203541;border-color:#405969;padding:.85rem}
     .object-card.selected{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
@@ -152,12 +158,18 @@
   <section id="hermit-playground" class="panel playground" aria-labelledby="playground-title">
     <div class="eyebrow">Live local environment · Deterministic runtime</div>
     <h2 id="playground-title">1. Give Hermit something to work with</h2>
-    <p class="playground-intro">Choose an object or drag it onto the interaction pad. Hermit can inspect through a read-only capability. Moving an object changes the simulated world and requires your explicit approval; host policy is checked again before execution.</p>
+    <p class="playground-intro">Choose an object, add your own, or drag one onto the interaction pad. Hermit can inspect through a read-only capability. Moving an object changes the simulated world and requires your explicit approval; host policy is checked again before execution.</p>
     <div class="scene-layout">
       <div>
         <div class="scene-zone" data-drop-zone="world" aria-label="Workshop objects">
           <h3>Workshop floor</h3>
-          <p>Objects available for Hermit to observe.</p>
+          <p>Objects available for Hermit to observe. Add your own props and ideas to this shared scene.</p>
+          <form id="object-creator" class="object-creator">
+            <div><label for="new-object-name">Object name</label><input id="new-object-name" name="name" maxlength="120" required placeholder="A tiny brass key"></div>
+            <div><label for="new-object-description">Describe it</label><input id="new-object-description" name="description" maxlength="1024" required placeholder="A key with a moon-shaped bow"></div>
+            <button type="submit">Add to scene</button>
+            <p class="object-creator-help">You are authoring the scene. Hermit can inspect the new object once it appears; any later world-changing action still follows host approval.</p>
+          </form>
           <div id="world-objects" class="object-list"></div>
         </div>
         <div class="scene-zone" data-drop-zone="workbench" style="margin-top:1rem" aria-label="Workbench destination">
