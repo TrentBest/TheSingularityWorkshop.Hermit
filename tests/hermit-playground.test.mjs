@@ -61,3 +61,47 @@ test("world snapshots carry a stable schema identity and advance only after a ve
   assert.equal(after.revision, 1);
   assert.equal(after.objects.find(item => item.id === "glass").location, "workbench");
 });
+
+test("the player can author a bounded object and Hermit can inspect it", async () => {
+  const playground = createHermitPlayground();
+  const snapshot = await playground.addObject({
+    name: "Moon key",
+    description: "A tiny key with a crescent-shaped bow."
+  });
+  const created = snapshot.objects.find(item => item.id === "player-object-1");
+  assert.equal(created.name, "Moon key");
+  assert.equal(created.location, "workshop");
+  assert.equal(snapshot.revision, 1);
+
+  const response = await playground.inspect(created.id);
+  assert.equal(response.status, "completed");
+  assert.equal(response.outcomes[0].result.description, "A tiny key with a crescent-shaped bow.");
+});
+
+test("player-authored object insertion validates the proposed world before changing it", async () => {
+  const playground = createHermitPlayground();
+  await assert.rejects(
+    playground.addObject({ name: "", description: "Invalid name." }),
+    /objects\\[3\\]\\.name/
+  );
+  const snapshot = await playground.snapshot();
+  assert.equal(snapshot.objects.length, 3);
+  assert.equal(snapshot.revision, 0);
+});
+
+test("the player cannot exceed the world-state object bound", async () => {
+  const objects = Array.from({ length: 256 }, (_, index) => ({
+    id: "fixture-" + index,
+    name: "Fixture " + index,
+    description: "A bounded fixture object.",
+    location: "workshop"
+  }));
+  const playground = createHermitPlayground({ objects });
+  await assert.rejects(
+    playground.addObject({ name: "Overflow", description: "Must not be inserted." }),
+    /at most 256/
+  );
+  const snapshot = await playground.snapshot();
+  assert.equal(snapshot.objects.length, 256);
+  assert.equal(snapshot.revision, 0);
+});
