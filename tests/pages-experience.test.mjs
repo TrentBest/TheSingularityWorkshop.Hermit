@@ -55,6 +55,10 @@ test("the page has unique IDs and one top-level heading", () => {
 });
 
 test("the Pages scene exposes keyboard-operable object selection and host approval", () => {
+  assert.match(page, /id="scene-map"/);
+  assert.match(playground, /function renderScene\(snapshot\)/);
+  assert.match(playground, /createElementNS/);
+  assert.match(page, /Top-down scene preview/);
   assert.match(page, /id="world-objects"/);
   assert.match(page, /id="object-creator"/);
   assert.match(page, /Add to scene/);
