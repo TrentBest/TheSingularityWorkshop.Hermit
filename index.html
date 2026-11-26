@@ -63,7 +63,7 @@
     .playground{border-color:#47766f;background:linear-gradient(145deg,#1b3038,#14232d 65%)}
     .playground-intro{max-width:780px}
     .scene-layout{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(280px,.8fr);gap:1rem;margin-top:1.2rem}
-    .scene-zone{min-height:190px;padding:1rem;border:1px dashed #587181;border-radius:13px;background:#0e1a22}
+    .scene-view{margin:1rem 0;padding:1rem;border:1px solid #405766;border-radius:13px;background:#101d26}.scene-view h3{margin:.1rem 0}.scene-view p{margin:.2rem 0 .7rem;font-size:.9rem}.scene-view svg{width:100%;min-width:0;height:auto;display:block}.scene-object{cursor:pointer;outline:none}.scene-object:focus .scene-shape,.scene-object.selected .scene-shape{stroke:#fff;stroke-width:3}.scene-object-label{fill:#edf3f7;font-size:11px;text-anchor:middle;paint-order:stroke;stroke:#0b151c;stroke-width:3px;stroke-linejoin:round}.scene-zone{min-height:190px;padding:1rem;border:1px dashed #587181;border-radius:13px;background:#0e1a22}
     .scene-zone h3{margin:.1rem 0 .3rem}
     .scene-zone.drop-ready{border-color:var(--accent);background:#17312f}
     .object-creator{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.65rem;align-items:end;margin:1rem 0;padding:1rem;border:1px solid #405766;border-radius:12px;background:#13232c}
@@ -159,6 +159,15 @@
     <div class="eyebrow">Live local environment · Deterministic runtime</div>
     <h2 id="playground-title">1. Give Hermit something to work with</h2>
     <p class="playground-intro">Choose an object, add your own, or drag one onto the interaction pad. Hermit can inspect through a read-only capability. Moving an object changes the simulated world and requires your explicit approval; host policy is checked again before execution.</p>
+    <div class="scene-view" aria-label="Top-down scene preview">
+      <h3>Scene view · Top-down</h3>
+      <p>Primitive props are placed using their X/Z coordinates. This is a visual editor preview, not a physics simulation.</p>
+      <svg id="scene-map" viewBox="0 0 640 280" role="img" aria-labelledby="scene-map-title scene-map-description">
+        <title id="scene-map-title">Hermit workshop scene preview</title>
+        <desc id="scene-map-description">A top-down schematic of authored primitive objects. Select an object to inspect it.</desc>
+        <rect x="1" y="1" width="638" height="278" rx="12" fill="#0b151c" stroke="#405766"/>
+      </svg>
+    </div>
     <div class="scene-layout">
       <div>
         <div class="scene-zone" data-drop-zone="world" aria-label="Workshop objects">
