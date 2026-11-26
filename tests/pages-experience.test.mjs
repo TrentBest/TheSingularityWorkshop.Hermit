@@ -6,6 +6,7 @@ const page = await readFile(new URL("../index.html", import.meta.url), "utf8");
 const experience = await readFile(new URL("../experience.html", import.meta.url), "utf8");
 const world = await readFile(new URL("../assets/hermit-world.js", import.meta.url), "utf8");
 const hostObservation = await readFile(new URL("../assets/hermit-host-observation.js", import.meta.url), "utf8");
+const sceneObservation = await import("../src/hermit-scene-observation.js");
 const playground = await readFile(new URL("../assets/hermit-playground.js", import.meta.url), "utf8");
 const voice = await readFile(new URL("../assets/hermit-voice.js", import.meta.url), "utf8");
 const playgroundCore = await readFile(new URL("../src/hermit-playground.js", import.meta.url), "utf8");
@@ -220,4 +221,28 @@ test("host scene observations are versioned, provenance-checked, allowlisted, an
   assert.match(world, /hermit:host-observation-accepted/);
   assert.match(world, /session\.hostRevision/);
   assert.match(world, /focusEntity\(observation\.entityId\)/);
+});
+
+
+test("scene observation validator rejects forged, malformed, unknown, and stale host events", () => {
+  const validate = sceneObservation.createSceneObservationValidator(["workbench", "lamp"]);
+  const valid = {
+    schema: "hermit.scene-observation.v1",
+    source: "host",
+    revision: 1,
+    kind: "entity-focused",
+    entityId: "workbench",
+    observedAt: "2026-11-26T04:00:00.000Z"
+  };
+  const accepted = validate(valid);
+  assert.equal(accepted.revision, 1);
+  assert.equal(accepted.entityId, "workbench");
+  assert.ok(Object.isFrozen(accepted));
+  assert.equal(validate({ ...valid, revision: 1 }), null);
+  assert.equal(validate({ ...valid, revision: 2, source: "visitor" }), null);
+  assert.equal(validate({ ...valid, revision: 2, entityId: "untrusted-object" }), null);
+  assert.equal(validate({ ...valid, revision: 2, observedAt: "not-a-date" }), null);
+  assert.equal(validate({ ...valid, revision: 2, kind: "execute-command", entityId: null }), null);
+  assert.equal(validate({ ...valid, revision: 2.5 }), null);
+  assert.equal(validate({ ...valid, revision: 3, kind: "scene-changed", entityId: null }).revision, 3);
 });
