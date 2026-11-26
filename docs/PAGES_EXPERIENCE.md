@@ -27,12 +27,12 @@ The page also includes a three-lane architecture map: intent/planning, capabilit
 | `tests/world-state.test.mjs` | Versioning, immutability, identity, bounds and hostile-input contract tests |
 | `tests/pages-experience.test.mjs` | Page composition and browser wiring tests |
 
-The browser adapter imports the same runtime module exercised by Node tests. Players can add structured primitive props to the local scene: box, sphere, or cylinder, with bounded dimensions, XYZ position and rotation, a declared material, and an explicit affordance list. Insertion validates the candidate full-world snapshot before committing it, advances the revision, and makes the geometry and affordances available to Hermit's existing inspection path. The browser renders a shape/material preview and exposes the authored transform in the selected-object detail. The playground environment also emits immutable schema-versioned world snapshots (environment identity, revision and bounded object records); this is a fixture-level observation contract, not a complete ontology or physics model. The static Pages artifact therefore includes both `assets/` and the required `src/` modules.
+The browser adapter imports the same runtime module exercised by Node tests. Players can add structured primitive props to the local scene: box, sphere, or cylinder, with bounded dimensions, XYZ position and rotation, a declared material, and an explicit affordance list. Insertion validates the candidate full-world snapshot before committing it, advances the revision, and makes the geometry and affordances available to Hermit's existing inspection path. The browser renders a keyboard-selectable top-down SVG scene preview using X/Z placement, primitive silhouettes, and material colors; it exposes the complete authored transform in the selected-object detail. This is a schematic editor view, not a 3D renderer or physics simulation. The playground environment also emits immutable schema-versioned world snapshots (environment identity, revision and bounded object records); this is a fixture-level observation contract, not a complete ontology or physics model. The static Pages artifact therefore includes both `assets/` and the required `src/` modules.
 
 ## Available interactions
 
 - Add player-authored box, sphere, or cylinder props with name, description, material, dimensions, position, and rotation; the host validates the complete proposed world snapshot before insertion.
-- Select an object by keyboard-operable button or drag it to the interaction pad.
+- Select an object by keyboard-operable list button, spatial SVG prop, or drag it to the interaction pad.
 - Ask Hermit to inspect newly authored objects through the same registered read-only capability as fixture objects.
 - Ask Hermit to inspect it through the registered read-only `inspect-object` capability.
 - Request a move to the workbench through `move-object`.
