@@ -31,6 +31,7 @@ function setBusy(value) {
   $("inspect-button").disabled = value || !selectedObjectId;
   $("move-button").disabled = value || !selectedObjectId;
   $("approval-granted").disabled = value;
+  $("object-creator").querySelector("button[type=submit]").disabled = value;
   document.querySelectorAll(".object-card").forEach(card => {
     card.disabled = value;
     card.draggable = !value;
@@ -66,7 +67,7 @@ function renderObjects(snapshot) {
     card.draggable = !busy;
     card.dataset.objectId = item.id;
     card.setAttribute("aria-pressed", String(item.id === selectedObjectId));
-    card.innerHTML = `<span class="object-glyph" aria-hidden="true">${item.id === "glass" ? "◉" : item.id === "crate" ? "▣" : "✥"}</span><span><strong></strong><small></small></span>`;
+    card.innerHTML = `<span class="object-glyph" aria-hidden="true">${item.id === "glass" ? "◉" : item.id === "crate" ? "▣" : item.id.startsWith("player-object-") ? "✧" : "✥"}</span><span><strong></strong><small></small></span>`;
     card.querySelector("strong").textContent = item.name;
     card.querySelector("small").textContent = item.location === "workbench" ? "On workbench" : "In workshop";
     card.addEventListener("click", () => selectObject(item.id));
@@ -162,6 +163,31 @@ for (const zone of document.querySelectorAll("[data-drop-zone]")) {
     }
   });
 }
+
+$("object-creator").addEventListener("submit", async event => {
+  event.preventDefault();
+  if (busy) return;
+  const name = $("new-object-name").value.trim();
+  const description = $("new-object-description").value.trim();
+  if (!name || !description) {
+    setStatus("Give the new object both a name and a description.", "warning");
+    return;
+  }
+  setBusy(true);
+  try {
+    const snapshot = await playground.addObject({ name, description });
+    $("new-object-name").value = "";
+    $("new-object-description").value = "";
+    selectedObjectId = snapshot.objects.at(-1).id;
+    renderObjects(snapshot);
+    setStatus(name + " is now part of the Workshop scene. Hermit can inspect it.", "success");
+    renderTrace([]);
+  } catch (error) {
+    setStatus("The object was not added: " + error.message, "warning");
+  } finally {
+    setBusy(false);
+  }
+});
 
 $("inspect-button").addEventListener("click", () => perform("inspect"));
 $("move-button").addEventListener("click", () => perform("move"));
