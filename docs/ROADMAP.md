@@ -8,6 +8,7 @@ This roadmap distinguishes the domain vision from current executable evidence.
 - [x] Specify GOAP-first local planning and bounded idle behavior.
 - [x] Add deterministic, bounded GOAP planning primitive and tests.
 - [x] Add a versioned, immutable world-state snapshot contract for the deterministic Pages fixture.
+- [x] Let the player author bounded scene objects; validate and version the world before making them observable to Hermit.
 - [ ] Define versioned affordance and action contracts and align them with Gestures/Physics ownership.
 - [x] Add bounded plan execution with per-action policy, post-action verification and observation reconciliation.
 - [x] Define and test versioned task-checkpoint serialization and recovery classification.
@@ -97,6 +98,7 @@ This roadmap distinguishes the domain vision from current executable evidence.
 - [x] Add a living page-level architecture map for Hermit intent, trust, environment and evidence boundaries.
 - [ ] Extend the map with Mini crews, Titan portal and microbundle wrappers when their task/event contracts are implemented.
 - [x] Add a deterministic Pages playground backed by Hermit's registered inspect/move capabilities, host policy, explicit approval, and post-action verification.
+- [x] Allow players to add described objects to the scene and let Hermit inspect those objects through the existing read-only capability.
 - [x] Add a voice interface with speech output, optional recognition, typed fallback, and approval-preserving fixture intent routing.
 - [x] Add a diegetic party-awareness scene using versioned participant context, isolated knowledge, and CORE Spying evidence-state labels.
 - [ ] Add volcano construction choreography timeline tied to a fixture task graph.
