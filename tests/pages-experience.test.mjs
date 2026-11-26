@@ -58,7 +58,12 @@ test("the Pages scene exposes keyboard-operable object selection and host approv
   assert.match(page, /id="world-objects"/);
   assert.match(page, /id="object-creator"/);
   assert.match(page, /Add to scene/);
+  assert.match(page, /new-object-shape/);
+  assert.match(page, /new-object-material/);
+  assert.match(page, /new-object-width/);
+  assert.match(page, /new-object-x/);
   assert.match(playground, /playground\.addObject/);
+  assert.match(playground, /shape-preview shape-/);
   assert.match(page, /id="workbench-objects"/);
   assert.match(page, /id="approval-granted"/);
   assert.match(page, /id="activity-trace"/);
