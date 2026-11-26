@@ -56,6 +56,9 @@ test("the page has unique IDs and one top-level heading", () => {
 
 test("the Pages scene exposes keyboard-operable object selection and host approval", () => {
   assert.match(page, /id="world-objects"/);
+  assert.match(page, /id="object-creator"/);
+  assert.match(page, /Add to scene/);
+  assert.match(playground, /playground\.addObject/);
   assert.match(page, /id="workbench-objects"/);
   assert.match(page, /id="approval-granted"/);
   assert.match(page, /id="activity-trace"/);
