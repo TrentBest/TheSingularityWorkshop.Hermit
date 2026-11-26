@@ -66,7 +66,7 @@ export function createHermitPlayground({ objects = DEFAULT_OBJECTS, policy } = {
     objects: [...world.values()].map(item => ({ ...item }))
   });
 
-  async function run({ objectId, capabilityId, arguments: args, approvalGranted = false }) {
+  async function run({ objectId, capabilityId, arguments: args, approvalGranted = false, onEvent }) {
     const capability = registry.resolve(capabilityId);
     if (!capability) throw new Error("Unknown playground capability.");
     const task = capabilityId === "inspect-object"
@@ -88,7 +88,8 @@ export function createHermitPlayground({ objects = DEFAULT_OBJECTS, policy } = {
         return { verified, observation: await observe() };
       },
       maxSteps: 2,
-      approvalGranted
+      approvalGranted,
+      onEvent
     });
   }
 
@@ -115,14 +116,15 @@ export function createHermitPlayground({ objects = DEFAULT_OBJECTS, policy } = {
     },
     capabilityCatalog: () => PLAYGROUND_CAPABILITY_CATALOG,
     snapshot: observe,
-    inspect: objectId => run({
-      objectId, capabilityId: "inspect-object", arguments: { objectId }
+    inspect: (objectId, { onEvent } = {}) => run({
+      objectId, capabilityId: "inspect-object", arguments: { objectId }, onEvent
     }),
-    moveToWorkbench: (objectId, { approvalGranted = false } = {}) => run({
+    moveToWorkbench: (objectId, { approvalGranted = false, onEvent } = {}) => run({
       objectId,
       capabilityId: "move-object",
       arguments: { objectId, target: "workbench" },
-      approvalGranted
+      approvalGranted,
+      onEvent
     })
   });
 }
