@@ -242,9 +242,13 @@ export class HermitRuntime {
     this.maxTaskLength = maxTaskLength;
   }
 
-  async execute({ task, planner, signal, timeoutMs = 5_000, approvalGranted = false, beforeInvoke } = {}) {
+  async execute({ task, planner, signal, timeoutMs = 5_000, approvalGranted = false, beforeInvoke, onEvent } = {}) {
     const trace = [];
-    const record = (event, details = {}) => trace.push(Object.freeze({ event, at: new Date().toISOString(), ...details }));
+    const record = (event, details = {}) => {
+      const entry = Object.freeze({ event, at: new Date().toISOString(), ...details });
+      trace.push(entry);
+      try { onEvent?.(entry); } catch { /* observers cannot alter execution authority or outcome */ }
+    };
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(new HermitError("TIMEOUT", "Task exceeded its execution time limit.")), timeoutMs);
     const onCallerAbort = () => controller.abort(signal?.reason instanceof HermitError ? signal.reason : new HermitError("CANCELLED", "Task cancelled."));
@@ -338,7 +342,7 @@ export class HermitRuntime {
   async executeLoop({
     task, planner, observe, verify, signal, timeoutMs = 10_000,
     maxSteps = 16, approvalGranted = false, checkpointRepository, taskId,
-    resume = false, reconcile
+    resume = false, reconcile, onEvent
   } = {}) {
     const trace = [];
     let outcomes = [];
@@ -353,9 +357,11 @@ export class HermitRuntime {
       else signal.addEventListener("abort", onAbort, { once: true });
     }
     const executionSignal = controller.signal;
-    const record = (event, details = {}) => trace.push(Object.freeze({
-      event, at: new Date().toISOString(), ...details
-    }));
+    const record = (event, details = {}) => {
+      const entry = Object.freeze({ event, at: new Date().toISOString(), ...details });
+      trace.push(entry);
+      try { onEvent?.(entry); } catch { /* observers cannot alter execution authority or outcome */ }
+    };
     let checkpointRevision = 0;
     let checkpointPhase = null;
     let checkpointTaskId = null;
@@ -501,7 +507,7 @@ export class HermitRuntime {
 
         const action = await this.execute({
           task, planner: async () => safeProposal, signal: executionSignal,
-          timeoutMs: Math.min(remaining, 30_000), approvalGranted,
+          timeoutMs: Math.min(remaining, 30_000), approvalGranted, onEvent,
           beforeInvoke: checkpointRepository ? async ({ capabilityId, arguments: actionArguments }) => {
             checkpointRevision += 1;
             await checkpointRepository.save({
