@@ -79,3 +79,25 @@ A conversation interruption and cancellation of an already-dispatched host opera
 ## Current reality
 
 The current Pages experience has a front-facing SVG character, local gaze response, speech synthesis/optional recognition, deterministic fixture intent routing, a schematic object scene, and verified task lifecycle narration. It is still a scrolling document with a detached character panel, local fixture objects, and no live model, 3D scene, Physics integration, or Gestures integration. This decision records the intended architectural change; it does not claim those integrations already exist.
+
+
+## Host scene observation contract
+
+The inhabited Workshop now exposes a deliberately narrow browser event boundary. A host may dispatch `hermit:host-observation` with a detail object matching `hermit.scene-observation.v1`:
+
+```js
+window.dispatchEvent(new CustomEvent("hermit:host-observation", {
+  detail: {
+    schema: "hermit.scene-observation.v1",
+    source: "host",
+    revision: 12,
+    kind: "entity-focused",
+    entityId: "workbench",
+    observedAt: new Date().toISOString()
+  }
+}));
+```
+
+The adapter accepts only host-sourced events, strictly increasing positive integer revisions, recognized event kinds, parseable observation timestamps, and entity identifiers in the current scene allowlist. Accepted events are re-emitted as `hermit:host-observation-accepted`; rejected events produce a generic rejection event without forwarding untrusted payload data. Hermit's world session keeps the host revision separately from its local presentation revision.
+
+This is an integration seam, not proof that a real host is connected. The current page does not manufacture host observations, and browser-side event validation is not an authorization boundary. A production host must authenticate its own event source and enforce permissions server-side. The current allowlist is intentionally small and must be extended alongside the scene/entity contract, not bypassed with arbitrary object identifiers.
