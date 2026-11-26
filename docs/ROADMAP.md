@@ -39,6 +39,7 @@ This roadmap distinguishes the domain vision from current executable evidence.
 - [x] Define and test a provider-neutral, versioned host capability catalog with shell-scoped discovery, bounded declarative input schemas, risk metadata and explicit approval metadata.
 - [x] Validate untrusted capability arguments against the selected shell's declared schema and return a detached immutable snapshot before host handoff.
 - [x] Add a provider-neutral host dispatcher that requires host authorization on every invocation, enforces approval if either host policy or catalog metadata requires it, and invokes only trusted host-injected handlers.
+- [x] Test physical-environment adapter composition through the dispatcher, including authorization, explicit approval, post-approval policy recheck, and denial before environment execution.
 - [x] Wire the browser playground's host-owned fixture catalog into voice capability discovery.
 - [ ] Supply equivalent host-owned catalogs to AnyApp, server and VR shells.
 - [ ] Integrate the tested dispatcher with the browser playground's real host policy and post-action verification.
