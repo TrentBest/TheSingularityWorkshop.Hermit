@@ -114,3 +114,25 @@ test("the player cannot exceed the world-state object bound", async () => {
   assert.equal(snapshot.objects.length, 256);
   assert.equal(snapshot.revision, 0);
 });
+
+test("Hermit can inspect structured geometry and affordances on a player-authored prop", async () => {
+  const playground = createHermitPlayground();
+  const snapshot = await playground.addObject({
+    name: "Moonstone orb",
+    description: "A smooth pale sphere.",
+    shape: "sphere",
+    dimensions: { x: 0.8, y: 0.8, z: 0.8 },
+    position: { x: 2, y: 1, z: -4 },
+    rotation: { x: 0, y: 30, z: 0 },
+    material: "stone",
+    affordances: ["inspect"]
+  });
+  const created = snapshot.objects.at(-1);
+  const response = await playground.inspect(created.id);
+  assert.equal(response.status, "completed");
+  assert.equal(response.outcomes[0].result.shape, "sphere");
+  assert.deepEqual(response.outcomes[0].result.dimensions, { x: 0.8, y: 0.8, z: 0.8 });
+  assert.deepEqual(response.outcomes[0].result.position, { x: 2, y: 1, z: -4 });
+  assert.equal(response.outcomes[0].result.material, "stone");
+  assert.deepEqual(response.outcomes[0].result.affordances, ["inspect"]);
+});
