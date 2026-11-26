@@ -101,8 +101,17 @@ export function createWorldStateSnapshot(value = {}) {
     const dimensions = vector(record.dimensions, { x: 1, y: 1, z: 1 }, "objects[" + index + "].dimensions", 0.05, MAX_DIMENSION);
     const position = vector(record.position, { x: 0, y: 0, z: 0 }, "objects[" + index + "].position", -MAX_POSITION, MAX_POSITION);
     const rotation = vector(record.rotation, { x: 0, y: 0, z: 0 }, "objects[" + index + "].rotation", -360_000, 360_000);
-    const affordances = record.affordances ?? ["inspect", "move"];
-    if (!Array.isArray(affordances) || affordances.length > 8 || affordances.some(item => !AFFORDANCES.has(item)) || new Set(affordances).size !== affordances.length) fail("objects[" + index + "].affordances contains unsupported or duplicate entries.");
+    const suppliedAffordances = record.affordances ?? ["inspect", "move"];
+    if (!Array.isArray(suppliedAffordances) || suppliedAffordances.length > 8) fail("objects[" + index + "].affordances must be a bounded dense array.");
+    const affordanceDescriptors = Object.getOwnPropertyDescriptors(suppliedAffordances);
+    const affordanceKeys = Reflect.ownKeys(affordanceDescriptors);
+    if (affordanceKeys.length !== suppliedAffordances.length + 1 || affordanceKeys.some(key => key !== "length" && (typeof key !== "string" || !/^(0|[1-7])$/.test(key) || Number(key) >= suppliedAffordances.length))) fail("objects[" + index + "].affordances must be a dense plain array.");
+    const affordances = [];
+    for (let i = 0; i < suppliedAffordances.length; i += 1) {
+      const descriptor = affordanceDescriptors[String(i)];
+      if (!descriptor || !descriptor.enumerable || !Object.hasOwn(descriptor, "value") || !AFFORDANCES.has(descriptor.value) || affordances.includes(descriptor.value)) fail("objects[" + index + "].affordances contains unsupported, duplicate, or executable entries.");
+      affordances.push(descriptor.value);
+    }
     return {
       id,
       name: boundedString(record.name, MAX_NAME_LENGTH, "objects[" + index + "].name"),
