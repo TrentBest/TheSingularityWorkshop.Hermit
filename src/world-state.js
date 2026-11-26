@@ -3,8 +3,13 @@ const MAX_ID_LENGTH = 64;
 const MAX_NAME_LENGTH = 120;
 const MAX_DESCRIPTION_LENGTH = 1_024;
 const MAX_LOCATION_LENGTH = 128;
+const SHAPES = new Set(["box", "sphere", "cylinder"]);
+const MATERIALS = new Set(["wood", "metal", "glass", "stone", "fabric"]);
+const AFFORDANCES = new Set(["inspect", "move"]);
+const MAX_DIMENSION = 10_000;
+const MAX_POSITION = 100_000;
 
-export const WORLD_STATE_SCHEMA_VERSION = 1;
+export const WORLD_STATE_SCHEMA_VERSION = 2;
 
 function fail(message) {
   throw new TypeError(`Invalid world-state snapshot: ${message}`);
@@ -74,18 +79,36 @@ export function createWorldStateSnapshot(value = {}) {
   const stableObjects = root.objects.map((item, index) => {
     const record = readDataRecord(
       item,
-      ["id", "name", "description", "location"],
+      ["id", "name", "description", "location", "shape", "dimensions", "position", "rotation", "material", "affordances"],
       ["id", "name", "description", "location"],
       `objects[${index}]`
     );
     const id = boundedString(record.id, MAX_ID_LENGTH, `objects[${index}].id`, /^[a-z0-9][a-z0-9-]*$/);
     if (ids.has(id)) fail(`duplicate object identity: ${id}.`);
     ids.add(id);
+    const shape = record.shape ?? "box";
+    if (!SHAPES.has(shape)) fail("objects[" + index + "].shape is unsupported.");
+    const material = record.material ?? "wood";
+    if (!MATERIALS.has(material)) fail("objects[" + index + "].material is unsupported.");
+    const vector = (value, fallback, label, min, max) => {
+      const source = value ?? fallback;
+      const item = readDataRecord(source, ["x", "y", "z"], ["x", "y", "z"], label);
+      for (const axis of ["x", "y", "z"]) {
+        if (!Number.isFinite(item[axis]) || item[axis] < min || item[axis] > max) fail(label + "." + axis + " is outside its finite bounds.");
+      }
+      return { x: item.x, y: item.y, z: item.z };
+    };
+    const dimensions = vector(record.dimensions, { x: 1, y: 1, z: 1 }, "objects[" + index + "].dimensions", 0.05, MAX_DIMENSION);
+    const position = vector(record.position, { x: 0, y: 0, z: 0 }, "objects[" + index + "].position", -MAX_POSITION, MAX_POSITION);
+    const rotation = vector(record.rotation, { x: 0, y: 0, z: 0 }, "objects[" + index + "].rotation", -360_000, 360_000);
+    const affordances = record.affordances ?? ["inspect", "move"];
+    if (!Array.isArray(affordances) || affordances.length > 8 || affordances.some(item => !AFFORDANCES.has(item)) || new Set(affordances).size !== affordances.length) fail("objects[" + index + "].affordances contains unsupported or duplicate entries.");
     return {
       id,
-      name: boundedString(record.name, MAX_NAME_LENGTH, `objects[${index}].name`),
-      description: boundedString(record.description, MAX_DESCRIPTION_LENGTH, `objects[${index}].description`),
-      location: boundedString(record.location, MAX_LOCATION_LENGTH, `objects[${index}].location`)
+      name: boundedString(record.name, MAX_NAME_LENGTH, "objects[" + index + "].name"),
+      description: boundedString(record.description, MAX_DESCRIPTION_LENGTH, "objects[" + index + "].description"),
+      location: boundedString(record.location, MAX_LOCATION_LENGTH, "objects[" + index + "].location"),
+      shape, dimensions, position, rotation, material, affordances: [...affordances]
     };
   });
 
