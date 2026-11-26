@@ -136,3 +136,15 @@ test("Hermit can inspect structured geometry and affordances on a player-authore
   assert.equal(response.outcomes[0].result.material, "stone");
   assert.deepEqual(response.outcomes[0].result.affordances, ["inspect"]);
 });
+
+
+test("streams task lifecycle events before the final result", async () => {
+  const playground = createHermitPlayground();
+  const observed = [];
+  const response = await playground.inspect("compass", { onEvent: event => observed.push(event.event) });
+  assert.equal(response.status, "completed");
+  assert.ok(observed.indexOf("execution-started") < observed.indexOf("execution-completed"));
+  assert.ok(observed.indexOf("execution-completed") < observed.indexOf("step-verified"));
+  assert.ok(observed.includes("task-verified-complete"));
+  assert.deepEqual(observed, response.trace.map(event => event.event));
+});
