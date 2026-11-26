@@ -44,7 +44,7 @@ function selectObject(objectId) {
   const item = snapshot?.objects.find(candidate => candidate.id === objectId);
   if (!item) return;
   $("selected-object-name").textContent = item.name;
-  $("selected-object-description").textContent = item.description;
+  $("selected-object-description").textContent = `${item.description} Shape: ${item.shape}; material: ${item.material}; dimensions ${item.dimensions.x} × ${item.dimensions.y} × ${item.dimensions.z}; position ${item.position.x}, ${item.position.y}, ${item.position.z}. Affordances: ${item.affordances.join(", ")}.`;
   document.querySelectorAll(".object-card").forEach(card => {
     card.classList.toggle("selected", card.dataset.objectId === objectId);
     card.setAttribute("aria-pressed", String(card.dataset.objectId === objectId));
@@ -59,7 +59,6 @@ function renderObjects(snapshot) {
   const bench = $("workbench-objects");
   world.replaceChildren();
   bench.replaceChildren();
-
   for (const item of snapshot.objects) {
     const card = document.createElement("button");
     card.type = "button";
@@ -67,29 +66,30 @@ function renderObjects(snapshot) {
     card.draggable = !busy;
     card.dataset.objectId = item.id;
     card.setAttribute("aria-pressed", String(item.id === selectedObjectId));
-    card.innerHTML = `<span class="object-glyph" aria-hidden="true">${item.id === "glass" ? "◉" : item.id === "crate" ? "▣" : item.id.startsWith("player-object-") ? "✧" : "✥"}</span><span><strong></strong><small></small></span>`;
-    card.querySelector("strong").textContent = item.name;
-    card.querySelector("small").textContent = item.location === "workbench" ? "On workbench" : "In workshop";
+    const glyph = document.createElement("span");
+    glyph.className = "object-glyph";
+    glyph.setAttribute("aria-hidden", "true");
+    const shape = document.createElement("span");
+    shape.className = `shape-preview shape-${item.shape}`;
+    glyph.append(shape);
+    const copy = document.createElement("span");
+    const title = document.createElement("strong");
+    const detail = document.createElement("small");
+    title.textContent = item.name;
+    detail.textContent = `${item.shape} · ${item.material} · ${item.dimensions.x}×${item.dimensions.y}×${item.dimensions.z}`;
+    copy.append(title, detail);
+    card.append(glyph, copy);
     card.addEventListener("click", () => selectObject(item.id));
-    card.addEventListener("dragstart", event => {
-      event.dataTransfer.setData("text/plain", item.id);
-      event.dataTransfer.effectAllowed = "copy";
-    });
+    card.addEventListener("dragstart", event => { event.dataTransfer.setData("text/plain", item.id); event.dataTransfer.effectAllowed = "copy"; });
     (item.location === "workbench" ? bench : world).append(card);
   }
-
-  if (!snapshot.objects.some(item => item.id === selectedObjectId)) {
-    selectedObjectId = snapshot.objects[0]?.id ?? null;
-  }
+  if (!snapshot.objects.some(item => item.id === selectedObjectId)) selectedObjectId = snapshot.objects[0]?.id ?? null;
   const selected = snapshot.objects.find(item => item.id === selectedObjectId);
   if (selected) {
     $("selected-object-name").textContent = selected.name;
-    $("selected-object-description").textContent = selected.description;
+    $("selected-object-description").textContent = `${selected.description} Shape: ${selected.shape}; material: ${selected.material}; dimensions ${selected.dimensions.x} × ${selected.dimensions.y} × ${selected.dimensions.z}; position ${selected.position.x}, ${selected.position.y}, ${selected.position.z}. Affordances: ${selected.affordances.join(", ")}.`;
   }
-  document.querySelectorAll(".object-card").forEach(card => {
-    card.classList.toggle("selected", card.dataset.objectId === selectedObjectId);
-    card.setAttribute("aria-pressed", String(card.dataset.objectId === selectedObjectId));
-  });
+  document.querySelectorAll(".object-card").forEach(card => { card.classList.toggle("selected", card.dataset.objectId === selectedObjectId); card.setAttribute("aria-pressed", String(card.dataset.objectId === selectedObjectId)); });
   setBusy(busy);
 }
 
@@ -169,24 +169,26 @@ $("object-creator").addEventListener("submit", async event => {
   if (busy) return;
   const name = $("new-object-name").value.trim();
   const description = $("new-object-description").value.trim();
-  if (!name || !description) {
-    setStatus("Give the new object both a name and a description.", "warning");
-    return;
-  }
+  if (!name || !description) { setStatus("Give the new object both a name and a description.", "warning"); return; }
   setBusy(true);
   try {
-    const snapshot = await playground.addObject({ name, description });
+    const number = id => Number($(id).value);
+    const snapshot = await playground.addObject({
+      name, description, shape: $("new-object-shape").value, material: $("new-object-material").value,
+      dimensions: { x: number("new-object-width"), y: number("new-object-height"), z: number("new-object-depth") },
+      position: { x: number("new-object-x"), y: number("new-object-y"), z: number("new-object-z") },
+      affordances: ["inspect", "move"]
+    });
     $("new-object-name").value = "";
     $("new-object-description").value = "";
+    for (const id of ["new-object-width", "new-object-height", "new-object-depth"]) $(id).value = "1";
+    for (const id of ["new-object-x", "new-object-y", "new-object-z"]) $(id).value = "0";
     selectedObjectId = snapshot.objects.at(-1).id;
     renderObjects(snapshot);
-    setStatus(name + " is now part of the Workshop scene. Hermit can inspect it.", "success");
+    setStatus(name + " is now part of the Workshop scene. Hermit can inspect its geometry and declared affordances.", "success");
     renderTrace([]);
-  } catch (error) {
-    setStatus("The object was not added: " + error.message, "warning");
-  } finally {
-    setBusy(false);
-  }
+  } catch (error) { setStatus("The object was not added: " + error.message, "warning"); }
+  finally { setBusy(false); }
 });
 
 $("inspect-button").addEventListener("click", () => perform("inspect"));
