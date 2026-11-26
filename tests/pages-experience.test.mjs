@@ -134,4 +134,17 @@ test("the first encounter presents an expressive Hermit character and direct con
   assert.match(presence, /speaking: "Speaking/);
   assert.match(voice, /hermit-direct-send/);
   assert.match(playground, /setHermitPresence/);
+  assert.match(page, /class="hermit-pupils"/);
+
+});
+
+
+test("Hermit's gaze responds gently to pointer and keyboard focus", () => {
+  assert.match(presence, /pointermove/);
+  assert.match(presence, /pointerleave/);
+  assert.match(presence, /focusin/);
+  assert.match(presence, /focusout/);
+  assert.match(presence, /Math\.max\(-6/);
+  assert.match(page, /class="hermit-pupils"/);
+  assert.match(page, /prefers-reduced-motion: reduce/);
 });
