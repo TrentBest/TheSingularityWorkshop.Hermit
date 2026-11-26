@@ -172,3 +172,9 @@ test("task lifecycle events drive Hermit's live presence and honest interruption
   assert.match(voice, /I can't safely interrupt it here/);
   assert.match(playgroundCore, /onEvent/);
 });
+
+
+test("voice listening controls update from support and active-listening state without recursion", () => {
+  assert.match(voice, /function setListeningControls\(\) \{\s*\$\("voice-listen"\)\.disabled = !speechInput\.supported \|\| listening;\s*\$\("voice-stop-listening"\)\.disabled = !speechInput\.supported \|\| !listening;\s*\}/);
+  assert.doesNotMatch(voice, /function setListeningControls\(\) \{\s*setListeningControls\(\);/);
+});
