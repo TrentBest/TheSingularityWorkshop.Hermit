@@ -76,6 +76,15 @@ test("the player can author a bounded object and Hermit can inspect it", async (
   const response = await playground.inspect(created.id);
   assert.equal(response.status, "completed");
   assert.equal(response.outcomes[0].result.description, "A tiny key with a crescent-shaped bow.");
+
+  const deniedMove = await playground.moveToWorkbench(created.id);
+  assert.equal(deniedMove.status, "failed");
+  assert.equal(deniedMove.error.code, "APPROVAL_REQUIRED");
+
+  const approvedMove = await playground.moveToWorkbench(created.id, { approvalGranted: true });
+  assert.equal(approvedMove.status, "completed");
+  assert.equal(approvedMove.outcomes[0].verified, true);
+  assert.equal((await playground.snapshot()).objects.find(item => item.id === created.id).location, "workbench");
 });
 
 test("player-authored object insertion validates the proposed world before changing it", async () => {
