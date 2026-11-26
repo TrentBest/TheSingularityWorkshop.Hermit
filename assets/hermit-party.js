@@ -50,6 +50,7 @@ $("party-ask").addEventListener("click", async () => {
   const ask = $("party-ask");
   ask.disabled = true;
   $("hermit-party-response").textContent = "Hermit is selecting a bounded role context…";
+  window.setHermitPresence?.("thinking", "I am checking only the knowledge this participant is permitted to use.");
   try {
     await refreshObservation();
     const profile = profiles.get(selectedParticipantId);
@@ -73,6 +74,7 @@ $("party-ask").addEventListener("click", async () => {
       sections.push(`Deterministic sample portrayal (not LLM-generated): “${role.exampleLine}”`);
     }
     $("hermit-party-response").textContent = sections.join("\n\n");
+    window.setHermitPresence?.("speaking", participant.name + ": I have the permitted context. " + (role.exampleLine || "I will keep my knowledge within this role."));
     $("hermit-party-provenance").textContent =
       `Agent ${context.agent.id} · Profile ${role.id}@${role.version} · ` +
       `${role.source.repository}/${role.source.path} · ` +
