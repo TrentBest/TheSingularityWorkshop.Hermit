@@ -1,0 +1,16 @@
+const $=id=>document.getElementById(id);
+const room=$("room"), speech=$("hermit-speech"), title=$("context-title"), detail=$("context-detail"), state=$("presence-state");
+const session={revision:1,focusedEntity:null,lastIntent:null,turns:0};
+const entities={workbench:{name:"Workbench",detail:"A sturdy place for making, testing, and improving things.",reply:"The workbench has seen a few ambitious projects. What are we building today?"},lamp:{name:"Lantern",detail:"A warm pool of light. It makes this corner feel a little more welcoming.",reply:"I like the lantern too. It makes the Workshop feel lived in, doesn't it?"},book:{name:"Field notes",detail:"A stack of notes waiting for an idea worth recording.",reply:"Field notes! We can capture an idea here. What should we remember from this session?"}};
+function say(text,mode="Here together"){speech.textContent=text;state.textContent=mode;}
+function focusEntity(id){const entity=entities[id];if(!entity)return;session.focusedEntity=id;session.revision++;for(const button of room.querySelectorAll("[data-prop]"))button.setAttribute("aria-pressed",String(button.dataset.prop===id));$("scene-revision").textContent=`Workshop · scene ${session.revision}`;title.textContent=entity.name;detail.textContent=entity.detail;say(entity.reply,"Attending · "+entity.name);}
+for(const button of room.querySelectorAll("[data-prop]")){button.addEventListener("click",()=>focusEntity(button.dataset.prop));}
+room.addEventListener("pointermove",event=>{if(event.pointerType!=="mouse"&&event.pointerType!=="pen")return;const p=document.querySelector(".pupils");const r=room.getBoundingClientRect();const x=(event.clientX-r.left)/r.width-.5,y=(event.clientY-r.top)/r.height-.5;p.style.setProperty("--gx",`${Math.max(-5,Math.min(5,x*10))}px`);p.style.setProperty("--gy",`${Math.max(-3,Math.min(3,y*6))}px`);});
+room.addEventListener("pointerleave",()=>{const p=document.querySelector(".pupils");p.style.setProperty("--gx","0px");p.style.setProperty("--gy","0px");});
+$("composer").addEventListener("submit",event=>{event.preventDefault();const input=$("visitor-message"),message=input.value.trim();if(!message)return;session.turns++;session.lastIntent=message;const lower=message.toLowerCase();let response;
+if(/hello|hi hermit|hey/.test(lower))response="Hello again. I'm right here. I can explore this room with you, or we can start making something.";
+else if(/what can you do|help/.test(lower))response="I can respond to what you focus on in this room and help think through the next step. My actions here are local demonstrations, not live AI or physical control.";
+else if(session.focusedEntity)response=`You mentioned “${message}” while ${entities[session.focusedEntity].name.toLowerCase()} is in focus. Let's use that as our starting point. What would you like to do next?`;
+else response="I'm listening. I don't know the whole story yet, but we can work it out together. Is there something in the room you'd like to show me?";
+title.textContent="Conversation";detail.textContent=`Session turn ${session.turns} · ${session.focusedEntity?entities[session.focusedEntity].name:"No object selected"} in focus`;say(response,"Listening · responding");input.value="";});
+document.addEventListener("keydown",event=>{if(event.key==="Escape"){$("visitor-message").blur();}});
