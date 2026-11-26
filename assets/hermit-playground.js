@@ -24,7 +24,6 @@ function setStatus(message, kind = "normal") {
   const status = $("scene-status");
   status.textContent = message;
   status.dataset.kind = kind;
-  window.setHermitPresence?.(kind === "warning" ? "concerned" : "working", message);
 }
 
 function setBusy(value) {
@@ -151,6 +150,7 @@ async function perform(action) {
   setStatus(action === "inspect"
     ? "Hermit is inspecting the selected object…"
     : "Hermit is requesting a host-authorized move…");
+  window.setHermitPresence?.("working", action === "inspect" ? "I am taking a closer look." : "I am preparing the move request for host review.");
   try {
     const response = action === "inspect"
       ? await playground.inspect(selectedObjectId)
