@@ -114,7 +114,7 @@ function renderScene(snapshot) {
     const p = point(item), w = Math.max(10, Math.min(180, item.dimensions.x * scale)), h = Math.max(10, Math.min(180, item.dimensions.z * scale));
     const group = make("g", { class: "scene-object" + (item.id === selectedObjectId ? " selected" : ""), tabindex: 0, role: "button", "aria-label": `${item.name}, ${item.shape}, ${item.material}, at X ${item.position.x}, Z ${item.position.z}` });
     const shape = item.shape === "sphere" ? make("circle", { cx: p.x, cy: p.y, r: Math.max(6, Math.min(90, Math.max(w, h) / 2)) }) : make("rect", { x: p.x - w / 2, y: p.y - h / 2, width: w, height: h, rx: item.shape === "cylinder" ? Math.min(w, h) / 2 : 3 });
-    shape.setAttribute("class", "scene-shape"); shape.setAttribute("fill", colors[item.material]); shape.setAttribute("stroke", item.id === selectedObjectId ? "#ffffff" : "#edf3f7"); shape.setAttribute("stroke-width", item.id === selectedObjectId ? "3" : "1.5");
+    shape.setAttribute("class", "scene-shape"); shape.setAttribute("transform", `rotate(${item.rotation.y} ${p.x} ${p.y})`); shape.setAttribute("fill", colors[item.material]); shape.setAttribute("stroke", item.id === selectedObjectId ? "#ffffff" : "#edf3f7"); shape.setAttribute("stroke-width", item.id === selectedObjectId ? "3" : "1.5");
     group.append(shape);
     const label = make("text", { x: p.x, y: p.y + h / 2 + 15, class: "scene-object-label" }); label.textContent = item.name; group.append(label);
     const activate = () => selectObject(item.id); group.addEventListener("click", activate);
