@@ -269,7 +269,8 @@ test("Hermit's identity is independent of replaceable shells and rigs", async ()
 });
 
 test("music response policy requests a dance only from trusted, confident groove evidence", async () => {
-  const { evaluateMusicObservation } = await import("../src/hermit-music-response.js");
+  const { createMusicResponsePolicy } = await import("../src/hermit-music-response.js");
+  const policy = createMusicResponsePolicy();
   const base = {
     schema: "hermit.music-observation.v1",
     source: "host",
@@ -280,12 +281,14 @@ test("music response policy requests a dance only from trusted, confident groove
     groove: 0.96,
     confidence: 0.95
   };
-  const dance = evaluateMusicObservation(base);
+  const dance = policy.evaluate(base);
   assert.equal(dance.expression, "dance");
   assert.equal(dance.utterance, "DANCE PARTY!!!!!!!");
   assert.ok(Object.isFrozen(dance));
-  assert.equal(evaluateMusicObservation({ ...base, source: "visitor" }), null);
-  assert.equal(evaluateMusicObservation({ ...base, groove: 4 }), null);
-  assert.equal(evaluateMusicObservation({ ...base, confidence: 0.2 }).expression, "attend");
-  assert.equal(evaluateMusicObservation({ ...base, bpm: 900 }), null);
+  assert.equal(policy.evaluate({ ...base, revision: 5, source: "visitor" }), null);
+  assert.equal(policy.evaluate({ ...base, revision: 5, groove: 4 }), null);
+  assert.equal(policy.evaluate({ ...base, revision: 5, confidence: 0.2 }).expression, "attend");
+  assert.equal(policy.evaluate({ ...base, revision: 5, bpm: 900 }), null);
+  assert.equal(policy.evaluate({ ...base, revision: 5 }), null);
+  assert.equal(policy.latestRevision, 5);
 });
