@@ -6,7 +6,9 @@ The public Pages site is an executable learning surface for Hermit's boundaries,
 
 ## Entry experience
 
-The home page introduces the Workshop companion and opens with a deterministic local environment. The existing neural-network lesson remains a separate module below the playground. Its inference visualization is not presented as Hermit's planner or body controller.
+The home page now begins with an introduction to Hermit before asking visitors to interact with the playground. It explains Hermit as a persistent, embodied creative companion and portable assistant runtime; describes the host-provided "shell" model; distinguishes Hermit's planning and capability coordination from the host's authority; and introduces the intended continuity and Mini/Hermit/Titan manifestations.
+
+The introduction also separates the long-term Workshop vision from the current executable proof. The playground is a deterministic local fixture with fake objects and bounded capabilities—not a live model, physical body, or production host integration. The existing neural-network lesson remains a separate educational module below the playground; its inference visualization is not presented as Hermit's planner or body controller.
 
 ## Playground composition
 
