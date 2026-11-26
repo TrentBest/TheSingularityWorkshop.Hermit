@@ -25,11 +25,12 @@ function setVoiceStatus(message) {
 function setPresence(state, message) { window.setHermitPresence?.(state, message); }
 
 async function speak(message) {
-  setPresence("speaking", message);
   if (!speechOutput.supported) {
+    setPresence("idle", message);
     setVoiceStatus("Speech output is not available in this browser. The text interface remains available.");
     return;
   }
+  setPresence("speaking", message);
   try {
     const voice = speechOutput.voices().find(candidate => candidate.lang?.toLowerCase().startsWith("en"));
     await speechOutput.speak(message, { lang: "en-US", voice });
