@@ -27,11 +27,11 @@ The page also includes a three-lane architecture map: intent/planning, capabilit
 | `tests/world-state.test.mjs` | Versioning, immutability, identity, bounds and hostile-input contract tests |
 | `tests/pages-experience.test.mjs` | Page composition and browser wiring tests |
 
-The browser adapter imports the same runtime module exercised by Node tests. Players can add objects to the local scene; insertion validates the candidate full-world snapshot before committing it, advances the revision, and makes the object available to Hermit's existing inspection path. The playground environment also emits immutable schema-versioned world snapshots (environment identity, revision and bounded object records); this is a fixture-level observation contract, not a complete ontology or physics model. The static Pages artifact therefore includes both `assets/` and the required `src/` modules.
+The browser adapter imports the same runtime module exercised by Node tests. Players can add structured primitive props to the local scene: box, sphere, or cylinder, with bounded dimensions, XYZ position and rotation, a declared material, and an explicit affordance list. Insertion validates the candidate full-world snapshot before committing it, advances the revision, and makes the geometry and affordances available to Hermit's existing inspection path. The browser renders a shape/material preview and exposes the authored transform in the selected-object detail. The playground environment also emits immutable schema-versioned world snapshots (environment identity, revision and bounded object records); this is a fixture-level observation contract, not a complete ontology or physics model. The static Pages artifact therefore includes both `assets/` and the required `src/` modules.
 
 ## Available interactions
 
-- Add player-authored objects with a name and description; the host validates the complete proposed world snapshot before insertion.
+- Add player-authored box, sphere, or cylinder props with name, description, material, dimensions, position, and rotation; the host validates the complete proposed world snapshot before insertion.
 - Select an object by keyboard-operable button or drag it to the interaction pad.
 - Ask Hermit to inspect newly authored objects through the same registered read-only capability as fixture objects.
 - Ask Hermit to inspect it through the registered read-only `inspect-object` capability.
@@ -40,7 +40,7 @@ The browser adapter imports the same runtime module exercised by Node tests. Pla
 - Observe the actual environment state after execution and require verification before the loop reports completion.
 - Inspect the trace of observation, proposal, policy, execution, and verification events.
 
-Player-authored insertion is a direct creator action, validated against the versioned world-state contract and its object-count/name/description bounds. It advances the environment revision. This is separate from Hermit authority.
+Player-authored insertion is a direct creator action, validated against the versioned world-state contract and its object-count, identity, text, primitive, vector, material, and affordance bounds. It advances the environment revision. This is separate from Hermit authority. The schema is now version 2 and keeps primitive geometry as data; it does not load arbitrary meshes, scripts, shaders, or external assets. The affordance list is descriptive capability metadata, not an authorization grant. Host policy still decides whether a registered operation may run. No collision, mass, reachability, balance, or physical outcome is simulated by this fixture.
 
 Dragging only selects an object. It never changes world state. The move capability is the only path that updates the fixture object's location.
 
