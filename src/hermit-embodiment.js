@@ -27,9 +27,33 @@ export function createRigExpressionRequest({ expression, intensity = 0.5, durati
   });
 }
 
+function isValidRequest(request) {
+  return Boolean(
+    request &&
+    typeof request === "object" &&
+    !Array.isArray(request) &&
+    request.schema === "hermit.rig-expression.v1" &&
+    request.identityId === HERMIT_IDENTITY.id &&
+    request.target === "active-rig" &&
+    expressions.has(request.expression) &&
+    Number.isFinite(request.intensity) &&
+    request.intensity >= 0 &&
+    request.intensity <= 1 &&
+    Number.isSafeInteger(request.durationMs) &&
+    request.durationMs >= 0 &&
+    request.durationMs <= 60000 &&
+    typeof request.reason === "string" &&
+    request.reason.length <= 160
+  );
+}
+
 /**
  * Host adapter: the host chooses the active rig and decides how/if a semantic
  * expression can be rendered. Hermit never assumes a particular skeleton.
+ *
+ * "submitted" means the host adapter accepted the request; it is not evidence
+ * that animation played or physical movement occurred. The owning host must
+ * report and verify those outcomes separately.
  */
 export function createHermitEmbodimentAdapter({ getActiveRig, requestExpression } = {}) {
   if (typeof getActiveRig !== "function" || typeof requestExpression !== "function") {
@@ -37,18 +61,30 @@ export function createHermitEmbodimentAdapter({ getActiveRig, requestExpression 
   }
   return Object.freeze({
     async express(request) {
-      if (!request || request.schema !== "hermit.rig-expression.v1" || request.identityId !== HERMIT_IDENTITY.id) {
+      if (!isValidRequest(request)) {
         return Object.freeze({ status: "rejected", reason: "invalid-request" });
       }
-      const rig = await getActiveRig();
-      if (!rig || typeof rig.id !== "string" || !Array.isArray(rig.expressions)) {
+
+      let rig;
+      try {
+        rig = await getActiveRig();
+      } catch {
+        return Object.freeze({ status: "failed", stage: "resolve-rig" });
+      }
+
+      if (!rig || typeof rig.id !== "string" || !rig.id.trim() || !Array.isArray(rig.expressions)) {
         return Object.freeze({ status: "unavailable", reason: "no-active-rig" });
       }
       if (!rig.expressions.includes(request.expression)) {
         return Object.freeze({ status: "unsupported", rigId: rig.id, expression: request.expression });
       }
-      const result = await requestExpression(Object.freeze({ rigId: rig.id, request }));
-      return Object.freeze({ status: "submitted", rigId: rig.id, result: result ?? null });
+
+      try {
+        const result = await requestExpression(Object.freeze({ rigId: rig.id, request }));
+        return Object.freeze({ status: "submitted", rigId: rig.id, result: result ?? null });
+      } catch {
+        return Object.freeze({ status: "failed", stage: "submit-expression", rigId: rig.id });
+      }
     }
   });
 }
