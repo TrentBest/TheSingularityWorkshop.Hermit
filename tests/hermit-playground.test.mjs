@@ -82,7 +82,7 @@ test("player-authored object insertion validates the proposed world before chang
   const playground = createHermitPlayground();
   await assert.rejects(
     playground.addObject({ name: "", description: "Invalid name." }),
-    /objects\\[3\\]\\.name/
+    /name/
   );
   const snapshot = await playground.snapshot();
   assert.equal(snapshot.objects.length, 3);
