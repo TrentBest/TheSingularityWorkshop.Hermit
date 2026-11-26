@@ -28,7 +28,8 @@ function setVoiceStatus(message) {
 function setPresence(state, message) { window.setHermitPresence?.(state, message); }
 
 function setListeningControls() {
-  setListeningControls();
+  $("voice-listen").disabled = !speechInput.supported || listening;
+  $("voice-stop-listening").disabled = !speechInput.supported || !listening;
 }
 
 async function speak(message, turn = activeTurn) {
