@@ -22,6 +22,8 @@ function setVoiceStatus(message) {
   $("voice-status").textContent = message;
 }
 
+function setPresence(state, message) { window.setHermitPresence?.(state, message); }
+
 async function speak(message) {
   if (!speechOutput.supported) {
     setVoiceStatus("Speech output is not available in this browser. The text interface remains available.");
@@ -42,6 +44,7 @@ function chooseObject(objectId) {
 }
 
 async function submitIntent(value) {
+  setPresence("thinking", "Let me understand what you are asking.");
   if (window.hermitWorldReady) await window.hermitWorldReady;
   const objects = window.hermitWorldSnapshot?.objects ?? [];
   let intent;
@@ -53,6 +56,7 @@ async function submitIntent(value) {
   }
 
   setVoiceStatus(intent.message);
+  setPresence(intent.status === "ready" ? "working" : "speaking", intent.message);
   if (intent.objectId) chooseObject(intent.objectId);
 
   if (intent.status === "discovery") {
