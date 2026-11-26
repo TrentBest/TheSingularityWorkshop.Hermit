@@ -10,7 +10,8 @@ This roadmap distinguishes the domain vision from current executable evidence.
 - [x] Add a versioned, immutable world-state snapshot contract for the deterministic Pages fixture.
 - [x] Let the player author bounded scene objects; validate and version the world before making them observable to Hermit.
 - [x] Upgrade world snapshots to schema v2 with bounded primitive shape, dimensions, transform, material, and explicit affordance metadata; expose these observations to Hermit's inspect capability and the Pages scene authoring UI.
-- [ ] Define versioned affordance and action contracts and align them with Gestures/Physics ownership.
+- [x] Define a versioned provider-neutral physical-action proposal and environment-adapter boundary with stale-observation rejection and post-action verification ([contract](PHYSICAL_ENVIRONMENT_ADAPTER.md)); owner-domain alignment and production adapters remain open.
+- [ ] Define canonical affordance and motion contracts with Gestures/Physics; the Hermit adapter is not a substitute for either owner.
 - [x] Add bounded plan execution with per-action policy, post-action verification and observation reconciliation.
 - [x] Define and test versioned task-checkpoint serialization and recovery classification.
 - [x] Add a host-backed checkpoint repository contract with atomic compare-and-swap, monotonic revisions, guarded deletion and recovery classification tests.
@@ -66,7 +67,8 @@ This roadmap distinguishes the domain vision from current executable evidence.
 
 ## Embodiment and interaction
 - [ ] Define articulated body, joint, reach, grip, force, balance and locomotion contracts.
-- [ ] Integrate Gestures and Physics through narrow adapters.
+- [ ] Integrate the owner-supplied Physics implementation through the physical-environment adapter.
+- [ ] Integrate Gestures-owned pose, posture and motion-evaluation contracts through a separate adapter.
 - [ ] Define perception/affordance discovery and object interaction.
 - [ ] Demonstrate safe object inspection and reversible play.
 - [ ] Define GPU neural motion proposal interface and deterministic fallback.
