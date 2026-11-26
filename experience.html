@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#101a20">
+<meta name="description" content="Enter the Workshop: an inhabited environment with Hermit.">
+<title>The Workshop — Hermit is here</title>
+<style>
+:root{color-scheme:dark;--ink:#edf4f2;--muted:#a9bbb7;--line:#48615c;--mint:#8ce0c6;--gold:#efc17b}
+*{box-sizing:border-box}html,body{height:100%;margin:0;overflow:hidden}body{background:#101a20;color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}button,input{font:inherit}button{color:var(--ink);background:#263d3a;border:1px solid #607b70;border-radius:10px;padding:.65rem .9rem;cursor:pointer}button:hover,button[aria-pressed=true]{border-color:var(--mint);background:#31534a}button:focus-visible,input:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+#world{height:100dvh;min-height:420px;display:grid;grid-template-rows:auto minmax(0,1fr) auto;position:relative;background:radial-gradient(ellipse at 50% 42%,#36544b 0,#203a37 42%,#13252a 100%)}
+.topbar{z-index:3;display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.65rem 1rem;border-bottom:1px solid #ffffff20;background:#101a20c9;backdrop-filter:blur(12px)}.brand{font-weight:750;letter-spacing:.04em}.brand small{display:block;color:var(--muted);font-weight:400;font-size:.75rem}.top-actions{display:flex;gap:.5rem;align-items:center}.top-actions a{color:var(--mint);font-size:.9rem}
+.room{position:relative;overflow:hidden;isolation:isolate;background:linear-gradient(180deg,#263f40 0%,#29453f 56%,#182c2c 56%,#132323 100%)}
+.window{position:absolute;left:8%;top:8%;width:23%;height:31%;border:9px solid #705e49;border-radius:9px;background:linear-gradient(#7caeae,#d5c18e 65%,#647d65);box-shadow:0 0 0 2px #b79b70,0 16px 30px #07100e88}.window:after{content:"";position:absolute;inset:0 48%;background:#705e49}.window:before{content:"";position:absolute;inset:48% 0;background:#705e49}
+.shelf{position:absolute;right:8%;top:13%;width:24%;height:5px;background:#9a7958;box-shadow:0 34px #9a7958,0 68px #9a7958}.shelf:before{content:"";position:absolute;left:10%;top:-38px;width:22px;height:38px;background:#638d70;border-radius:12px 12px 3px 3px;box-shadow:62px 35px #a46e50,125px 0 #d4b16c}
+.rug{position:absolute;left:50%;bottom:7%;width:min(62vw,760px);height:30%;transform:translateX(-50%);border-radius:50%;background:radial-gradient(ellipse,#765d48 0,#594638 62%,#3d342d 64%,transparent 66%);opacity:.9}
+.floor-line{position:absolute;left:0;right:0;bottom:0;height:45%;background:repeating-linear-gradient(0deg,#ffffff08 0 2px,transparent 2px 55px),linear-gradient(180deg,#243b36,#142723);clip-path:polygon(0 0,100% 0,100% 100%,0 100%)}
+.prop{position:absolute;z-index:2;display:grid;place-items:center;gap:.2rem;min-width:86px;min-height:78px;padding:.35rem;border:1px solid transparent;border-radius:14px;background:#15262155;cursor:pointer}.prop:hover,.prop[aria-pressed=true]{border-color:var(--mint);background:#10221dcc;box-shadow:0 0 24px #8ce0c633}.prop .glyph{font-size:clamp(2.2rem,5vw,4rem);filter:drop-shadow(0 9px 5px #0008)}.prop small{color:#f0e6d2;text-shadow:0 2px 4px #000;font-weight:700}.prop[data-prop=workbench]{left:13%;bottom:17%}.prop[data-prop=lamp]{right:17%;bottom:27%}.prop[data-prop=book]{right:37%;top:22%}
+.hermit-anchor{position:absolute;z-index:2;left:50%;bottom:14%;transform:translateX(-50%);width:clamp(150px,24vw,260px);text-align:center;pointer-events:none}.hermit-shadow{width:70%;height:20px;margin:-4px auto 0;border-radius:50%;background:#07100d99;filter:blur(8px)}.crab{width:100%;height:auto;overflow:visible;filter:drop-shadow(0 14px 9px #07100d88);animation:bob 4s ease-in-out infinite}.crab .eyes{transform-origin:center;animation:blink 5.5s infinite}.crab .pupils{transform:translate(var(--gx,0px),var(--gy,0px));transition:transform .15s}.crab .antenna{transform-origin:50% 100%;animation:sway 3s ease-in-out infinite}@keyframes bob{50%{transform:translateY(-6px)}}@keyframes blink{0%,43%,47%,83%,87%,100%{transform:scaleY(1)}45%,85%{transform:scaleY(.08)}}@keyframes sway{50%{transform:rotate(4deg)}}
+.speech{position:absolute;left:50%;bottom:calc(100% + 12px);transform:translateX(-50%);width:min(280px,78vw);padding:.75rem .9rem;border:1px solid #8ce0c688;border-radius:14px;background:#10201e;color:var(--ink);box-shadow:0 10px 30px #0005;font-size:.92rem}.speech:after{content:"";position:absolute;left:50%;bottom:-8px;width:14px;height:14px;background:#10201e;border-right:1px solid #8ce0c688;border-bottom:1px solid #8ce0c688;transform:translateX(-50%) rotate(45deg)}
+.context{z-index:3;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:1rem;align-items:center;padding:.75rem 1rem calc(.75rem + env(safe-area-inset-bottom));background:#101a20ed;border-top:1px solid #ffffff20}.context-copy{min-width:0}.context-copy strong{display:block;color:var(--mint);font-size:.8rem;letter-spacing:.08em;text-transform:uppercase}.context-copy p{margin:.15rem 0 0;color:var(--muted);font-size:.9rem}.composer{display:flex;gap:.5rem;min-width:min(48vw,460px)}.composer input{min-width:0;flex:1;background:#1b2c2e;border:1px solid var(--line);border-radius:10px;color:var(--ink);padding:.65rem .8rem}.status{position:absolute;left:1rem;top:1rem;z-index:2;color:#dce9df;font-size:.78rem;background:#10201eaa;padding:.35rem .6rem;border-radius:20px}
+@media(max-width:650px){.topbar{padding:.5rem .7rem}.brand small{display:none}.top-actions a{display:none}.window{left:5%;width:32%;height:25%}.shelf{right:5%;width:32%}.prop[data-prop=workbench]{left:2%;bottom:16%}.prop[data-prop=lamp]{right:2%;bottom:25%}.prop[data-prop=book]{right:32%;top:18%}.hermit-anchor{bottom:17%;width:clamp(140px,39vw,210px)}.context{grid-template-columns:1fr;gap:.5rem}.composer{min-width:0;width:100%}.context-copy p{font-size:.82rem}.status{top:.5rem;left:.5rem}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main id="world" aria-label="The Workshop inhabited environment">
+<header class="topbar"><div class="brand">THE WORKSHOP<small>A place to make things together</small></div><div class="top-actions"><span id="presence-state" aria-live="polite">Hermit is here</span><a href="./index.html">Open the guide</a></div></header>
+<section class="room" id="room" aria-label="Workshop room. Select an object to bring it into focus.">
+<div class="window" aria-hidden="true"></div><div class="shelf" aria-hidden="true"></div><div class="floor-line" aria-hidden="true"></div><div class="rug" aria-hidden="true"></div>
+<div class="status" id="scene-revision">Workshop · scene 1</div>
+<button class="prop" data-prop="workbench" aria-pressed="false"><span class="glyph" aria-hidden="true">🛠️</span><small>Workbench</small></button>
+<button class="prop" data-prop="lamp" aria-pressed="false"><span class="glyph" aria-hidden="true">🏮</span><small>Lantern</small></button>
+<button class="prop" data-prop="book" aria-pressed="false"><span class="glyph" aria-hidden="true">📚</span><small>Field notes</small></button>
+<div class="hermit-anchor" id="hermit-anchor">
+<div class="speech" id="hermit-speech" role="status" aria-live="polite">Oh! Hello. I was just looking around. What shall we explore?</div>
+<svg class="crab" viewBox="0 0 240 220" role="img" aria-labelledby="crab-title crab-desc"><title id="crab-title">Hermit</title><desc id="crab-desc">A friendly hermit crab companion, standing in the Workshop.</desc>
+<g class="antenna" fill="none" stroke="#e8aa72" stroke-width="5" stroke-linecap="round"><path d="M88 63Q64 20 49 26M152 63Q176 20 191 26"/></g><g fill="#f6c27e"><circle cx="49" cy="26" r="6"/><circle cx="191" cy="26" r="6"/></g>
+<path d="M55 91Q27 53 68 37Q120 10 172 37Q213 57 185 99Q213 147 175 175Q120 201 65 175Q27 147 55 91Z" fill="#b8794e" stroke="#70452f" stroke-width="6"/><path d="M68 89Q120 47 172 89L163 156Q120 178 77 156Z" fill="#eea16c" stroke="#9b5a43" stroke-width="5"/>
+<g class="eyes"><ellipse cx="91" cy="92" rx="17" ry="22" fill="#fff4dc"/><ellipse cx="149" cy="92" rx="17" ry="22" fill="#fff4dc"/><g class="pupils" fill="#26343a"><circle cx="95" cy="96" r="8"/><circle cx="153" cy="96" r="8"/></g></g>
+<path d="M105 132Q120 145 135 132" fill="none" stroke="#743f39" stroke-width="5" stroke-linecap="round"/><g fill="#e99568" stroke="#9b5a43" stroke-width="4"><ellipse cx="38" cy="148" rx="24" ry="19"/><ellipse cx="202" cy="148" rx="24" ry="19"/></g><g stroke="#d98b60" stroke-width="8" stroke-linecap="round"><path d="M78 169L62 192M99 177L92 201M141 177L148 201M162 169L178 192"/></g></svg><div class="hermit-shadow"></div>
+</div>
+</section>
+<footer class="context"><div class="context-copy"><strong id="context-title">Here together</strong><p id="context-detail">This is our shared room. Choose something to show me what has your attention, or just say hello.</p></div><form class="composer" id="composer"><label for="visitor-message" hidden>Talk to Hermit</label><input id="visitor-message" autocomplete="off" placeholder="Say something to Hermit…" maxlength="500"><button type="submit">Send</button></form></footer>
+</main>
+<script type="module" src="./assets/hermit-world.js"></script>
+</body></html>
