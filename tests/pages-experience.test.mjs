@@ -8,6 +8,7 @@ const voice = await readFile(new URL("../assets/hermit-voice.js", import.meta.ur
 const playgroundCore = await readFile(new URL("../src/hermit-playground.js", import.meta.url), "utf8");
 const catalog = await readFile(new URL("../src/playground-capabilities.js", import.meta.url), "utf8");
 const party = await readFile(new URL("../assets/hermit-party.js", import.meta.url), "utf8");
+const presence = await readFile(new URL("../assets/hermit-presence.js", import.meta.url), "utf8");
 const surpsObservation = await readFile(new URL("../src/surps-observation.js", import.meta.url), "utf8");
 const surpsRoleContext = await readFile(new URL("../src/surps-role-context.js", import.meta.url), "utf8");
 const roleProfiles = JSON.parse(await readFile(new URL("../assets/embassy-reception-role-profiles.json", import.meta.url), "utf8"));
@@ -118,4 +119,19 @@ test("Hermit presents a diegetic party scene using versioned, participant-scoped
   assert.equal(sessionFixture.sourceId, "surps.microbundle.core.spying");
   assert.match(surpsObservation, /session revision moved backwards/);
   assert.match(surpsObservation, /participant's authorized portrayal context/);
+});
+
+test("the first encounter presents an expressive Hermit character and direct conversation", () => {
+  assert.match(page, /id="hermit-meet"/);
+  assert.match(page, /id="hermit-avatar-title"/);
+  assert.match(page, /class="hermit-character"/);
+  assert.match(page, /class="hermit-eyes"/);
+  assert.match(page, /id="hermit-direct-request"/);
+  assert.match(page, /id="hermit-direct-send"/);
+  assert.match(page, /hermit-presence\\.js/);
+  assert.match(presence, /listening: "Listening/);
+  assert.match(presence, /thinking: "Thinking/);
+  assert.match(presence, /speaking: "Speaking/);
+  assert.match(voice, /hermit-direct-send/);
+  assert.match(playground, /setHermitPresence/);
 });
