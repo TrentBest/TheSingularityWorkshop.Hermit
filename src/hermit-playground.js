@@ -18,6 +18,7 @@ export function createHermitPlayground({ objects = DEFAULT_OBJECTS, policy } = {
   const initialSnapshot = createWorldStateSnapshot({ environmentId: "hermit-workshop", revision: 0, objects });
   const world = new Map(initialSnapshot.objects.map(item => [item.id, { ...item }]));
   let worldRevision = initialSnapshot.revision;
+  let nextCustomObject = 1;
   const registry = new CapabilityRegistry();
 
   registry.register({
@@ -93,6 +94,19 @@ export function createHermitPlayground({ objects = DEFAULT_OBJECTS, policy } = {
 
   return Object.freeze({
     capabilities: () => registry.list(),
+    addObject: async ({ name, description }) => {
+      const id = "player-object-" + nextCustomObject;
+      const candidate = { id, name, description, location: "workshop" };
+      const nextSnapshot = createWorldStateSnapshot({
+        environmentId: "hermit-workshop",
+        revision: worldRevision + 1,
+        objects: [...world.values()].map(item => ({ ...item })).concat(candidate)
+      });
+      nextCustomObject += 1;
+      world.set(id, { ...nextSnapshot.objects.at(-1) });
+      worldRevision = nextSnapshot.revision;
+      return nextSnapshot;
+    },
     capabilityCatalog: () => PLAYGROUND_CAPABILITY_CATALOG,
     snapshot: observe,
     inspect: objectId => run({
