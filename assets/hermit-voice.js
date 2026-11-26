@@ -27,6 +27,10 @@ function setVoiceStatus(message) {
 
 function setPresence(state, message) { window.setHermitPresence?.(state, message); }
 
+function setListeningControls() {
+  setListeningControls();
+}
+
 async function speak(message, turn = activeTurn) {
   if (!speechOutput.supported) {
     if (turn === activeTurn) setPresence("idle", message);
@@ -58,6 +62,7 @@ async function submitIntent(value) {
   if (listening) {
     speechInput.cancel();
     listening = false;
+    setListeningControls();
   }
   const request = value.trim();
   if (!request) {
@@ -158,6 +163,7 @@ $("voice-listen").addEventListener("click", async () => {
     $("voice-request").value = result.transcript;
     $("voice-interim").textContent = "Recognized: " + result.transcript;
     listening = false;
+    setListeningControls();
     await submitIntent(result.transcript);
   } catch (error) {
     if (turn !== activeTurn) return;
@@ -173,8 +179,7 @@ $("voice-listen").addEventListener("click", async () => {
     $("voice-interim").textContent = error.code === "NO_SPEECH" ? "No speech detected." : "";
   } finally {
     if (turn === activeTurn) {
-      $("voice-listen").disabled = !speechInput.supported;
-      $("voice-stop-listening").disabled = !speechInput.supported;
+      setListeningControls();
     }
   }
 });
