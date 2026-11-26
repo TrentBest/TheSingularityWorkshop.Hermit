@@ -160,3 +160,15 @@ test("conversation turns can interrupt stale speech and recover from host failur
   assert.match(voice, /Speech output is not available in this browser/);
   assert.match(voice, /You can still talk to me by typing/);
 });
+
+
+test("task lifecycle events drive Hermit's live presence and honest interruption response", () => {
+  assert.match(playground, /function presentTaskEvent\(event\)/);
+  assert.match(playground, /window\.hermitTaskActive = true/);
+  assert.match(playground, /window\.hermitTaskActive = false/);
+  assert.match(playground, /execution-completed/);
+  assert.match(playground, /step-verified/);
+  assert.match(voice, /if \(window\.hermitTaskActive\)/);
+  assert.match(voice, /I can't safely interrupt it here/);
+  assert.match(playgroundCore, /onEvent/);
+});
