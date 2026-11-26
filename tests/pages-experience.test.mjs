@@ -5,6 +5,7 @@ import { readFile } from "node:fs/promises";
 const page = await readFile(new URL("../index.html", import.meta.url), "utf8");
 const experience = await readFile(new URL("../experience.html", import.meta.url), "utf8");
 const world = await readFile(new URL("../assets/hermit-world.js", import.meta.url), "utf8");
+const hostObservation = await readFile(new URL("../assets/hermit-host-observation.js", import.meta.url), "utf8");
 const playground = await readFile(new URL("../assets/hermit-playground.js", import.meta.url), "utf8");
 const voice = await readFile(new URL("../assets/hermit-voice.js", import.meta.url), "utf8");
 const playgroundCore = await readFile(new URL("../src/hermit-playground.js", import.meta.url), "utf8");
@@ -204,4 +205,19 @@ test("Workshop scene focus updates bounded session context and Hermit's response
   assert.match(experience, /data-prop="workbench"/);
   assert.match(experience, /data-prop="lamp"/);
   assert.match(experience, /data-prop="book"/);
+});
+
+
+test("host scene observations are versioned, provenance-checked, allowlisted, and revision-monotonic", () => {
+  assert.match(experience, /hermit-host-observation\.js/);
+  assert.match(hostObservation, /hermit\.scene-observation\.v1/);
+  assert.match(hostObservation, /value\.source !== "host"/);
+  assert.match(hostObservation, /value\.revision <= latestRevision/);
+  assert.match(hostObservation, /acceptedKinds/);
+  assert.match(hostObservation, /allowedEntities/);
+  assert.match(hostObservation, /hermit:host-observation-accepted/);
+  assert.match(hostObservation, /hermit:host-observation-rejected/);
+  assert.match(world, /hermit:host-observation-accepted/);
+  assert.match(world, /session\.hostRevision/);
+  assert.match(world, /focusEntity\(observation\.entityId\)/);
 });
