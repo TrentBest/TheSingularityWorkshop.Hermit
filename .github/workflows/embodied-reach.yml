@@ -29,14 +29,14 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: TrentBest/TheSingularityWorkshop.Gestures
-          ref: 0e6294dff2013f43c08cf83503ed62507b80349f
+          ref: 595fb0a627b0b5fab885e7c64c833214979addd2
           path: integration/dependencies/Gestures
 
       - name: Check out pinned NeuralNetworks source
         uses: actions/checkout@v4
         with:
           repository: TrentBest/TheSingularityWorkshop.FSM_NeuralNetworks
-          ref: d47a2e3caae77f6e710920a47e2d5c1bc298d0a0
+          ref: aa8d8232e9038061a01c45db236b269a0003b207
           path: integration/dependencies/NeuralNetworks
 
       - name: Set up .NET 10
