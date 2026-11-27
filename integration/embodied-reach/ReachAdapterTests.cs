@@ -35,6 +35,10 @@ public sealed class ReachAdapterTests
         Assert.Equal(0.05f, result.AchievedShoulderAngleRadians, 5);
         Assert.Equal(-0.05f, result.AchievedElbowAngleRadians, 5);
         Assert.Equal(1, result.OutputStepIndex);
+        Assert.Equal("hermit-reach-fixture", result.ScenarioId);
+        Assert.Equal((ulong)17, result.Seed);
+        Assert.Equal(0.1, result.MaximumCorrectionRadiansPerStep, 10);
+        Assert.Equal(0.1f, result.DeltaTimeSeconds);
         Assert.Equal(1, armature.StepIndex);
     }
 
@@ -71,8 +75,9 @@ public sealed class ReachAdapterTests
         Assert.Equal(withTrace.RawElbowCorrectionRadians, withoutTrace.RawElbowCorrectionRadians);
         Assert.Equal(withTrace.AchievedShoulderAngleRadians, withoutTrace.AchievedShoulderAngleRadians);
         Assert.Equal(withTrace.AchievedElbowAngleRadians, withoutTrace.AchievedElbowAngleRadians);
-        Assert.Equal(new[] { "joint-errors", "joint-proposals" }, withTrace.TraceNodeIds);
-        Assert.Empty(withoutTrace.TraceNodeIds);
+        Assert.Equal(new[] { "joint-errors", "joint-proposals" }, withTrace.TraceRecords.Select(item => item.NodeId));
+        Assert.Equal(new[] { 0.2, -0.1 }, withTrace.TraceRecords[1].Values);
+        Assert.Empty(withoutTrace.TraceRecords);
         Assert.True(withTrace.TraceCaptured);
         Assert.False(withoutTrace.TraceCaptured);
     }
