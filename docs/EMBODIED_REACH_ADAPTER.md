@@ -25,7 +25,7 @@ The harness consumes the real PlanarArmatureObservation v1 and PlanarArmatureAct
 6. Compose the bounded correction with the corresponding observed angle to create absolute JointAngleTargets.
 7. Submit an action bound to the observed episode ID and expected step index.
 8. Let Gestures independently clamp to legal joint ranges and enforce its configured angular-speed limits.
-9. Record the original target, measured input, raw correction, bounded correction, requested absolute target, Gestures-accepted target, achieved angles, end-effector coordinates, and trace identity.
+9. Record scenario and episode identity, seed, input/output step, target angles, measured errors, raw and bounded corrections, proposal bound, requested absolute targets, Gestures-accepted targets, achieved angles, end-effector coordinates, timestep, full bounded evaluator trace, and per-stage diagnostic timings.
 
 The first fixture is joint-angle target conformance. It does not solve a world-space end-effector target or prove a physical reach/contact outcome. A later end-effector task must explicitly add and test a consumer-side IK target-to-joint mapping or consume a Gestures-owned target controller; it must not silently reinterpret the current two-angle contract.
 
@@ -44,7 +44,7 @@ The GitHub Actions workflow checks out those two source snapshots into integrati
 
     dotnet test integration/embodied-reach/Hermit.EmbodiedReach.Tests.csproj --configuration Release
 
-The test suite covers correction-versus-absolute-target semantics, consumer proposal bounds, Gestures range/speed enforcement, stale and wrong-version observations, non-finite inputs, trace-on/off numerical parity, and deterministic reset/replay.
+The test suite covers correction-versus-absolute-target semantics, consumer proposal bounds, Gestures range/speed enforcement, stale and wrong-version observations, non-finite inputs, trace-on/off numerical parity, provenance capture, and deterministic reset/replay.
 
 Stage timings in ReachStepEvidence are diagnostic per-run measurements only. They are not benchmark results. A separate benchmark must compare trace-on and trace-off runs and report validation, inference, command mapping, and armature stepping independently before making performance claims.
 
