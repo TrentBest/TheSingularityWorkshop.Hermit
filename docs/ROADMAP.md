@@ -67,6 +67,9 @@ This roadmap distinguishes the domain vision from current executable evidence.
 - [ ] Evaluate an Oracle retrieval prototype against held-out Workshop API/contract questions; preserve provenance and explicit uncertainty.
 
 ## Embodiment and interaction
+- [x] Add an isolated .NET consumer conformance harness for the Gestures v1 two-joint armature and NeuralNetworks stateless reach-proposal fixture ([adapter contract and limits](EMBODIED_REACH_ADAPTER.md); live Hermit shell integration is not claimed).
+- [ ] Verify the pinned-source .NET harness through exact-commit CI and retain its test evidence ([Hermit #9](https://github.com/TrentBest/TheSingularityWorkshop.Hermit/issues/9)).
+- [ ] Select and test the actual host/runtime handoff for Hermit's JavaScript shell; do not invent an in-process .NET reference or cross-process protocol.
 - [ ] Define articulated body, joint, reach, grip, force, balance and locomotion contracts.
 - [ ] Integrate the owner-supplied Physics implementation through the physical-environment adapter.
 - [ ] Integrate Gestures-owned pose, posture and motion-evaluation contracts through a separate adapter.
