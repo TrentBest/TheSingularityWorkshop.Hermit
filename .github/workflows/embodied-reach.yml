@@ -1,0 +1,48 @@
+name: Hermit embodied reach conformance
+
+on:
+  push:
+    branches: [development]
+    paths:
+      - "integration/embodied-reach/**"
+      - "docs/EMBODIED_REACH_ADAPTER.md"
+      - ".github/workflows/embodied-reach.yml"
+  pull_request:
+    branches: [development]
+    paths:
+      - "integration/embodied-reach/**"
+      - "docs/EMBODIED_REACH_ADAPTER.md"
+      - ".github/workflows/embodied-reach.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  embodied-reach:
+    name: .NET 10 consumer conformance
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Hermit
+        uses: actions/checkout@v4
+
+      - name: Check out pinned Gestures source
+        uses: actions/checkout@v4
+        with:
+          repository: TrentBest/TheSingularityWorkshop.Gestures
+          ref: 0e6294dff2013f43c08cf83503ed62507b80349f
+          path: integration/dependencies/Gestures
+
+      - name: Check out pinned NeuralNetworks source
+        uses: actions/checkout@v4
+        with:
+          repository: TrentBest/TheSingularityWorkshop.FSM_NeuralNetworks
+          ref: d47a2e3caae77f6e710920a47e2d5c1bc298d0a0
+          path: integration/dependencies/NeuralNetworks
+
+      - name: Set up .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore and run conformance tests
+        run: dotnet test integration/embodied-reach/Hermit.EmbodiedReach.Tests.csproj --configuration Release
