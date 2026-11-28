@@ -70,11 +70,11 @@ This roadmap distinguishes the domain vision from current executable evidence.
 - [x] Define Hermit's role as strategic player/commander over SingularityBot's existing runtime, with controller composition as the control surface ([architecture](STARCRAFT_STRATEGIC_PLAYER.md); not a live integration).
 - [x] Record cross-repository implementation scope, ownership, player-observation fairness, proposal lifecycle, and acceptance gates in [Hermit #10](https://github.com/TrentBest/TheSingularityWorkshop.Hermit/issues/10).
 - [ ] Audit the exact SingularityBot development contracts/catalogs and identify the first executable Terran controller composition.
-- [ ] Define and test the versioned strategic-intent and controller-composition proposal contracts against SingularityBot's canonical descriptors.
+- [ ] Define and test the versioned pre-match build/configuration proposal contract against SingularityBot's canonical descriptors, including race/matchup-conditioned registered openings.
 - [ ] Select the real host-to-Hermit observation/proposal handoff; do not invent a transport or expose observer data.
-- [ ] Prove deterministic intent validation and safe composition revision at a bot-declared boundary.
-- [ ] Demonstrate one controlled Hermit-directed Terran match with player-safe observations and complete trace.
-- [ ] Compare Hermit-directed and baseline compositions through ServerSC2's authoritative match/replay and experiment evidence gates.
+- [ ] Prove deterministic pre-match configuration validation and freeze the accepted build into the match manifest; the running bot executes independently without a Hermit decision loop.
+- [ ] Demonstrate one controlled Terran match using a Hermit-selected pre-match build, followed by fire-and-forget bot execution and complete trace.
+- [ ] Compare Hermit-selected builds against baseline through ServerSC2's authoritative match/replay and experiment evidence gates; feed results into future between-match configuration choices.
 
 ## Embodiment and interaction
 - [x] Add an isolated .NET consumer conformance harness for the Gestures v1 two-joint armature and NeuralNetworks stateless reach-proposal fixture ([adapter contract and limits](EMBODIED_REACH_ADAPTER.md); live Hermit shell integration is not claimed).
