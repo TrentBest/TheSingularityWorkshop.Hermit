@@ -33,8 +33,8 @@ The first fixture is joint-angle target conformance. It does not solve a world-s
 
 The CI harness checks out exact development snapshots:
 
-- Gestures: 595fb0a627b0b5fab885e7c64c833214979addd2
-- NeuralNetworks: aa8d8232e9038061a01c45db236b269a0003b207
+- Gestures: 8ee61dc6bf07cc5dca072d6e7b91601ae9e807e8
+- NeuralNetworks: 5b8c9163c8f33e3d5c26940942d96cb9316b9e2c
 
 The pins make the consumer contract reproducible. Update them deliberately when either upstream contract changes, after auditing the source and rerunning the conformance tests.
 
