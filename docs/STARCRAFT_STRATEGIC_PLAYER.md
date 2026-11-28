@@ -129,6 +129,22 @@ ServerSC2 already tracks the staged experiment direction in [issue #5](https://g
 | ServerApp / host | Match assignment, identity, admission, permissions, budgets and policy |
 | HeadlessAi / model provider | Optional asynchronous inference only; never authority or frame-loop execution |
 
+
+
+### Initial source audit (2026-11-28)
+
+The exact SingularityBot `development` head inspected for this plan is [`b9543e3405e9982274050d28916eaefc4f696304`](https://github.com/TrentBest/TheSingularityWorkshop.SingularityBot/commit/b9543e3405e9982274050d28916eaefc4f696304).
+
+- `CommandLayerComposition` exists as a bounded declarative type with strategic-to-unit layer kinds, stable slots, implementation/presentation IDs, accepts/emits contracts, and required/provided capabilities.
+- `BotDefinition` v1 does **not** currently contain a `CommandLayerComposition` property. The composition type is therefore not yet the portable, persisted, executable controller composition Hermit needs.
+- SingularityBot issue #26 explicitly records that the current Forge hierarchy is a preview, not serialized into BotDefinition v1 or executable at runtime; it also records that the runtime currently has a race-level module shape rather than a complete matchup-indexed hero/module matrix.
+- `BotDefinition` already contains a bounded `BotAiPolicy` (provider/model labels, startup/in-match call budgets, timeout, minimum game-loop spacing, and allowed triggers). This is a bot-owned consultation policy, not a Hermit host adapter, not a controller-composition handoff, and not permission to put network inference in the frame/action loop.
+- `ExecutiveController` enforces the per-observation stage order: executive reaction, subordinate controllers, executive review, then unit AI. This is a promising existing strategic control seam to investigate; it must not be bypassed or replaced.
+- `NormalizedObservation` already carries player ID, game-loop identity, unit alliance and visibility classifications (Visible/Snapshot/Hidden), captured-field metadata, and economy fields. This is a useful source for a player-safe projection, but the host handoff still needs authentication, monotonic revision/provenance, and proof that observer-only data cannot enter the player context.
+- The canonical bot definition remains strict JSON v1 and excludes unknown properties. Do not have Hermit send new composition fields until SingularityBot versions and validates the canonical contract.
+
+**Immediate cross-repository dependency:** SingularityBot must turn the existing composition concept into a trusted, validated runtime contract (or expose an equally authoritative registered-controller API) before Hermit can safely add/modify controllers. Hermit should first define its provider-neutral strategic intent envelope and consume the bot's published descriptors; it must not invent a competing BotDefinition schema.
+
 ## Current implementation status
 
 - Hermit's deterministic runtime and host capability registry exist, but this StarCraft integration is not implemented.
