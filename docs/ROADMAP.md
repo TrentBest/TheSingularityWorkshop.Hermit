@@ -66,6 +66,16 @@ This roadmap distinguishes the domain vision from current executable evidence.
 - [ ] Tie Mini/Titan construction manifestations to idempotent microbundle task events and measured representation budgets.
 - [ ] Evaluate an Oracle retrieval prototype against held-out Workshop API/contract questions; preserve provenance and explicit uncertainty.
 
+## StarCraft strategic player
+- [x] Define Hermit's role as strategic player/commander over SingularityBot's existing runtime, with controller composition as the control surface ([architecture](STARCRAFT_STRATEGIC_PLAYER.md); not a live integration).
+- [x] Record cross-repository implementation scope, ownership, player-observation fairness, proposal lifecycle, and acceptance gates in [Hermit #10](https://github.com/TrentBest/TheSingularityWorkshop.Hermit/issues/10).
+- [ ] Audit the exact SingularityBot development contracts/catalogs and identify the first executable Terran controller composition.
+- [ ] Define and test the versioned strategic-intent and controller-composition proposal contracts against SingularityBot's canonical descriptors.
+- [ ] Select the real host-to-Hermit observation/proposal handoff; do not invent a transport or expose observer data.
+- [ ] Prove deterministic intent validation and safe composition revision at a bot-declared boundary.
+- [ ] Demonstrate one controlled Hermit-directed Terran match with player-safe observations and complete trace.
+- [ ] Compare Hermit-directed and baseline compositions through ServerSC2's authoritative match/replay and experiment evidence gates.
+
 ## Embodiment and interaction
 - [x] Add an isolated .NET consumer conformance harness for the Gestures v1 two-joint armature and NeuralNetworks stateless reach-proposal fixture ([adapter contract and limits](EMBODIED_REACH_ADAPTER.md); live Hermit shell integration is not claimed).
 - [x] Verify the pinned-source .NET harness through exact-commit CI and retain its test evidence ([Hermit #9](https://github.com/TrentBest/TheSingularityWorkshop.Hermit/issues/9)). The run on `b6eece2d9c802cb9eb78ba83e6a43f3fa372780d` passed all 6 tests (0 failed, 0 skipped) against the pinned Gestures and NeuralNetworks snapshots: [run 46090780281](https://github.com/TrentBest/TheSingularityWorkshop.Hermit/actions/runs/46090780281).
