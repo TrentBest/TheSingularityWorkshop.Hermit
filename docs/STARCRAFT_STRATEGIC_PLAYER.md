@@ -36,6 +36,16 @@ This is deliberately not a per-unit micro interface. Hermit should not decide ev
 
 Hermit is the strategic decision-maker; it is not the authority for SC2 legality, live feasibility, or match truth. SingularityBot remains the sole owner of gameplay semantics and SC2 action submission. ServerSC2 remains the match and evidence authority.
 
+## Pre-match build selection, then fire-and-forget execution
+
+The primary control point is **before the match starts**. Hermit chooses and explains the bot's configuration: its doctrine/personality, opening build, strategic posture, and any supported matchup or race-conditioned variants. Examples include standard macro play, timing attacks, proxy openings, cannon rushes, and other cheese. These are examples of strategic choices, not claims that every build is currently implemented.
+
+For a Random-race bot, Hermit may select a bounded race-conditioned policy (for example, choose a registered Protoss cannon-rush opening if the bot rolls Protoss). The bot must resolve the actual race and select only from the pre-authorized, registered branches. If the chosen branch is unavailable or incompatible, the bot follows an explicitly configured fallback or rejects the configuration before play; it must not improvise an unregistered controller.
+
+Once the match is underway, execution is **fire and forget**: SingularityBot owns the match and runs the selected build using its own production, economy, scouting, tactical, and unit controllers. Hermit is not polled for per-frame decisions, does not continuously re-plan the match, and does not issue live strategic commands. The bot handles normal in-game reactions within the selected configuration and its own runtime.
+
+After the match, Hermit can review player-appropriate telemetry plus host-authoritative result/replay summaries, explain what happened, and use measured outcomes to inform a later configuration choice. That is an between-match learning/evaluation loop, not live match control. Any later in-match Hermit intervention would be a separate, explicitly designed feature and is outside this first scope.
+
 ## What Hermit decides
 
 Hermit reasons in strategic objectives and policies:
@@ -94,22 +104,24 @@ The independent ServerSC2 observer may hold host-only information for terminal r
 The target flow is:
 
 1. Server/host provides an authenticated player-safe observation and current bot composition descriptor.
-2. Hermit interprets the situation and records its strategic assessment.
-3. Hermit emits a versioned, bounded intent and composition proposal with a stable proposal ID, base composition revision, expiry, and supersession semantics.
+2. Hermit interprets the pre-match context and records its strategic assessment.
+3. Before launch, Hermit emits a versioned, bounded build/configuration proposal with a stable proposal ID, target bot-definition revision, expiry, and supersession semantics.
 4. Host policy authorizes or denies the requested operation; the SingularityBot runtime validates it against its canonical catalogs and current state.
 5. The bot returns a structured accepted/rejected/deferred result with diagnostics and the effective composition revision.
 6. At a declared safe boundary, SingularityBot applies the accepted change using its existing scheduler and controllers.
-7. Bot telemetry and subsequent player-safe observations let Hermit explain whether the intended outcome is being achieved and propose a revision.
+7. During the match, SingularityBot runs independently; it does not call back to Hermit for strategic decisions. After completion, match telemetry and replay/result evidence let Hermit evaluate the selected build and propose a different configuration for a future match.
 8. ServerSC2 independently captures host-authoritative terminal result and replay evidence.
 
 Duplicate proposal delivery must be idempotent. Stale base revisions, expired proposals, unknown IDs, invalid settings, policy denial, and incompatible race/matchup must fail closed. Partial application and controller transition failures must be explicit.
 
-Any model/provider reasoning is asynchronous and outside the SC2 frame/action loop. Deterministic fake inference and recorded observations should prove the contracts before adding a live model adapter.
+Any model/provider reasoning is asynchronous and outside the SC2 frame/action loop. For this first scope, Hermit's strategic choice is completed before launch; no live model adapter or match-time Hermit consultation is required. Deterministic fake inference and recorded match fixtures should prove the configuration contract before adding a live model adapter.
 
 ## First playable proof
 
 Start narrow:
 - one supported Terran bot build;
+- one Hermit-selected, registered opening/configuration (then add cheese and race-conditioned variants as the bot catalog supports them);
+- launch the bot with an immutable, validated configuration and let it complete the match without Hermit in the decision loop;
 - one pinned 1v1 map and opponent configuration;
 - one player-safe observation source;
 - one small set of existing, registered controller compositions/settings;
@@ -148,6 +160,7 @@ The exact SingularityBot `development` head inspected for this plan is [`b9543e3
 ## Current implementation status
 
 - Hermit's deterministic runtime and host capability registry exist, but this StarCraft integration is not implemented.
+- The intended first control model is pre-match build/configuration selection followed by fire-and-forget SingularityBot execution; post-match evaluation informs future selections.
 - Hermit's existing .NET Gestures/NeuralNetworks reach harness is an isolated consumer conformance test, not a live SC2 or Hermit runtime bridge.
 - SingularityBot has declarative composition work and existing bot-domain controllers; its current state and executable composition support must be audited at the exact development revision before selecting the first supported modules.
 - ServerSC2 has a documented target for bounded batch experiments, but its live observer/result/replay and production runner gates remain incomplete.
