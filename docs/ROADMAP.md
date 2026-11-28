@@ -76,6 +76,15 @@ This roadmap distinguishes the domain vision from current executable evidence.
 - [ ] Demonstrate one controlled Terran match using a Hermit-selected pre-match build, followed by fire-and-forget bot execution and complete trace.
 - [ ] Compare Hermit-selected builds against baseline through ServerSC2's authoritative match/replay and experiment evidence gates; feed results into future between-match configuration choices.
 
+### Human-authored tactics
+- [x] Define the human tactic-authoring and explicit-authorization milestone in [Hermit #11](https://github.com/TrentBest/TheSingularityWorkshop.Hermit/issues/11).
+- [ ] Expose the canonical, versioned tactic catalog and parameter schemas from SingularityBot; Hermit must consume descriptors rather than duplicate executable definitions.
+- [ ] Build a Hermit authoring surface for selecting, ordering, parameterizing, and conditionally composing only catalog-supported tactics.
+- [ ] Show compatibility, dependencies, conflicts, budgets, fallback behavior, and a readable effective-configuration preview before approval.
+- [ ] Bind explicit host-authorized human approval to an immutable configuration revision/hash and target match; any edit requires revalidation and reapproval.
+- [ ] Validate and freeze the approved configuration in SingularityBot and the ServerSC2 match manifest, then execute fire-and-forget.
+- [ ] Trace the human-authored configuration and approval to authoritative match/replay evidence; reject stale, unknown, incompatible, malformed, or unauthorized configurations.
+
 ## Embodiment and interaction
 - [x] Add an isolated .NET consumer conformance harness for the Gestures v1 two-joint armature and NeuralNetworks stateless reach-proposal fixture ([adapter contract and limits](EMBODIED_REACH_ADAPTER.md); live Hermit shell integration is not claimed).
 - [x] Verify the pinned-source .NET harness through exact-commit CI and retain its test evidence ([Hermit #9](https://github.com/TrentBest/TheSingularityWorkshop.Hermit/issues/9)). The run on `b6eece2d9c802cb9eb78ba83e6a43f3fa372780d` passed all 6 tests (0 failed, 0 skipped) against the pinned Gestures and NeuralNetworks snapshots: [run 46090780281](https://github.com/TrentBest/TheSingularityWorkshop.Hermit/actions/runs/46090780281).
@@ -128,7 +137,6 @@ This roadmap distinguishes the domain vision from current executable evidence.
 ## Definition of done for an embodied vertical slice
 
 A user places a glass container on a counter. Hermit notices it, approaches within safe range, inspects it, proposes a harmless interaction, receives host policy approval where required, performs it through physics-aware adapters, verifies the actual result, and yields immediately when interrupted. Tests cover success, denial, unreachable object, physics rejection, interruption and recovery.
-
 
 ## Hermit cross-repository coordination register
 
