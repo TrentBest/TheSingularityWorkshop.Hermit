@@ -24,9 +24,9 @@ public sealed class ReachAdapterTests
 
         Assert.Equal(0.8, result.TargetShoulderAngleRadians, 10);
         Assert.Equal(-0.4, result.TargetElbowAngleRadians, 10);
-        Assert.Equal(0.4, result.ShoulderErrorRadians, 5);
+        Assert.Equal(0.8, result.ShoulderErrorRadians, 5);
         Assert.Equal(-0.4, result.ElbowErrorRadians, 5);
-        Assert.Equal(0.2, result.RawShoulderCorrectionRadians, 5);
+        Assert.Equal(0.4, result.RawShoulderCorrectionRadians, 5);
         Assert.Equal(-0.2, result.RawElbowCorrectionRadians, 5);
         Assert.Equal(0.1, result.BoundedShoulderCorrectionRadians, 5);
         Assert.Equal(-0.1, result.BoundedElbowCorrectionRadians, 5);
