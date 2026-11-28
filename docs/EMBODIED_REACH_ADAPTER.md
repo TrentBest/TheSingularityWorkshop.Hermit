@@ -48,6 +48,10 @@ The test suite covers correction-versus-absolute-target semantics, consumer prop
 
 Stage timings in ReachStepEvidence are diagnostic per-run measurements only. They are not benchmark results. A separate benchmark must compare trace-on and trace-off runs and report validation, inference, command mapping, and armature stepping independently before making performance claims.
 
+## CI evidence
+
+The pinned-source conformance workflow passed on Hermit commit `b6eece2d9c802cb9eb78ba83e6a43f3fa372780d`: all 6 tests passed, with 0 failures and 0 skips. The run compiled the adapter against both checked-out source projects using .NET SDK 10.0.404 and completed the test assembly in 51 ms. See [GitHub Actions run 46090780281](https://github.com/TrentBest/TheSingularityWorkshop.Hermit/actions/runs/46090780281). This is evidence for the isolated consumer harness only; it does not change the runtime-boundary limitations below.
+
 ## Runtime boundary
 
 Hermit's Pages/runtime code remains JavaScript. This harness is an isolated .NET consumer test and evidence generator, not an in-process connection to the Pages runtime, AnyApp, a live simulation host, or a production Hermit shell. No transport protocol is invented here. A real shell integration must be selected and tested as a separate host decision.
